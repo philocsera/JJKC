@@ -1,0 +1,48 @@
+// Prisma schema mirroring plan.md §Step 3.
+// This file is intentionally NOT executed by the prototype — the runtime
+// reads from lib/mock-data.ts. Keep it here so the seam to a real DB is
+// obvious: when wiring Neon, run `prisma generate && prisma migrate dev`
+// and replace the calls in lib/mock-data.ts with Prisma queries.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String       @id @default(cuid())
+  googleId    String       @unique
+  name        String
+  image       String?
+  accessToken String       // encrypt at rest in production
+  isPublic    Boolean      @default(false)
+  profile     AlgoProfile?
+  follows     Follow[]     @relation("follower")
+  followers   Follow[]     @relation("following")
+  createdAt   DateTime     @default(now())
+}
+
+model AlgoProfile {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id])
+  categories     Json
+  topChannels    Json
+  topKeywords    String[]
+  sampleVideoIds String[]
+  lastSyncedAt   DateTime
+  updatedAt      DateTime @updatedAt
+}
+
+model Follow {
+  followerId  String
+  followingId String
+  follower    User @relation("follower", fields: [followerId], references: [id])
+  following   User @relation("following", fields: [followingId], references: [id])
+
+  @@id([followerId, followingId])
+}
