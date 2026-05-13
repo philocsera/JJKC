@@ -5,3 +5,9 @@ out
 .env.local
 .DS_Store
 *.log
+
+# Database
+prisma/dev.db
+prisma/dev.db-journal
+dev.db
+dev.db-journal

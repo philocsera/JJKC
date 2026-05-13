@@ -28,7 +28,7 @@ function seededShuffle<T>(items: T[], seed: string): T[] {
   for (let i = out.length - 1; i > 0; i--) {
     h = (h * 9301 + 49297) % 233280;
     const j = Math.abs(h) % (i + 1);
-    [out[i]!, out[j]!] = [out[j]!, out[i]!];
+    [out[i], out[j]] = [out[j], out[i]];
   }
   return out;
 }

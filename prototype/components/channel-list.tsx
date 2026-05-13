@@ -16,7 +16,7 @@ export function ChannelList({ channels }: { channels: Channel[] }) {
           <div className="min-w-0">
             <div className="truncate text-sm font-medium">{ch.name}</div>
             <div className="text-xs text-[hsl(var(--foreground))]/60">
-              {ch.videoCount.toLocaleString()} videos
+              {ch.videoCount?.toLocaleString() ?? "N/A"} videos
             </div>
           </div>
         </li>
