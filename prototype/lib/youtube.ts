@@ -95,3 +95,23 @@ export async function getPopularVideosByCategory(
 
   return response.data.items || [];
 }
+
+/**
+ * 키워드로 영상을 검색합니다.
+ * Phase 2의 "키워드 기반 피드 생성"을 위해 사용됩니다.
+ */
+export async function searchVideosByKeyword(
+  accessToken: string,
+  keyword: string,
+  maxResults = 10
+) {
+  const youtube = getYouTubeClient(accessToken);
+  const response = await youtube.search.list({
+    part: ["snippet"],
+    q: keyword, // 검색어 (예: "top hits")
+    type: ["video"],
+    maxResults,
+  });
+
+  return response.data.items || [];
+}
