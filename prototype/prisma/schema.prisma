@@ -1,48 +1,101 @@
-// Prisma schema mirroring plan.md §Step 3.
-// This file is intentionally NOT executed by the prototype — the runtime
-// reads from lib/mock-data.ts. Keep it here so the seam to a real DB is
-// obvious: when wiring Neon, run `prisma generate && prisma migrate dev`
-// and replace the calls in lib/mock-data.ts with Prisma queries.
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
+// --- NextAuth Models ---
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? 
+  access_token      String? 
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// --- Application Models ---
+
 model User {
-  id          String       @id @default(cuid())
-  googleId    String       @unique
-  name        String
-  image       String?
-  accessToken String       // encrypt at rest in production
-  isPublic    Boolean      @default(false)
-  profile     AlgoProfile?
-  follows     Follow[]     @relation("follower")
-  followers   Follow[]     @relation("following")
-  createdAt   DateTime     @default(now())
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  
+  // YouTube API Access (Updated during signIn callback)
+  accessToken   String?
+  refreshToken  String?
+  expiresAt     Int?
+  
+  // NextAuth relations
+  accounts      Account[]
+  sessions      Session[]
+  
+  // Algorithm Profile
+  profile       AlgoProfile?
+  
+  // Social: Following/Followers
+  following     Follow[]  @relation("follower")
+  followers     Follow[]  @relation("following")
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 model AlgoProfile {
-  id             String   @id @default(cuid())
-  userId         String   @unique
-  user           User     @relation(fields: [userId], references: [id])
-  categories     Json
-  topChannels    Json
-  topKeywords    String[]
-  sampleVideoIds String[]
-  lastSyncedAt   DateTime
-  updatedAt      DateTime @updatedAt
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  categories      String   
+  keywords        String   
+  topChannels     String   
+  sampleVideoIds  String   
+
+  isPublic        Boolean  @default(true)
+  lastSyncedAt    DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model Follow {
   followerId  String
   followingId String
-  follower    User @relation("follower", fields: [followerId], references: [id])
-  following   User @relation("following", fields: [followingId], references: [id])
+  follower    User   @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User   @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
 
   @@id([followerId, followingId])
 }

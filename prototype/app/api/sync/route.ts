@@ -1,23 +1,59 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { touchProfileSync } from "@/lib/mock-data";
+import { prisma } from "@/lib/prisma";
+import { 
+  getSubscriptions, 
+  getLikedVideos, 
+  getVideoCategories, 
+  getChannels 
+} from "@/lib/youtube";
+import { generateProfile } from "@/lib/profiler";
+import { saveProfile } from "@/lib/profile-service";
 
-// In a real build this would:
-//   1. Pull a fresh access token from NextAuth.
-//   2. Call YouTube Data API v3 (videos.list?myRating=like, subscriptions.list,
-//      playlistItems.list) — see plan.md §Step 4.
-//   3. Recompute categories / channels / keywords and persist via Prisma.
-//   4. Cache the response in Upstash Redis with a 1h TTL.
-// For the prototype it just bumps lastSyncedAt so the dashboard shows
-// the user a recent timestamp.
 export async function POST() {
   const user = await getCurrentUser();
-  if (!user) {
-    return NextResponse.json({ error: "not signed in" }, { status: 401 });
+
+  if (!user || !user.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const profile = touchProfileSync(user.id);
-  if (!profile) {
-    return NextResponse.json({ error: "no profile" }, { status: 404 });
+
+  // Fetch tokens from DB (NextAuth might not put tokens in the session object directly)
+  const dbUser = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { accessToken: true }
+  });
+
+  if (!dbUser?.accessToken) {
+    return NextResponse.json({ error: "No YouTube access token found. Please re-login." }, { status: 400 });
   }
-  return NextResponse.json({ ok: true, lastSyncedAt: profile.lastSyncedAt });
+
+  try {
+    const token = dbUser.accessToken;
+
+    // 1. Fetch data from YouTube
+    const [categories, subs, likes] = await Promise.all([
+      getVideoCategories(token),
+      getSubscriptions(token, 50),
+      getLikedVideos(token, 50),
+    ]);
+
+    // 2. Fetch channel details for topics
+    const channelIds = subs.map((s: any) => s.snippet.resourceId.channelId);
+    let channelDetails: any[] = [];
+    if (channelIds.length > 0) {
+      channelDetails = await getChannels(token, channelIds);
+    }
+
+    // 3. Generate and Save profile
+    const result = generateProfile(subs, likes, channelDetails, categories);
+    const saved = await saveProfile(user.id, result);
+
+    return NextResponse.json({ 
+      success: true, 
+      lastSyncedAt: saved.lastSyncedAt 
+    });
+  } catch (error: any) {
+    console.error("Sync API error:", error);
+    return NextResponse.json({ error: "Failed to sync data" }, { status: 500 });
+  }
 }
