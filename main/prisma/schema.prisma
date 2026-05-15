@@ -1,0 +1,106 @@
+// plan.md Step 3 의 스키마를 SQLite 로 옮긴 것.
+//
+// 차이점:
+//   - Postgres 의 Json / String[] → SQLite 에서는 native 가 없으므로
+//     모두 JSON-stringified String 으로 저장한다. lib/profile-service 가
+//     read 시 parse, write 시 stringify 한다.
+//   - Postgres 로 옮기려면 provider 와 위 필드 타입만 바꾸면 됨.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---- NextAuth ----
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ---- Domain ----
+
+model User {
+  id            String    @id @default(cuid())
+  googleId      String?   @unique
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+
+  // YouTube tokens (plan: 암호화 저장. 데모는 평문)
+  accessToken   String?
+  refreshToken  String?
+  expiresAt     Int?
+
+  isPublic      Boolean   @default(false)
+
+  accounts      Account[]
+  sessions      Session[]
+  profile       AlgoProfile?
+
+  following     Follow[]  @relation("follower")
+  followers     Follow[]  @relation("following")
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model AlgoProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  categories      String   // JSON: { name: percent }
+  topChannels     String   // JSON: [{ id, name, thumbnail, videoCount }]
+  topKeywords     String   // JSON: string[]
+  sampleVideoIds  String   // JSON: string[]
+  metrics         String?  // JSON: ProfileMetrics (diversity, shortsRatio, languageDistribution, …)
+
+  lastSyncedAt    DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Follow {
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+  follower    User     @relation("follower",  fields: [followerId],  references: [id], onDelete: Cascade)
+  following   User     @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+}

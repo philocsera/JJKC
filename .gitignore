@@ -1,2 +1,16 @@
 .DS_Store
 node_modules/
+
+# secrets — never commit
+.env
+.env.*
+!.env.example
+
+# Next.js
+.next/
+*.tsbuildinfo
+next-env.d.ts
+
+# SQLite dev DB
+*.db
+*.db-journal
