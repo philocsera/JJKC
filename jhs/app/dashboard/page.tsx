@@ -76,14 +76,16 @@ export default async function DashboardPage() {
             <h1 className="text-2xl font-semibold tracking-tight">
               {user.name ?? "나"} 의 알고리즘
             </h1>
-            <p className="text-xs text-muted-foreground">
-              Last synced {new Date(profile.lastSyncedAt).toLocaleString()}
+            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              <span>
+                Last synced {new Date(profile.lastSyncedAt).toLocaleString()}
+              </span>
               {feed.ok ? (
-                <Badge variant="muted" className="ml-2">
+                <Badge variant="muted">
                   feed {feed.counts.channel}+{feed.counts.keyword}+{feed.counts.category}
                 </Badge>
               ) : null}
-            </p>
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-2">

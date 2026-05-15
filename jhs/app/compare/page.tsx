@@ -81,6 +81,13 @@ export default async function ComparePage({
 }
 
 async function CompareView({ aId, bId }: { aId: string; bId: string }) {
+  if (aId === bId) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        같은 사용자끼리는 비교할 수 없습니다. 다른 프로필을 선택해 주세요.
+      </p>
+    );
+  }
   const [a, b] = await Promise.all([
     getProfileWithOwner(aId),
     getProfileWithOwner(bId),

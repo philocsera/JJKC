@@ -88,7 +88,20 @@ export async function performAutoSync(userId: string) {
       activities,
     });
 
+    console.log("[sync] counts", {
+      subs: subs.length,
+      likes: likes.length,
+      channelDetails: channelDetails.length,
+      playlists: (playlists as any[]).length,
+      playlistVideos: playlistVideos.length,
+      activities: activities.length,
+      categoryMapEntries: Object.keys(categoryMap).length,
+    });
+    console.log("[sync] result.metrics", result.metrics);
+    console.log("[sync] result.categories", result.categories);
+
     const saved = await saveProfile(userId, result);
+    console.log("[sync] saved.metrics length", (saved as any).metrics?.length ?? null);
     // 프로필 캐시만 명시적으로 무효화.
     // 피드 캐시는 version-keyed (lastSyncedAt) — 새 sync 후 자동으로 새 key
     // 가 만들어져 stale key 가 자연 만료된다.
