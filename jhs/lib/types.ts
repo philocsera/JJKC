@@ -23,6 +23,7 @@ export type ProfileMetrics = {
 export type AlgoProfileShape = {
   userId: string;
   categories: CategoryDist;
+  subCategories: CategoryDist;  // { "Parent/Sub": percent } — 카테고리 내 세부 취향
   topChannels: TopChannel[];
   topKeywords: string[];
   sampleVideoIds: string[];
@@ -70,6 +71,7 @@ export type ChannelRecord = {
   country: string | null;
   isKorean: boolean;
   categories: CategoryDist;     // { name: 0-100 }
+  subCategories: CategoryDist;  // { "Parent/Sub": 0-100 }
   keywords: string[];
   metrics: ChannelMetrics;
   clusterId: number | null;

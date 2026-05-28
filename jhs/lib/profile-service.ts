@@ -34,6 +34,7 @@ const DEFAULT_METRICS: ProfileMetrics = {
 type DbProfile = {
   userId: string;
   categories: string;
+  subCategories?: string | null;
   topChannels: string;
   topKeywords: string;
   sampleVideoIds: string;
@@ -46,6 +47,7 @@ function unpack(p: DbProfile): AlgoProfileShape {
   return {
     userId: p.userId,
     categories: safeParse<CategoryDist>(p.categories, {}),
+    subCategories: safeParse<CategoryDist>(p.subCategories, {}),
     topChannels: safeParse<TopChannel[]>(p.topChannels, []),
     topKeywords: safeParse<string[]>(p.topKeywords, []),
     sampleVideoIds: safeParse<string[]>(p.sampleVideoIds, []),
@@ -83,6 +85,7 @@ export async function saveProfile(
 ) {
   const data = {
     categories: JSON.stringify(result.categories),
+    subCategories: JSON.stringify(result.subCategories ?? {}),
     topChannels: JSON.stringify(result.topChannels),
     topKeywords: JSON.stringify(result.topKeywords),
     sampleVideoIds: JSON.stringify(result.sampleVideoIds),

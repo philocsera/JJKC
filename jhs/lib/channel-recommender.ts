@@ -66,8 +66,8 @@ export function rankChannels(
     .filter((ch) => !exclude.has(ch.id))
     .map((ch) => {
       const sim = profileSimilarity(
-        { categories: user.categories, topKeywords: user.topKeywords },
-        { categories: ch.categories, topKeywords: ch.keywords },
+        { categories: user.categories, topKeywords: user.topKeywords, subCategories: user.subCategories },
+        { categories: ch.categories, topKeywords: ch.keywords, subCategories: ch.subCategories },
       );
       const score = Math.round(
         SIM_W * sim + METRIC_W * metricMatch(user, ch) + QUALITY_W * qualityPrior(ch),

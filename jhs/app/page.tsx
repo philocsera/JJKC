@@ -15,7 +15,7 @@ export default async function LandingPage() {
           공유하고 탐험하세요.
         </h1>
         <p className="mx-auto max-w-2xl text-balance text-base text-muted-foreground">
-          내 구독·좋아요 데이터로 알고리즘 프로필을 만들고,
+          자주 보는 채널과 관심 카테고리로 알고리즘 프로필을 만들고,
           다른 사람의 알고리즘이 본 영상을 그대로 받아 보세요.
           나와 닮은 사람을 찾고, 카테고리·키워드를 비교할 수 있습니다.
         </p>
@@ -25,13 +25,13 @@ export default async function LandingPage() {
         <div className="space-y-2">
           <h2 className="text-lg font-medium">Google 계정으로 시작하기</h2>
           <p className="text-sm text-muted-foreground">
-            YouTube 데이터 v3 API <strong>읽기 전용</strong> 권한이 필요합니다
-            (`youtube.readonly`). 시청 기록은 사용하지 않습니다.
+            Google 계정은 <strong>로그인 식별용</strong>으로만 사용합니다.
+            YouTube 데이터 접근 권한은 요청하지 않습니다.
           </p>
         </div>
         <SignInButton />
         <p className="text-xs text-muted-foreground">
-          서비스는 한 번의 sync 후 결과만 저장하며, accessToken 은 다음 sync 시점까지 보관됩니다.
+          로그인 후 자주 보는 채널과 관심 카테고리를 입력하면 알고리즘 프로필이 만들어집니다.
         </p>
       </Card>
 

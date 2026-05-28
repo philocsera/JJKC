@@ -36,6 +36,7 @@ export interface ProfileMetrics {
 
 export interface ProfileResult {
   categories: Record<string, number>;
+  subCategories?: Record<string, number>; // { "Parent/Sub": percent } — 온보딩에서 채움
   topKeywords: string[];
   topChannels: TopChannel[];
   sampleVideoIds: string[];
@@ -369,12 +370,21 @@ export function jaccardSimilarity(a: string[], b: string[]): number {
   return uni === 0 ? 0 : inter / uni;
 }
 
-// 두 프로필의 종합 유사도 (0–100). 카테고리 0.7 + 키워드 0.3.
+// 두 프로필의 종합 유사도 (0–100).
+//   세부 카테고리(subCategories)가 양쪽에 있으면: 카테고리 0.5 + 세부 0.3 + 키워드 0.2.
+//   없으면(콜드스타트/미분류): 기존 거동 그대로 카테고리 0.7 + 키워드 0.3.
 export function profileSimilarity(
-  a: { categories: Record<string, number>; topKeywords: string[] },
-  b: { categories: Record<string, number>; topKeywords: string[] },
+  a: { categories: Record<string, number>; topKeywords: string[]; subCategories?: Record<string, number> },
+  b: { categories: Record<string, number>; topKeywords: string[]; subCategories?: Record<string, number> },
 ): number {
   const cos = cosineSimilarity(a.categories, b.categories);
   const jac = jaccardSimilarity(a.topKeywords, b.topKeywords);
+  const aSub = a.subCategories ?? {};
+  const bSub = b.subCategories ?? {};
+  const hasSub = Object.keys(aSub).length > 0 && Object.keys(bSub).length > 0;
+  if (hasSub) {
+    const subCos = cosineSimilarity(aSub, bSub);
+    return Math.round((0.5 * cos + 0.3 * subCos + 0.2 * jac) * 100);
+  }
   return Math.round((0.7 * cos + 0.3 * jac) * 100);
 }

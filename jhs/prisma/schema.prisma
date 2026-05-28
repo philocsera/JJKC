@@ -89,6 +89,7 @@ model AlgoProfile {
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   categories      String   // JSON: { name: percent }
+  subCategories   String   @default("{}") // JSON: { "Parent/Sub": percent } — 카테고리 내 세부 취향
   topChannels     String   // JSON: [{ id, name, thumbnail, videoCount }]
   topKeywords     String   // JSON: string[]
   sampleVideoIds  String   // JSON: string[]
@@ -111,6 +112,7 @@ model OnboardInput {
 
   channelIds    String   @default("[]")  // JSON: string[]  — 사용자가 고른 채널
   categories    String   @default("[]")  // JSON: string[]  — 체크한 카테고리 이름
+  subCategories String   @default("[]")  // JSON: string[]  — 체크한 세부 카테고리 ("Parent/Sub")
   playlistUrls  String   @default("[]")  // JSON: string[]  — 선택 보강용
 
   submittedAt   DateTime @default(now())
@@ -145,6 +147,7 @@ model Channel {
   isKorean        Boolean  @default(true)
 
   categories      String   @default("{}")  // JSON: { name: 0-100 }
+  subCategories   String   @default("{}")  // JSON: { "Parent/Sub": 0-100 } — 세부 카테고리
   keywords        String   @default("[]")  // JSON: string[]
   metrics         String?                  // JSON: { mainstreamScore, nicheScore, uploadsPerMonth }
 

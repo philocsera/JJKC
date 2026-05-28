@@ -50,3 +50,25 @@ Playboard top100 paste → resolve-channel-ids.ts (YouTube 검색 HTML 스크랩
 ```
 
 자세한 내용 — 수집 전략·rate-limit 회피·lexicon 튜닝 전후 적중률·메타데이터 출처 분석·클러스터 결과·DB 상태 — **[`jhs/README.md`](jhs/README.md)** 참고.
+
+### Phase 6 — 카탈로그 확장 · 세부 카테고리 · 온보딩 개편 (2026-05-29, 이번 작업)
+
+YouTube 공개 검색 스크래핑으로 카탈로그를 대폭 키우고, 상위 카테고리 아래 **세부 카테고리** 레이어를 도입해 카테고리 내 취향(예: 게임 안에서 마인크래프트 vs 리그오브레전드)까지 추천에 반영. **Music 카테고리는 프로젝트 전체에서 제거**.
+
+**결과**
+
+| 항목 | 값 |
+|---|---|
+| 총 채널 | **4,753** (Phase 5 기준 2,244 → +2,503) |
+| 발굴 방식 | YouTube 공개 검색 스크래핑(키 0) — 2라운드 446개 쿼리 → 신규 2,503개 RSS 분류·삽입 |
+| 카테고리 | 15 → **14** (Music 제거, 음악 채널 195개 삭제) |
+| 세부 카테고리 | **14 부모 × 57 세부**, 채널 **3,379개** 분류 |
+| ChannelCluster | **18** (k-means + 실루엣 재계산) |
+
+**핵심 변경**
+
+- **채널 발굴** (`scripts/discover-channels.ts`) — YouTube 검색 결과(`channelRenderer`)에서 channelId + 구독자수 텍스트를 파싱, continuation 으로 롱테일까지 페이지네이션. 5만+ floor + 기존 DB 중복 제거. `enrich-discovered.ts` 가 RSS 로 한글 비율 검증(외국 채널 제외) 후 적재.
+- **세부 카테고리** — `scripts/discover-subcategories.ts` 가 카테고리별 keyword TF-IDF k-means 로 하위 그룹 자동 발견 → 사람이 라벨링 → `data/sub-taxonomy.ko.yaml`. `lib/subclassify.ts` 가 부모 게이팅 키워드 매칭으로 `Channel.subCategories`(`{"Gaming/마인크래프트":70}`) 부여. 추천은 세부가 있을 때 `0.5·카테고리 + 0.3·세부 + 0.2·키워드`, 없으면 기존 `0.7/0.3` 폴백(`lib/profiler.ts`).
+- **Music 제거** — `CATEGORY_NAMESPACE`·`category-lexicon`·세부 택소노미에서 제외, 음악 dominant 채널 삭제, 잔존 음악 키 정리 후 재클러스터.
+- **온보딩 3단계 개편** (`components/onboard-form.tsx`) — ① 큰 카테고리 → ② 세부 관심사 → ③ 세부 기반 채널(중복 통합 단일 리스트)에서 관심 채널 선택. API: `/api/channels/by-subcategory`.
+- **스키마** — `Channel`·`AlgoProfile`·`OnboardInput` 에 `subCategories` 컬럼 추가.

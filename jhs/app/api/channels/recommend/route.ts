@@ -4,6 +4,7 @@
 import { NextResponse } from "next/server";
 import { recommendForUser } from "@/lib/channel-recommender";
 import { cache, TTL } from "@/lib/cache";
+import { subtaxVersion } from "@/lib/sub-taxonomy";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -13,7 +14,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "?userId= required" }, { status: 400 });
   }
 
-  const ckey = `rec:${userId}:${limit}`;
+  const ckey = `rec:${userId}:${limit}:${subtaxVersion()}`;
   const cached = await cache.get<Awaited<ReturnType<typeof recommendForUser>>>(ckey);
   if (cached) return NextResponse.json({ ...cached, cacheHit: true });
 

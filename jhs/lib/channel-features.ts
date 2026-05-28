@@ -68,6 +68,7 @@ export interface ChannelFeatures {
   country: string | null;
   isKorean: boolean;
   categories: Record<string, number>;
+  subCategories?: Record<string, number>; // { "Parent/Sub": 0-100 } — 선택(수집 시 비고 후 reclassify가 채움)
   keywords: string[];
   metrics: ChannelMetrics;
 }

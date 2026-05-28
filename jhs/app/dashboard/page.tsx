@@ -35,16 +35,16 @@ export default async function DashboardPage() {
             {user.name ?? "안녕하세요"} 님, 환영합니다.
           </h1>
           <p className="text-sm text-muted-foreground">
-            아직 알고리즘 프로필이 없습니다. YouTube 와 한 번 동기화하면
-            카테고리 / 채널 / 키워드 카드가 만들어집니다.
+            아직 알고리즘 프로필이 없습니다. 자주 보는 채널과 관심 카테고리를
+            입력하면 카테고리 / 채널 / 키워드 카드가 만들어집니다.
           </p>
         </header>
         <Card className="p-8 text-center">
           <p className="mb-4 text-sm text-muted-foreground">
-            아래 버튼을 누르면 구독 채널과 좋아요 영상을 분석합니다 (약 5–15초).
+            아래 버튼을 누르면 알고리즘 입력 폼으로 이동합니다 (약 1분).
           </p>
           <div className="flex justify-center">
-            <SyncButton label="첫 동기화 시작" />
+            <SyncButton label="알고리즘 만들기" />
           </div>
         </Card>
       </section>

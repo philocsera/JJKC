@@ -9,22 +9,7 @@
 #   - 동률은 weight 의 합으로 결정. weight 기본 1, 강한 시그널은 2~3
 #   - 마지막에 normalizeTopN 으로 0-100 로 정규화
 
-Music:
-  - { kw: "음악", w: 2 }
-  - { kw: "노래", w: 2 }
-  - { kw: "커버", w: 2 }
-  - { kw: "라이브", w: 1 }
-  - { kw: "kpop", w: 3 }
-  - { kw: "k-pop", w: 3 }
-  - { kw: "뮤직비디오", w: 3 }
-  - { kw: "엠브이", w: 2 }
-  - { kw: "발라드", w: 1 }
-  - { kw: "랩", w: 2 }
-  - { kw: "힙합", w: 2 }
-  - { kw: "버스킹", w: 2 }
-  - { kw: "오피셜", w: 1 }
-  - { kw: "official audio", w: 2 }
-  - { kw: "official mv", w: 3 }
+# ※ Music 카테고리는 프로젝트에서 제외됨 — lexicon 에서도 제거.
 
 Gaming:
   - { kw: "게임", w: 2 }

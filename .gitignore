@@ -11,6 +11,13 @@ node_modules/
 *.tsbuildinfo
 next-env.d.ts
 
-# SQLite dev DB
+# SQLite dev DB + 수동 백업
 *.db
 *.db-journal
+*.db.bak*
+
+# 일회성/생성 카탈로그 데이터 산출물 (실제 데이터는 dev.db 에 있음)
+/channels-final.json
+/discovered-*.json
+/dump.sql
+jhs/data/sub-taxonomy.proposed.json

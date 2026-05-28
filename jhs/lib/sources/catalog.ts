@@ -59,6 +59,26 @@ export async function listByCategory(
   return filtered;
 }
 
+// 세부 카테고리("Parent/Sub")를 가진 채널들. subCategories JSON 컬럼 LIKE 검색.
+// 키가 JSON 안에 "Parent/Sub" 형태로 박혀 있어 quote 포함 contains 로 매치.
+export async function listBySubCategory(
+  subKey: string,
+  opts: { limit?: number; minSubs?: number } = {},
+): Promise<ChannelSearchResult[]> {
+  const key = subKey.trim();
+  if (!key) return [];
+  const rows = await prisma.channel.findMany({
+    where: {
+      isKorean: true,
+      ...(opts.minSubs ? { subscriberCount: { gte: opts.minSubs } } : {}),
+      subCategories: { contains: `"${key}"` },
+    },
+    orderBy: { subscriberCount: "desc" },
+    take: opts.limit ?? 24,
+  });
+  return rows.map((r) => unpackChannel(r as any));
+}
+
 // 키워드가 채널 keywords 에 포함된 채널들. JSON String 컬럼이라 contains 로 검색.
 export async function listByKeyword(
   keyword: string,

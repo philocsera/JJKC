@@ -38,6 +38,7 @@ type DbChannel = {
   country: string | null;
   isKorean: boolean;
   categories: string;
+  subCategories: string;
   keywords: string;
   metrics: string | null;
   clusterId: number | null;
@@ -57,6 +58,7 @@ export function unpackChannel(c: DbChannel): ChannelRecord {
     country: c.country,
     isKorean: c.isKorean,
     categories: safeParse<CategoryDist>(c.categories, {}),
+    subCategories: safeParse<CategoryDist>(c.subCategories, {}),
     keywords: safeParse<string[]>(c.keywords, []),
     metrics: safeParse<ChannelMetrics>(c.metrics, DEFAULT_METRICS),
     clusterId: c.clusterId,
@@ -99,6 +101,7 @@ export async function upsertChannel(f: ChannelFeatures, source: string) {
     country: f.country,
     isKorean: f.isKorean,
     categories: JSON.stringify(f.categories),
+    subCategories: JSON.stringify(f.subCategories ?? {}),
     keywords: JSON.stringify(f.keywords),
     metrics: JSON.stringify(f.metrics),
     source,
@@ -127,6 +130,16 @@ export async function listAllChannels(
     },
   });
   return rows.map((r) => unpackChannel(r as DbChannel));
+}
+
+// onboard 폼이 고른 채널들을 한 번에 로드. 입력 순서(사용자 선택 순서)를 보존한다.
+export async function getChannelsByIds(ids: string[]): Promise<ChannelRecord[]> {
+  if (ids.length === 0) return [];
+  const rows = await prisma.channel.findMany({ where: { id: { in: ids } } });
+  const byId = new Map(rows.map((r) => [r.id, unpackChannel(r as DbChannel)]));
+  return ids
+    .map((id) => byId.get(id))
+    .filter((c): c is ChannelRecord => Boolean(c));
 }
 
 export async function listClusters(): Promise<ClusterRecord[]> {

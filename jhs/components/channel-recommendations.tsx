@@ -23,7 +23,7 @@ export async function ChannelRecommendations({ userId }: { userId: string }) {
     return (
       <Card>
         <CardContent className="py-8 text-center text-sm text-muted-foreground">
-          먼저 대시보드에서 YouTube 와 한 번 동기화해 알고리즘 프로필을 만들어 주세요.
+          먼저 <a href="/onboard" className="text-accent underline-offset-4 hover:underline">알고리즘 만들기</a>에서 프로필을 만들어 주세요.
         </CardContent>
       </Card>
     );

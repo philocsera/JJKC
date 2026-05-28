@@ -4,6 +4,13 @@
 
 **YouTube Data API key 없이 동작** — RSS·oEmbed·정적 카탈로그만 사용. 자세한 마이그레이션 이력은 아래 [YouTube API 의존 제거](#youtube-api-의존-제거-2026-05) 절 참고.
 
+> **2026-05-29 업데이트** — 아래 "로컬 DB 카탈로그" 절은 초기(2,244채널·15카테고리·16클러스터) 기록입니다. 이후:
+> - 채널 **2,244 → 4,753** (YouTube 공개 검색 스크래핑 발굴 + RSS 분류, `scripts/discover-channels.ts` / `enrich-discovered.ts`)
+> - **Music 카테고리 제거** — 15 → **14 카테고리**, 음악 채널 195개 삭제
+> - **세부 카테고리 도입** — 14 부모 × **57 세부**, 채널 3,379개 분류 (`data/sub-taxonomy.ko.yaml`, `lib/subclassify.ts`). 추천에 세부 유사도 항 추가
+> - **온보딩 3단계** — 카테고리 → 세부 관심사 → 채널 (`components/onboard-form.tsx`, `/api/channels/by-subcategory`)
+> - 클러스터 **18개** 재계산. 전체 그림은 루트 [`README.md`](../README.md) Phase 6 참고.
+
 ---
 
 ## 로컬 DB 카탈로그 (2026-05)
@@ -205,8 +212,8 @@ centroid 는 `{ name: weight }` 형태로 저장돼 사용자 `AlgoProfile.categ
 
 영향:
 - API key·OAuth scope 모두 제거. 운영 비용·quota 0
-- `lib/youtube.ts`, `lib/sync-service.ts` → `lib/_archive/` 이동 (참고용 보존)
-- `/api/sync` 는 410 Gone + `/onboard` 안내 placeholder
+- `lib/youtube.ts`, `lib/sync-service.ts`, 옛 수집 스크립트 → `old/` 디렉터리로 이동 (참고용 보존, tsconfig `exclude`·런타임 모두 미참조)
+- `/api/sync` 는 410 Gone + `/onboard` 안내 placeholder. 새 진입점은 `/onboard` 폼 + `/api/onboard`
 - 사용자 데이터 부재 (구독·좋아요) → 정확도는 사용자 자기선언 폼에 의존. 대신 카탈로그·분류기·클러스터링으로 추천 신뢰도 보완
 
 ---
