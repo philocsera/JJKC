@@ -12,6 +12,8 @@
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
     "catalog:seed": "tsx scripts/catalog-seed.ts",
+    "catalog:export": "tsx scripts/export-catalog.ts",
+    "catalog:restore": "tsx scripts/restore-catalog.ts",
     "channels:cluster": "tsx scripts/channels-cluster.ts",
     "postinstall": "prisma generate"
   },

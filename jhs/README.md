@@ -13,6 +13,24 @@
 
 ---
 
+## 처음 설정 (clone 후)
+
+`dev.db` 는 `.gitignore` 대상이라 clone 하면 **빈 DB** 입니다. 카탈로그(Channel·ChannelCluster 4,753개)는 `jhs/data/catalog-seed.json` 으로 커밋돼 있으니 복원하세요. (사용자/인증 데이터는 시드에 없음 — 토큰·이메일 미포함.)
+
+```bash
+cd jhs
+npm install                 # postinstall 이 prisma generate 실행
+npm run db:push             # schema → 빈 dev.db 생성 (Account/Channel/… 테이블)
+npm run catalog:restore     # data/catalog-seed.json → Channel + ChannelCluster 적재
+# .env 생성 후 DATABASE_URL="file:./dev.db", GOOGLE_CLIENT_ID/SECRET 등 채우기
+npm run dev
+```
+
+- **카탈로그 갱신 후 재공유**: 발굴·재분류·재클러스터를 돌린 사람이 `npm run catalog:export` 로 `data/catalog-seed.json` 을 다시 만들어 커밋하면, 나머지는 `npm run catalog:restore` 로 동기화.
+- `catalog:restore` 는 멱등 — 기존 Channel/ChannelCluster 를 비우고 시드로 교체하며 사용자 테이블은 건드리지 않음.
+
+---
+
 ## 로컬 DB 카탈로그 (2026-05)
 
 YouTube Data API 호출 없이 한국 인기 채널 ~2,200개를 직접 수집·분류·클러스터링해 `Channel` 테이블에 적재. 피드·검색·추천 전부 이 카탈로그 위에서 동작하며, 외부 호출은 채널별 RSS feed 만 사용 (key 0, 공식 endpoint).

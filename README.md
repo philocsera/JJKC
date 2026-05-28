@@ -1,74 +1,77 @@
-# 📺 JJKC YouTube Algorithm Project
+# 📺 JJKC — 한국 유튜브 채널 추천
 
-내 유튜브 알고리즘을 분석해 공유하고, 다른 사람의 알고리즘으로 탐색하며, **한국 채널을 클러스터링해 내 취향에 맞는 채널을 추천**하는 서비스입니다.
+내 시청 취향을 입력하면 취향에 맞는 한국 유튜브 채널을 추천하고, 내 "알고리즘"을 다른 사람과 공유·비교하는 서비스. **YouTube Data API(키·쿼터·OAuth) 없이** 직접 구축한 한국 채널 카탈로그 위에서 동작한다.
 
-https://ytalgoshare.vercel.app/
+🔗 https://ytalgoshare.vercel.app/
 
 ---
 
-## ✅ 진행 상황
+## 무엇으로 DB를 구성했나
 
-### Phase 1–3 — 알고리즘 공유 (완료)
-- Google OAuth 로그인 (식별용), 사용자 폼 입력 기반 알고리즘 프로필
-- 카테고리 분포 / 대표 채널 / 키워드 / 지표(다양성·Shorts비율·니치도 등) 프로필
-- 공개/비공개 토글, 타인 알고리즘 피드(`/profile/[id]`), 비교(`/compare`), 닮은 사용자 추천
+추천의 토대는 **구독자 5만+ 한국 채널 4,753개** 카탈로그다. 공개 데이터만으로 수집·분류·클러스터링했다 (서빙 시 외부 호출 0).
 
-### Phase 4 — 채널 클러스터링 & 추천 (완료)
-한국 채널(구독자 10만+)을 수집·벡터화·클러스터링해 사용자 알고리즘에 맞는 채널을 추천.
-**핵심: 채널을 사용자 프로필과 같은 카테고리 벡터 공간에 올려 기존 `profileSimilarity` 를 재사용 → 추천 서빙 외부 호출 0.**
+### 1. 채널 수집 — 출처
 
-### Phase 5 — YouTube Data API 의존 제거 + 로컬 DB 카탈로그 구축 (2026-05, 이번 작업)
-운영 비용·quota·토큰 보안 부담을 해결하기 위해 YouTube Data API 호출을 모두 제거하고, 사전 큐레이션된 한국 채널 카탈로그 위에서 동작하도록 전환.
+| 출처 | 채널 수 | 방식 |
+|---|---|---|
+| **YouTube 공개 검색 스크래핑** | ~2,500 | `youtube.com/results?search_query=…` 의 `ytInitialData`(channelRenderer)에서 channelId + 구독자수 텍스트 파싱, continuation 으로 롱테일까지 페이지네이션 |
+| **Playboard 랭킹** (14 카테고리 × top100) | ~1,135 | 사람이 붙여넣은 이름 리스트를 YouTube 검색으로 channelId 해결 |
+| **외부 SQL 덤프 / 보강 수집** | ~1,116 | 구독자수·조회수 등 RSS 로 못 받는 메타데이터 보강 |
+| **RSS 피드** (전 채널 검증) | 4,753 | `feeds/videos.xml?channel_id=…` 로 제목·영상 메타 수집 + **영상 제목 한글 비율로 외국 채널 제외** |
 
-**카탈로그 빌드 결과**
+- 구독자 **5만 미만**과 **외국 채널**은 제외. **음악(K-pop 등) 카테고리는 프로젝트에서 제외**.
+- 모든 수집은 공개 페이지/RSS 만 사용 — **API 키·OAuth 토큰·쿼터 0**.
 
-| 항목 | 값 |
-|---|---|
-| 총 채널 | **2,244** (seed 1,284 + external-dump 910 + legacy 50) |
-| 이름→channelId 자동 해결 | **1,367 / 1,400** (97.6%, Playboard 14 카테고리 × top100) |
-| ChannelCluster | **16** (k-means + 실루엣 0.434) |
-| 외부 호출 | RSS feed (`feeds/videos.xml`) 만, key 0 |
+### 2. 분류 — categories / subCategories
 
-**핵심 변경**
+- **상위 카테고리 (14개)** — YouTube 표준 15개에서 Music 제외. `data/category-lexicon.ko.yaml` 한국어 키워드 사전을 `title + description + 최근 영상 제목` 에 매칭해 `{ "Gaming": 45, "Comedy": 30, … }` 벡터 산출 (`lib/classify.ts`).
+- **세부 카테고리 (57개)** — 상위 카테고리 아래 세분 (예: 게임 → 마인크래프트 / 리그오브레전드 / 배틀그라운드 / 로블록스 …). 채널 keyword TF-IDF k-means 로 후보를 자동 발견한 뒤 사람이 라벨링 → `data/sub-taxonomy.ko.yaml`. `lib/subclassify.ts` 가 부모 카테고리 게이팅 매칭으로 `{ "Gaming/마인크래프트": 70 }` 부여.
 
-| 원본 호출 | 대체 |
-|---|---|
-| `subscriptions.list` / `videos.list(myRating=like)` / `activities.list` | 사용자 폼 입력 (Phase 3 onboard, 예정) |
-| `channels.list` / `videoCategories.list` | 정적 카탈로그 (`Channel` 테이블) + `lib/classify.ts` 분류기 |
-| `search.list` | `lib/sources/catalog.ts` DB 검색 + RSS 폴백 |
-| `videos.list(chart=mostPopular)` | `videosByCategory` — 카탈로그 top 채널의 RSS |
-| `playlistItems.list` (uploads) | `youtube.com/feeds/videos.xml?channel_id=…` |
+### 3. 클러스터링
 
-**파이프라인 한 줄 요약**
+카테고리 벡터를 L2 정규화 → **k-means++ + 실루엣**으로 best-k 선정 → **클러스터 18개**(`lib/kmeans.ts`, `scripts/channels-cluster.ts`). centroid 는 `{ name: weight }` 로 저장돼 사용자 프로필과 같은 코사인 공간에서 비교되며, 추천 다양성·라벨에 쓰인다.
 
-```
-Playboard top100 paste → resolve-channel-ids.ts (YouTube 검색 HTML 스크랩, 5~9s 페이싱)
-   → seed-channels.json 1,460+ → catalog-seed.ts (RSS 적재 + lib/classify.ts 분류)
-   → import-external-dump.ts (외부 dump.sql 메타데이터 보강)
-   → reclassify-catalog.ts (lexicon 튜닝 후 일괄 재분류)
-   → channels-cluster.ts (k-means++ + 실루엣, k=16 자동 선정)
+### 4. 재현 / 협업자 공유
+
+`dev.db`(SQLite)는 git 에서 제외되지만, 카탈로그는 `jhs/data/catalog-seed.json` 으로 커밋된다 (사용자·토큰 데이터 미포함). clone 후:
+
+```bash
+cd jhs && npm install && npm run db:push && npm run catalog:restore
 ```
 
-자세한 내용 — 수집 전략·rate-limit 회피·lexicon 튜닝 전후 적중률·메타데이터 출처 분석·클러스터 결과·DB 상태 — **[`jhs/README.md`](jhs/README.md)** 참고.
+수집·분류 파이프라인 스크립트(`jhs/scripts/`): `discover-channels` → `enrich-discovered` → `reclassify-subcategories` → `channels-cluster` (+ `export-catalog` / `restore-catalog`).
 
-### Phase 6 — 카탈로그 확장 · 세부 카테고리 · 온보딩 개편 (2026-05-29, 이번 작업)
+---
 
-YouTube 공개 검색 스크래핑으로 카탈로그를 대폭 키우고, 상위 카테고리 아래 **세부 카테고리** 레이어를 도입해 카테고리 내 취향(예: 게임 안에서 마인크래프트 vs 리그오브레전드)까지 추천에 반영. **Music 카테고리는 프로젝트 전체에서 제거**.
+## 어떤 기능이 있나
 
-**결과**
+### 알고리즘 프로필 만들기 — `/onboard`
+Google 로그인 후 **3단계**: ① 큰 카테고리 선택 → ② 그 카테고리의 세부 관심사 선택 → ③ 세부에 해당하는 채널 중 관심 채널 선택. 입력을 카테고리·세부·키워드 벡터와 지표(다양성·니치도 등)를 담은 `AlgoProfile` 로 변환한다. (구독·시청기록 권한 불필요 — 자기선언 기반)
 
-| 항목 | 값 |
-|---|---|
-| 총 채널 | **4,753** (Phase 5 기준 2,244 → +2,503) |
-| 발굴 방식 | YouTube 공개 검색 스크래핑(키 0) — 2라운드 446개 쿼리 → 신규 2,503개 RSS 분류·삽입 |
-| 카테고리 | 15 → **14** (Music 제거, 음악 채널 195개 삭제) |
-| 세부 카테고리 | **14 부모 × 57 세부**, 채널 **3,379개** 분류 |
-| ChannelCluster | **18** (k-means + 실루엣 재계산) |
+### 채널 추천 — `/discover`
+프로필과 채널을 **같은 카테고리/세부 벡터 공간**에서 비교해 랭킹한다:
 
-**핵심 변경**
+```
+점수 = 0.8·유사도 + 0.1·지표매칭 + 0.1·인기도
+유사도 = 0.5·카테고리코사인 + 0.3·세부카테고리코사인 + 0.2·키워드자카드
+         (세부 정보 없으면 0.7·카테고리 + 0.3·키워드 로 폴백)
+```
 
-- **채널 발굴** (`scripts/discover-channels.ts`) — YouTube 검색 결과(`channelRenderer`)에서 channelId + 구독자수 텍스트를 파싱, continuation 으로 롱테일까지 페이지네이션. 5만+ floor + 기존 DB 중복 제거. `enrich-discovered.ts` 가 RSS 로 한글 비율 검증(외국 채널 제외) 후 적재.
-- **세부 카테고리** — `scripts/discover-subcategories.ts` 가 카테고리별 keyword TF-IDF k-means 로 하위 그룹 자동 발견 → 사람이 라벨링 → `data/sub-taxonomy.ko.yaml`. `lib/subclassify.ts` 가 부모 게이팅 키워드 매칭으로 `Channel.subCategories`(`{"Gaming/마인크래프트":70}`) 부여. 추천은 세부가 있을 때 `0.5·카테고리 + 0.3·세부 + 0.2·키워드`, 없으면 기존 `0.7/0.3` 폴백(`lib/profiler.ts`).
-- **Music 제거** — `CATEGORY_NAMESPACE`·`category-lexicon`·세부 택소노미에서 제외, 음악 dominant 채널 삭제, 잔존 음악 키 정리 후 재클러스터.
-- **온보딩 3단계 개편** (`components/onboard-form.tsx`) — ① 큰 카테고리 → ② 세부 관심사 → ③ 세부 기반 채널(중복 통합 단일 리스트)에서 관심 채널 선택. API: `/api/channels/by-subcategory`.
-- **스키마** — `Channel`·`AlgoProfile`·`OnboardInput` 에 `subCategories` 컬럼 추가.
+클러스터별 노출 상한으로 다양성 보장, 이미 고른 채널은 제외. **추천 서빙 시 외부 호출 0** (`lib/channel-recommender.ts`).
+
+### 알고리즘 공유 · 탐색 · 비교
+- `/dashboard` — 내 알고리즘(카테고리 분포·대표 채널·키워드·지표) 시각화
+- `/explore` — 공개된 다른 사람들의 알고리즘 둘러보기
+- `/profile/[id]` — 타인 알고리즘 + 그 취향으로 만든 피드
+- `/compare` — 두 알고리즘 비교, 닮은 사용자 추천(`/api/similar`), 팔로우, 공개/비공개 토글
+
+### 피드 생성
+타인 프로필의 대표 채널(30%)·키워드(40%)·카테고리(30%)로 후보 채널을 모아 각 채널의 RSS 최신 영상을 인터리브 → YouTube watch 링크로 연결.
+
+---
+
+## 기술 스택
+
+Next.js 15 (App Router) · TypeScript · Prisma + SQLite · NextAuth (Google, 식별용) · Tailwind · Upstash Redis(캐시). 런타임 외부 호출은 채널 RSS 피드뿐 (키 0).
+
+> 수집 전략·rate-limit 회피·lexicon 튜닝·메타데이터 출처·클러스터 결과 등 **기술 상세는 [`jhs/README.md`](jhs/README.md)** 참고.
