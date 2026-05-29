@@ -3,6 +3,7 @@ import { Sparkles, Radar, Telescope, GitCompareArrows } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { SignInButton } from "@/components/sign-in-button";
 import { Button } from "@/components/ui/button";
+import { ChannelMarquee } from "@/components/channel-marquee";
 
 const STATS = [
   { v: "6,540", l: "한국 채널" },
@@ -97,6 +98,9 @@ export default async function HomePage() {
           </div>
         ))}
       </dl>
+
+      {/* ── 채널 마퀴 ──────────────────────────────────────── */}
+      <ChannelMarquee />
     </div>
   );
 }

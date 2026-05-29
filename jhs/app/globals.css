@@ -107,4 +107,19 @@
   .hairline {
     background: linear-gradient(90deg, transparent, hsl(var(--border)), transparent);
   }
+  /* 채널 썸네일 마퀴 — 우→좌 무한 스크롤, 호버 시 일시정지 */
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .marquee-track {
+    animation: marquee 70s linear infinite;
+    width: max-content;
+  }
+  .marquee-wrap:hover .marquee-track {
+    animation-play-state: paused;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track { animation: none; }
+  }
 }
