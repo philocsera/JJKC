@@ -5,17 +5,17 @@
 **YouTube Data API key 없이 동작** — RSS·oEmbed·정적 카탈로그만 사용. 자세한 마이그레이션 이력은 아래 [YouTube API 의존 제거](#youtube-api-의존-제거-2026-05) 절 참고.
 
 > **2026-05-29 업데이트** — 아래 "로컬 DB 카탈로그" 절은 초기(2,244채널·15카테고리·16클러스터) 기록입니다. 이후:
-> - 채널 **2,244 → 4,753** (YouTube 공개 검색 스크래핑 발굴 + RSS 분류, `scripts/discover-channels.ts` / `enrich-discovered.ts`)
+> - 채널 **2,244 → 6,592** (YouTube 공개 검색 스크래핑 발굴 + RSS 분류, `scripts/discover-channels.ts` / `enrich-discovered.ts`). 니치 쿼리 풀(`data/overnight-queries.txt`, ~900개)을 배치로 발굴 — 중단 시 `scripts/resume-enrich.sh` 로 남은 쿼리만 이어서 재개
 > - **Music 카테고리 제거** — 15 → **14 카테고리**, 음악 채널 195개 삭제
-> - **세부 카테고리 도입** — 14 부모 × **57 세부**, 채널 3,379개 분류 (`data/sub-taxonomy.ko.yaml`, `lib/subclassify.ts`). 추천에 세부 유사도 항 추가
+> - **세부 카테고리 도입** — 14 부모 × **57 세부**, 채널 4,835개 분류 (`data/sub-taxonomy.ko.yaml`, `lib/subclassify.ts`). 추천에 세부 유사도 항 추가
 > - **온보딩 3단계** — 카테고리 → 세부 관심사 → 채널 (`components/onboard-form.tsx`, `/api/channels/by-subcategory`)
-> - 클러스터 **18개** 재계산. 전체 그림은 루트 [`README.md`](../README.md) Phase 6 참고.
+> - 클러스터 **16개** 재계산 (best-k). 전체 그림은 루트 [`README.md`](../README.md) Phase 6 참고.
 
 ---
 
 ## 처음 설정 (clone 후)
 
-`dev.db` 는 `.gitignore` 대상이라 clone 하면 **빈 DB** 입니다. 카탈로그(Channel·ChannelCluster 4,753개)는 `jhs/data/catalog-seed.json` 으로 커밋돼 있으니 복원하세요. (사용자/인증 데이터는 시드에 없음 — 토큰·이메일 미포함.)
+`dev.db` 는 `.gitignore` 대상이라 clone 하면 **빈 DB** 입니다. 카탈로그(Channel 6,592개 · ChannelCluster 16개)는 `jhs/data/catalog-seed.json` 으로 커밋돼 있으니 복원하세요. (사용자/인증 데이터는 시드에 없음 — 토큰·이메일 미포함.)
 
 ```bash
 cd jhs

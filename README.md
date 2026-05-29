@@ -8,7 +8,7 @@
 
 ## 무엇으로 DB를 구성했나
 
-추천의 토대는 **구독자 5만+ 한국 채널 4,753개** 카탈로그다. 공개 데이터만으로 수집·분류·클러스터링했다 (서빙 시 외부 호출 0).
+추천의 토대는 **구독자 5만+ 한국 채널 6,592개** 카탈로그다. 공개 데이터만으로 수집·분류·클러스터링했다 (서빙 시 외부 호출 0).
 
 ### 1. 채널 수집 — 출처
 
@@ -17,7 +17,9 @@
 | **YouTube 공개 검색 스크래핑** | ~2,500 | `youtube.com/results?search_query=…` 의 `ytInitialData`(channelRenderer)에서 channelId + 구독자수 텍스트 파싱, continuation 으로 롱테일까지 페이지네이션 |
 | **Playboard 랭킹** (14 카테고리 × top100) | ~1,135 | 사람이 붙여넣은 이름 리스트를 YouTube 검색으로 channelId 해결 |
 | **외부 SQL 덤프 / 보강 수집** | ~1,116 | 구독자수·조회수 등 RSS 로 못 받는 메타데이터 보강 |
-| **RSS 피드** (전 채널 검증) | 4,753 | `feeds/videos.xml?channel_id=…` 로 제목·영상 메타 수집 + **영상 제목 한글 비율로 외국 채널 제외** |
+| **RSS 피드** (전 채널 검증) | 6,592 | `feeds/videos.xml?channel_id=…` 로 제목·영상 메타 수집 + **영상 제목 한글 비율로 외국 채널 제외** |
+
+> 발굴은 ~900개 한국 버티컬 니치 쿼리 풀(`jhs/data/overnight-queries.txt`)을 배치로 돌려 롱테일까지 캔다. 중단 시 `jhs/scripts/resume-enrich.sh` 로 남은 쿼리만 이어서 발굴→보강→재분류·재클러스터까지 재개할 수 있다.
 
 - 구독자 **5만 미만**과 **외국 채널**은 제외. **음악(K-pop 등) 카테고리는 프로젝트에서 제외**.
 - 모든 수집은 공개 페이지/RSS 만 사용 — **API 키·OAuth 토큰·쿼터 0**.
@@ -29,7 +31,7 @@
 
 ### 3. 클러스터링
 
-카테고리 벡터를 L2 정규화 → **k-means++ + 실루엣**으로 best-k 선정 → **클러스터 18개**(`lib/kmeans.ts`, `scripts/channels-cluster.ts`). centroid 는 `{ name: weight }` 로 저장돼 사용자 프로필과 같은 코사인 공간에서 비교되며, 추천 다양성·라벨에 쓰인다.
+카테고리 벡터를 L2 정규화 → **k-means++ + 실루엣**으로 best-k 선정 → **클러스터 16개**(`lib/kmeans.ts`, `scripts/channels-cluster.ts`). centroid 는 `{ name: weight }` 로 저장돼 사용자 프로필과 같은 코사인 공간에서 비교되며, 추천 다양성·라벨에 쓰인다.
 
 ### 4. 재현 / 협업자 공유
 
