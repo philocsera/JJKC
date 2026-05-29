@@ -3,11 +3,11 @@ import { auth } from "@/lib/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SignOutButton } from "./sign-out-button";
 
-const NAV_PUBLIC = [{ href: "/explore", label: "Explore" }];
+const NAV_PUBLIC = [{ href: "/explore", label: "다른 사람들의 유튜브 알고리즘 탐색" }];
 const NAV_AUTH = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/discover", label: "Discover" },
-  { href: "/compare", label: "Compare" },
+  { href: "/dashboard", label: "내 알고리즘" },
+  { href: "/discover", label: "추천" },
+  { href: "/compare", label: "비교" },
 ];
 
 export async function SiteNav() {
@@ -26,7 +26,7 @@ export async function SiteNav() {
             J
           </span>
           <span className="font-mono text-sm font-semibold tracking-tight text-foreground transition-colors group-hover:text-accent">
-            JJKC<span className="text-muted-foreground">/algo</span>
+            JJKC
           </span>
         </Link>
 
@@ -35,7 +35,7 @@ export async function SiteNav() {
             <Link
               key={l.href}
               href={l.href}
-              className="rounded-full px-3 py-1.5 font-mono text-xs uppercase tracking-wider text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               {l.label}
             </Link>

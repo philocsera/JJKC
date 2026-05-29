@@ -32,24 +32,24 @@
     --radius: 0.75rem;
   }
 
-  /* 다크가 기본 테마 (layout 의 html.dark). YouTube 풍 중성 검정 + 레드 액센트. */
+  /* 다크가 기본 테마. 순수 검정 대신 약간 푸른 slate 톤 + 살짝 밝혀 가독성↑. */
   .dark {
-    --background: 0 0% 7%;          /* #121212 */
-    --foreground: 0 0% 96%;
-    --muted: 0 0% 14.5%;
-    --muted-foreground: 0 0% 62%;
-    --card: 0 0% 10.5%;             /* 살짝 떠 보이는 surface */
-    --card-foreground: 0 0% 96%;
-    --border: 0 0% 17%;
-    --input: 0 0% 17%;
-    --ring: 0 72% 54%;
-    --primary: 0 0% 96%;
-    --primary-foreground: 0 0% 8%;
-    --secondary: 0 0% 16%;
-    --secondary-foreground: 0 0% 96%;
-    --accent: 0 72% 54%;            /* youtube red, 다크에서 약간 밝게 */
+    --background: 222 16% 10%;      /* 푸른 기운의 딥 슬레이트 */
+    --foreground: 210 22% 97%;
+    --muted: 220 14% 17%;
+    --muted-foreground: 218 16% 72%; /* 보조 텍스트 대비 강화 */
+    --card: 222 15% 13%;            /* 배경보다 떠 보이는 surface */
+    --card-foreground: 210 22% 97%;
+    --border: 220 13% 24%;          /* 경계 또렷하게 */
+    --input: 220 13% 24%;
+    --ring: 0 72% 56%;
+    --primary: 210 22% 97%;
+    --primary-foreground: 222 20% 11%;
+    --secondary: 220 14% 19%;
+    --secondary-foreground: 210 22% 97%;
+    --accent: 0 72% 56%;            /* youtube red — 푸른 베이스와 대비 */
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 72% 51%;
+    --destructive: 0 72% 53%;
     --destructive-foreground: 0 0% 100%;
   }
 

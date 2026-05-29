@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Sparkles, Radar, Telescope, GitCompareArrows } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { SignInButton } from "@/components/sign-in-button";
 import { Button } from "@/components/ui/button";
@@ -10,10 +11,10 @@ const STATS = [
 ];
 
 const FEATURES = [
-  { idx: "01", href: "/onboard", title: "알고리즘 만들기", body: "3단계로 내 취향 벡터 생성" },
-  { idx: "02", href: "/discover", title: "채널 추천", body: "벡터 공간 유사도 랭킹" },
-  { idx: "03", href: "/explore", title: "알고리즘 탐색", body: "다른 사람의 알고리즘 둘러보기" },
-  { idx: "04", href: "/compare", title: "비교 & 팔로우", body: "두 알고리즘 레이더 비교" },
+  { idx: "01", href: "/onboard", title: "알고리즘 만들기", body: "3단계로 내 취향 벡터 생성", Icon: Sparkles },
+  { idx: "02", href: "/discover", title: "채널 추천", body: "벡터 공간 유사도 랭킹", Icon: Radar },
+  { idx: "03", href: "/explore", title: "알고리즘 탐색", body: "다른 사람의 알고리즘 둘러보기", Icon: Telescope },
+  { idx: "04", href: "/compare", title: "비교 & 팔로우", body: "두 알고리즘 레이더 비교", Icon: GitCompareArrows },
 ];
 
 export default async function HomePage() {
@@ -21,13 +22,12 @@ export default async function HomePage() {
   const signedIn = !!session?.user;
 
   return (
-    <div className="space-y-16">
+    <div className="space-y-14">
       {/* ── HERO + 기능 (한 화면) ───────────────────────────── */}
-      <section className="grid items-center gap-10 pt-2 lg:grid-cols-12 lg:gap-12">
+      <section className="grid items-center gap-10 pt-2 lg:grid-cols-2 lg:gap-14">
         {/* 좌: 히어로 */}
-        <div className="space-y-7 lg:col-span-7">
-          <p className="label-mono">한국 유튜브 · 알고리즘 카탈로그</p>
-          <h1 className="text-balance text-5xl font-extrabold leading-[0.98] lg:text-6xl">
+        <div className="space-y-7">
+          <h1 className="text-balance text-5xl font-extrabold leading-[1.08] lg:text-6xl">
             내 취향을 읽는
             <br />
             <span className="text-accent">한국 유튜브</span> 알고리즘.
@@ -58,26 +58,31 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* 우: 기능 4개 — 첫 화면에 바로 노출 */}
-        <div className="space-y-3 lg:col-span-5">
-          <div className="flex items-center justify-between px-1">
-            <span className="label-mono">무엇을 할 수 있나</span>
-            <span className="label-mono">04</span>
-          </div>
+        {/* 우: 기능 2×2 — 아이콘 카드로 한눈에 */}
+        <div className="grid grid-cols-2 gap-3.5">
           {FEATURES.map((f) => (
             <Link
               key={f.href}
               href={f.href}
-              className="lift group flex items-center gap-4 rounded-xl border border-border/70 bg-card/50 p-4 backdrop-blur-sm"
+              className="lift group relative flex aspect-[4/3] flex-col justify-between overflow-hidden rounded-2xl border border-border/70 bg-card/50 p-5 backdrop-blur-sm"
             >
-              <span className="label-mono shrink-0 text-accent">{f.idx}</span>
-              <div className="min-w-0 flex-1">
-                <div className="font-semibold leading-tight">{f.title}</div>
-                <div className="truncate text-xs text-muted-foreground">{f.body}</div>
+              <div className="flex items-start justify-between">
+                <span className="grid h-11 w-11 place-items-center rounded-xl bg-accent/15 text-accent ring-1 ring-accent/20">
+                  <f.Icon className="h-5 w-5" strokeWidth={2} />
+                </span>
+                <span className="label-mono opacity-60">{f.idx}</span>
               </div>
-              <span className="shrink-0 font-mono text-muted-foreground transition-transform group-hover:translate-x-0.5">
-                →
-              </span>
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5 font-semibold leading-tight">
+                  {f.title}
+                  <span className="font-mono text-muted-foreground opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100">
+                    →
+                  </span>
+                </div>
+                <div className="text-xs leading-snug text-muted-foreground">{f.body}</div>
+              </div>
+              {/* 호버 시 은은한 레드 글로우 */}
+              <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-accent/10 opacity-0 blur-2xl transition-opacity group-hover:opacity-100" />
             </Link>
           ))}
         </div>
