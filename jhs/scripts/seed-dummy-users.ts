@@ -39,16 +39,16 @@ type Persona = { id: string; name: string; email: string; cats: string[] };
 
 // 각자 여러 카테고리를 골고루 — 첫 카테고리가 주(主), 뒤는 보조.
 const PERSONAS: Persona[] = [
-  { id: "dummy_01", name: "겜창 민준", email: "minjun@demo.local", cats: ["Gaming", "Comedy", "Entertainment"] },
-  { id: "dummy_02", name: "먹방러 지우", email: "jiwoo@demo.local", cats: ["Howto & Style", "People & Blogs", "Travel & Events"] },
-  { id: "dummy_03", name: "주식하는 서연", email: "seoyeon@demo.local", cats: ["News & Politics", "Education", "Science & Technology"] },
-  { id: "dummy_04", name: "뷰티덕후 하은", email: "haeun@demo.local", cats: ["Howto & Style", "People & Blogs", "Entertainment"] },
-  { id: "dummy_05", name: "여행가 도윤", email: "doyoon@demo.local", cats: ["Travel & Events", "People & Blogs", "Howto & Style"] },
-  { id: "dummy_06", name: "스포츠광 준호", email: "junho@demo.local", cats: ["Sports", "Entertainment", "News & Politics"] },
-  { id: "dummy_07", name: "개발자 현우", email: "hyunwoo@demo.local", cats: ["Science & Technology", "Education", "News & Politics"] },
-  { id: "dummy_08", name: "집사 수아", email: "sua@demo.local", cats: ["Pets & Animals", "People & Blogs", "Howto & Style"] },
-  { id: "dummy_09", name: "시네필 예준", email: "yejun@demo.local", cats: ["Film & Animation", "Entertainment", "Comedy"] },
-  { id: "dummy_10", name: "육아맘 채원", email: "chaewon@demo.local", cats: ["Education", "Comedy", "Pets & Animals"] },
+  { id: "dummy_01", name: "김민준", email: "minjun@demo.local", cats: ["Gaming", "Comedy", "Entertainment"] },
+  { id: "dummy_02", name: "박지우", email: "jiwoo@demo.local", cats: ["Howto & Style", "People & Blogs", "Travel & Events"] },
+  { id: "dummy_03", name: "이서연", email: "seoyeon@demo.local", cats: ["News & Politics", "Education", "Science & Technology"] },
+  { id: "dummy_04", name: "최하은", email: "haeun@demo.local", cats: ["Howto & Style", "People & Blogs", "Entertainment"] },
+  { id: "dummy_05", name: "정도윤", email: "doyoon@demo.local", cats: ["Travel & Events", "People & Blogs", "Howto & Style"] },
+  { id: "dummy_06", name: "강준호", email: "junho@demo.local", cats: ["Sports", "Entertainment", "News & Politics"] },
+  { id: "dummy_07", name: "조현우", email: "hyunwoo@demo.local", cats: ["Science & Technology", "Education", "News & Politics"] },
+  { id: "dummy_08", name: "윤수아", email: "sua@demo.local", cats: ["Pets & Animals", "People & Blogs", "Howto & Style"] },
+  { id: "dummy_09", name: "임예준", email: "yejun@demo.local", cats: ["Film & Animation", "Entertainment", "Comedy"] },
+  { id: "dummy_10", name: "한채원", email: "chaewon@demo.local", cats: ["Education", "Comedy", "Pets & Animals"] },
 ];
 
 function dominant(catJson: string): string | null {

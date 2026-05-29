@@ -134,9 +134,6 @@ async function CompareView({ aId, bId }: { aId: string; bId: string }) {
               </Avatar>
               <div className="min-w-0">
                 <div className="truncate text-sm font-medium">{owner.name}</div>
-                <div className="truncate text-xs text-muted-foreground">
-                  {owner.email}
-                </div>
               </div>
             </CardContent>
           </Card>

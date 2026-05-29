@@ -43,9 +43,6 @@ export default async function ExplorePage() {
                     <CardTitle className="truncate text-sm">
                       {owner.name}
                     </CardTitle>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {owner.email ?? ""}
-                    </p>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3 text-xs">
