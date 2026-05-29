@@ -38,21 +38,20 @@ export default async function ProfilePage({
   }));
 
   return (
-    <section className="space-y-10">
-      <header className="flex flex-wrap items-center justify-between gap-4">
+    <section className="space-y-12">
+      <header className="flex flex-wrap items-end justify-between gap-5 border-b border-border/60 pb-8">
         <div className="flex items-center gap-4">
-          <Avatar className="h-16 w-16">
+          <Avatar className="h-16 w-16 ring-1 ring-border">
             {owner.image ? (
               <AvatarImage src={owner.image} alt={owner.name} />
             ) : null}
-            <AvatarFallback>{owner.name.slice(0, 1).toUpperCase()}</AvatarFallback>
+            <AvatarFallback className="text-lg">{owner.name.slice(0, 1).toUpperCase()}</AvatarFallback>
           </Avatar>
-          <div className="space-y-1">
-            <h1 className="text-2xl font-semibold tracking-tight">
-              {owner.name} 의 알고리즘
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              Last synced {new Date(profile.lastSyncedAt).toLocaleString()}
+          <div className="space-y-2">
+            <p className="label-mono">Algorithm profile</p>
+            <h1 className="text-3xl font-extrabold sm:text-4xl">{owner.name}</h1>
+            <p className="font-mono text-[11px] text-muted-foreground">
+              last synced · {new Date(profile.lastSyncedAt).toLocaleString()}
             </p>
           </div>
         </div>
@@ -66,9 +65,9 @@ export default async function ProfilePage({
           {me ? (
             <Link
               href={`/compare?a=${me}&b=${owner.id}`}
-              className="rounded-full border px-4 py-1.5 text-xs hover:bg-muted"
+              className="rounded-full border border-border px-4 py-1.5 font-mono text-xs uppercase tracking-wider text-muted-foreground transition-colors hover:border-accent/60 hover:text-foreground"
             >
-              Compare with me
+              Compare
             </Link>
           ) : null}
         </div>

@@ -57,15 +57,54 @@
   html, body { @apply h-full; }
   body {
     @apply bg-background text-foreground antialiased;
+    font-feature-settings: "ss01", "cv01", "tnum";
     /* 상단에서 은은하게 퍼지는 레드 글로우 — 평평한 검정 방지 */
     background-image: radial-gradient(
-      120% 60% at 50% -10%,
-      hsl(0 72% 54% / 0.08),
-      transparent 60%
+      130% 70% at 50% -20%,
+      hsl(0 72% 54% / 0.10),
+      transparent 55%
     );
     background-attachment: fixed;
   }
   ::selection {
-    background: hsl(var(--accent) / 0.3);
+    background: hsl(var(--accent) / 0.35);
+    color: hsl(0 0% 100%);
+  }
+  /* 헤드라인은 디스플레이 폰트 + 타이트 트래킹 */
+  h1, h2, h3 {
+    font-family: var(--font-display), var(--font-sans), sans-serif;
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer utilities {
+  /* 모노 메타 라벨 — uppercase, 넓은 트래킹 */
+  .label-mono {
+    font-family: var(--font-mono), monospace;
+    font-size: 0.6875rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+  /* 미세 필름 그레인 — 평평함 제거 */
+  .grain::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    pointer-events: none;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  /* 카드 호버 시 떠오르는 느낌 */
+  .lift {
+    transition: transform 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
+  }
+  .lift:hover {
+    transform: translateY(-2px);
+    border-color: hsl(var(--accent) / 0.5);
+  }
+  .hairline {
+    background: linear-gradient(90deg, transparent, hsl(var(--border)), transparent);
   }
 }

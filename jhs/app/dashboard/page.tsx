@@ -56,29 +56,26 @@ export default async function DashboardPage() {
     .sort((a, b) => b.pct - a.pct);
 
   return (
-    <section className="space-y-10">
-      <header className="flex flex-wrap items-center justify-between gap-4">
+    <section className="space-y-12">
+      <header className="flex flex-wrap items-end justify-between gap-5 border-b border-border/60 pb-8">
         <div className="flex items-center gap-4">
-          <Avatar className="h-14 w-14">
+          <Avatar className="h-16 w-16 ring-1 ring-border">
             {user.image ? <AvatarImage src={user.image} alt={user.name ?? ""} /> : null}
-            <AvatarFallback>
+            <AvatarFallback className="text-lg">
               {(user.name ?? "?").slice(0, 1).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div className="space-y-1">
-            <h1 className="text-2xl font-semibold tracking-tight">
-              {user.name ?? "나"} 의 알고리즘
+          <div className="space-y-2">
+            <p className="label-mono">My algorithm</p>
+            <h1 className="text-3xl font-extrabold sm:text-4xl">
+              {user.name ?? "나"}
             </h1>
-            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-              <span>
-                Last synced {new Date(profile.lastSyncedAt).toLocaleString()}
-              </span>
-            </div>
+            <p className="font-mono text-[11px] text-muted-foreground">
+              last synced · {new Date(profile.lastSyncedAt).toLocaleString()}
+            </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <SyncButton label="Re-sync" />
-        </div>
+        <SyncButton label="Re-sync" />
       </header>
 
       <div className="grid gap-6 lg:grid-cols-2">
