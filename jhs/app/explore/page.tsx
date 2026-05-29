@@ -14,14 +14,13 @@ export default async function ExplorePage() {
       <header className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">Explore</h1>
         <p className="text-sm text-muted-foreground">
-          공개된 알고리즘 프로필. 누구의 알고리즘으로 영상을 보고 싶나요?
+          다른 사람들의 알고리즘 프로필. 누구의 알고리즘으로 영상을 보고 싶나요?
         </p>
       </header>
 
       {items.length === 0 ? (
         <Card className="p-8 text-center text-sm text-muted-foreground">
-          아직 공개 프로필이 없습니다. 누군가가 로그인 후 sync 하고
-          본인 dashboard 에서 "공개" 로 전환해야 여기에 표시됩니다.
+          아직 알고리즘 프로필이 없습니다. 로그인 후 온보딩을 마치면 여기에 표시됩니다.
         </Card>
       ) : (
         <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

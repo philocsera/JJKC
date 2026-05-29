@@ -67,15 +67,6 @@ export async function buildFeed(
   const profile = await getProfile(targetUserId);
   if (!profile) return { ok: false, reason: "no_profile" };
 
-  // 비공개 가드 — 본인은 자기 거 볼 수 있음.
-  if (targetUserId !== viewerId) {
-    const target = await prisma.user.findUnique({
-      where: { id: targetUserId },
-      select: { isPublic: true },
-    });
-    if (!target?.isPublic) return { ok: false, reason: "private" };
-  }
-
   const version = new Date(profile.lastSyncedAt).getTime() || 0;
   const ckey = feedCacheKey(viewerId, targetUserId, total, version);
   const cached = await cache.get<FeedResult>(ckey);

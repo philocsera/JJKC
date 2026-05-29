@@ -5,17 +5,6 @@ import type { ProfileMetrics } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-const LANG_LABEL: Record<string, string> = {
-  ko: "한국어",
-  en: "English",
-  ja: "日本語",
-  zh: "中文",
-  es: "Español",
-  fr: "Français",
-  de: "Deutsch",
-  ru: "Русский",
-};
-
 function Stat({
   label,
   value,
@@ -39,10 +28,6 @@ function Stat({
 }
 
 export function ProfileMetricsCard({ metrics }: { metrics: ProfileMetrics }) {
-  const langs = Object.entries(metrics.languageDistribution).sort(
-    (a, b) => b[1] - a[1],
-  );
-
   const shortsLabel =
     metrics.shortsRatio >= 60
       ? "Shorts 위주"
@@ -89,30 +74,6 @@ export function ProfileMetricsCard({ metrics }: { metrics: ProfileMetrics }) {
             value={`${metrics.nicheChannelScore}`}
             sub={nicheLabel}
           />
-        </div>
-
-        <div className="space-y-2">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">
-            Language mix
-          </div>
-          {langs.length === 0 ? (
-            <p className="text-xs text-muted-foreground">
-              언어 정보를 가진 영상이 부족합니다.
-            </p>
-          ) : (
-            <div className="flex flex-wrap gap-1">
-              {langs.slice(0, 6).map(([lang, pct]) => (
-                <Badge
-                  key={lang}
-                  variant={
-                    lang === metrics.primaryLanguage ? "accent" : "muted"
-                  }
-                >
-                  {(LANG_LABEL[lang] ?? lang.toUpperCase())} · {pct}%
-                </Badge>
-              ))}
-            </div>
-          )}
         </div>
 
         <div className="flex flex-wrap gap-1 pt-1">

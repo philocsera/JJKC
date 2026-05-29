@@ -2,7 +2,6 @@
 
 import { NextResponse } from "next/server";
 import { getProfileWithOwner } from "@/lib/profile-service";
-import { getSessionUserId } from "@/lib/auth";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -11,7 +10,6 @@ export async function GET(req: Request) {
   if (!a || !b) {
     return NextResponse.json({ error: "?a=&b= required" }, { status: 400 });
   }
-  const me = await getSessionUserId();
 
   const [pa, pb] = await Promise.all([
     getProfileWithOwner(a),
@@ -19,12 +17,6 @@ export async function GET(req: Request) {
   ]);
   if (!pa || !pb) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
-  }
-  if (
-    (!pa.owner.isPublic && me !== a) ||
-    (!pb.owner.isPublic && me !== b)
-  ) {
-    return NextResponse.json({ error: "private" }, { status: 403 });
   }
 
   const keys = Array.from(

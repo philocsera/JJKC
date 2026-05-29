@@ -99,14 +99,6 @@ async function CompareView({ aId, bId }: { aId: string; bId: string }) {
       </p>
     );
   }
-  if (!a.owner.isPublic || !b.owner.isPublic) {
-    return (
-      <p className="text-sm text-muted-foreground">
-        두 프로필 모두 공개 상태여야 비교할 수 있습니다.
-      </p>
-    );
-  }
-
   const keys = Array.from(
     new Set([
       ...Object.keys(a.profile.categories),

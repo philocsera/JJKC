@@ -6,12 +6,10 @@ import { buildFeed } from "@/lib/feed-builder";
 import { CategoryRadar } from "@/components/category-radar";
 import { CategoryBar } from "@/components/category-bar";
 import { ChannelList } from "@/components/channel-list";
-import { KeywordCloud } from "@/components/keyword-cloud";
 import { VideoGrid } from "@/components/video-grid";
 import { ProfileMetricsCard } from "@/components/profile-metrics";
 import { SimilarUsers } from "@/components/similar-users";
 import { SyncButton } from "@/components/sync-button";
-import { VisibilityToggle } from "@/components/visibility-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -89,7 +87,6 @@ export default async function DashboardPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <VisibilityToggle initialPublic={user.isPublic} />
           <SyncButton label="Re-sync" />
         </div>
       </header>
@@ -122,14 +119,6 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <ChannelList channels={profile.topChannels} />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Top keywords</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <KeywordCloud keywords={profile.topKeywords} />
           </CardContent>
         </Card>
       </div>

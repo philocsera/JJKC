@@ -6,7 +6,6 @@ import { getProfileWithOwner } from "@/lib/profile-service";
 import { buildFeed } from "@/lib/feed-builder";
 import { CategoryRadar } from "@/components/category-radar";
 import { ChannelList } from "@/components/channel-list";
-import { KeywordCloud } from "@/components/keyword-cloud";
 import { VideoGrid } from "@/components/video-grid";
 import { FollowButton } from "@/components/follow-button";
 import { ProfileMetricsCard } from "@/components/profile-metrics";
@@ -26,13 +25,6 @@ export default async function ProfilePage({
 
   const hit = await getProfileWithOwner(userId);
   if (!hit) notFound();
-  if (!hit.owner.isPublic && me !== userId) {
-    return (
-      <section className="py-16 text-center text-sm text-muted-foreground">
-        이 프로필은 비공개입니다.
-      </section>
-    );
-  }
   const { owner, profile } = hit;
 
   const initialFollowing = me
@@ -97,11 +89,10 @@ export default async function ProfilePage({
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium">Top channels & keywords</CardTitle>
+            <CardTitle className="text-sm font-medium">Top channels</CardTitle>
           </CardHeader>
           <CardContent className="space-y-5">
             <ChannelList channels={profile.topChannels} />
-            <KeywordCloud keywords={profile.topKeywords} />
           </CardContent>
         </Card>
       </div>

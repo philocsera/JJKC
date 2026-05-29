@@ -19,16 +19,13 @@ async function toggle(
 
   const target = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, isPublic: true },
+    select: { id: true },
   });
   if (!target) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
 
   if (action === "follow") {
-    if (!target.isPublic) {
-      return NextResponse.json({ error: "private" }, { status: 403 });
-    }
     await prisma.follow
       .create({ data: { followerId: me, followingId: userId } })
       .catch((e: any) => {

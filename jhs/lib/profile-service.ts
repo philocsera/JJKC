@@ -113,7 +113,6 @@ export async function listPublic({
   nextCursor: string | null;
 }> {
   const rows = await prisma.algoProfile.findMany({
-    where: { user: { isPublic: true } },
     include: { user: true },
     orderBy: { lastSyncedAt: "desc" },
     take: limit + 1,

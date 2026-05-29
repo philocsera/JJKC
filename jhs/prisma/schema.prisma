@@ -69,7 +69,8 @@ model User {
   refreshToken  String?
   expiresAt     Int?
 
-  isPublic      Boolean   @default(false)
+  // 공개/비공개 기능은 제거됨 — 모든 프로필은 공개. (컬럼은 호환성 위해 유지, 항상 true)
+  isPublic      Boolean   @default(true)
 
   accounts      Account[]
   sessions      Session[]
