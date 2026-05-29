@@ -20,12 +20,12 @@ export function CategoryBar({
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} layout="vertical" margin={{ left: 16 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-          <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} />
+          <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
           <YAxis
             type="category"
             dataKey="category"
             width={110}
-            tick={{ fontSize: 11 }}
+            tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
           />
           <Tooltip
             contentStyle={{

@@ -27,8 +27,8 @@ export function CategoryRadar({
       <ResponsiveContainer width="100%" height="100%">
         <RadarChart data={rows} outerRadius="80%">
           <PolarGrid stroke="hsl(var(--border))" />
-          <PolarAngleAxis dataKey="category" tick={{ fontSize: 11 }} />
-          <PolarRadiusAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+          <PolarAngleAxis dataKey="category" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+          <PolarRadiusAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} stroke="hsl(var(--border))" />
           <Radar
             name={aLabel}
             dataKey="a"
