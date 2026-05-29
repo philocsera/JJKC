@@ -3,10 +3,9 @@ import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getProfileWithOwner } from "@/lib/profile-service";
-import { buildFeed } from "@/lib/feed-builder";
 import { CategoryRadar } from "@/components/category-radar";
 import { ChannelList } from "@/components/channel-list";
-import { VideoGrid } from "@/components/video-grid";
+import { ChannelRecommendations } from "@/components/channel-recommendations";
 import { FollowButton } from "@/components/follow-button";
 import { ProfileMetricsCard } from "@/components/profile-metrics";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -37,9 +36,6 @@ export default async function ProfilePage({
     category,
     a: pct,
   }));
-
-  const feed = me ? await buildFeed(me, userId, 18) : null;
-  const feedVideos = feed && feed.ok ? feed.videos : [];
 
   return (
     <section className="space-y-10">
@@ -103,19 +99,10 @@ export default async function ProfilePage({
         <h2 className="text-sm font-medium">
           {owner.name} 의 알고리즘으로 보기
         </h2>
-        {!me ? (
-          <p className="text-sm text-muted-foreground">
-            피드를 보려면 로그인이 필요합니다.
-          </p>
-        ) : feed && !feed.ok ? (
-          <p className="text-sm text-muted-foreground">
-            {feed.reason === "unavailable"
-              ? "외부 소스(RSS) 일시 불가."
-              : "피드를 가져올 수 없습니다."}
-          </p>
-        ) : (
-          <VideoGrid videos={feedVideos} />
-        )}
+        <p className="text-sm text-muted-foreground">
+          {owner.name} 의 취향(카테고리·세부·키워드)으로 카탈로그에서 추천한 채널입니다.
+        </p>
+        <ChannelRecommendations userId={userId} />
       </div>
     </section>
   );

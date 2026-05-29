@@ -2,16 +2,14 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getProfile } from "@/lib/profile-service";
-import { buildFeed } from "@/lib/feed-builder";
 import { CategoryRadar } from "@/components/category-radar";
 import { CategoryBar } from "@/components/category-bar";
 import { ChannelList } from "@/components/channel-list";
-import { VideoGrid } from "@/components/video-grid";
+import { ChannelRecommendations } from "@/components/channel-recommendations";
 import { ProfileMetricsCard } from "@/components/profile-metrics";
 import { SimilarUsers } from "@/components/similar-users";
 import { SyncButton } from "@/components/sync-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const dynamic = "force-dynamic";
@@ -57,9 +55,6 @@ export default async function DashboardPage() {
     .map(([category, pct]) => ({ category, pct }))
     .sort((a, b) => b.pct - a.pct);
 
-  const feed = await buildFeed(userId, userId, 12);
-  const videos = feed.ok ? feed.videos : [];
-
   return (
     <section className="space-y-10">
       <header className="flex flex-wrap items-center justify-between gap-4">
@@ -78,11 +73,6 @@ export default async function DashboardPage() {
               <span>
                 Last synced {new Date(profile.lastSyncedAt).toLocaleString()}
               </span>
-              {feed.ok ? (
-                <Badge variant="muted">
-                  feed {feed.counts.channel}+{feed.counts.keyword}+{feed.counts.category}
-                </Badge>
-              ) : null}
             </div>
           </div>
         </div>
@@ -128,17 +118,9 @@ export default async function DashboardPage() {
 
       <section className="space-y-3">
         <h2 className="text-sm font-medium">
-          오늘의 피드 — 내 알고리즘 기준 (channel 30 / keyword 40 / category 30)
+          내 알고리즘이 추천하는 채널
         </h2>
-        {!feed.ok ? (
-          <p className="text-sm text-muted-foreground">
-            {feed.reason === "unavailable"
-              ? "외부 소스(RSS) 일시 불가. 잠시 후 다시 시도해 주세요."
-              : "피드를 가져올 수 없습니다."}
-          </p>
-        ) : (
-          <VideoGrid videos={videos} />
-        )}
+        <ChannelRecommendations userId={userId} />
       </section>
     </section>
   );
