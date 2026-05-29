@@ -13,7 +13,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { PrismaClient } from "@prisma/client";
-import { fetchChannelFeed, type RssChannel } from "../lib/sources/rss";
+import { fetchChannelFeed, RateLimitError, type RssChannel } from "../lib/sources/rss";
 import { classify } from "../lib/classify";
 import { mainstreamScoreOf, nicheScoreOf } from "../lib/category-utils";
 import { upsertChannel } from "../lib/channel-service";
@@ -33,9 +33,32 @@ function arg(name: string, dflt: string): string {
   return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : dflt;
 }
 const DRY = process.argv.includes("--dry");
-const CONC = parseInt(arg("conc", "5"), 10);
+// 기본 동시성 2 + 요청 간 지연으로 공개 RSS 를 부드럽게 두드린다(IP throttle 회피).
+const CONC = parseInt(arg("conc", "2"), 10);
+// 정상 요청 사이 최소 지연(ms). 워커당 적용 → 실효 요청률 ≈ CONC / (REQ_DELAY/1000) req/s.
+const REQ_DELAY = parseInt(arg("delay", "500"), 10);
 const posArg = process.argv.slice(2).find((a) => !a.startsWith("--"));
 const INPUT = path.resolve(posArg ?? "../discovered-channels.json");
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const jitter = (base: number) => base + Math.floor(Math.random() * base);
+
+// RateLimitError 시 지수 백오프 재시도. 재시도까지 모두 throttle 이면 RateLimitError 를 그대로 던진다.
+async function fetchFeedWithBackoff(id: string): Promise<RssChannel | null> {
+  const waits = [4000, 15000, 45000]; // 4s → 15s → 45s
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await fetchChannelFeed(id, { throwOnRateLimit: true });
+    } catch (e) {
+      if (e instanceof RateLimitError && attempt < waits.length) {
+        process.stderr.write(`  ⏳ RSS rate-limit(${e.status}) — ${waits[attempt] / 1000}s 백오프 후 재시도\n`);
+        await sleep(jitter(waits[attempt]));
+        continue;
+      }
+      throw e; // 비-rate-limit 에러이거나 재시도 소진 → 상위에서 처리
+    }
+  }
+}
 
 // channel-features.hangulRatio 와 동일 (private 라 인라인).
 function hangulRatio(text: string): number {
@@ -90,15 +113,39 @@ async function main() {
     fail = 0,
     done = 0;
 
+  // circuit-breaker: 백오프까지 소진된 지속적 rate-limit 을 만나면 더 이상 요청하지 않고
+  // 남은 후보를 보관한다(차단당하는 중에 계속 두드리지 않기 위함).
+  let aborted = false;
+  const skipped: Cand[] = [];
+
   await runConcurrent(
     cands,
     async (c) => {
-      const feed = await fetchChannelFeed(c.id).catch(() => null);
+      if (aborted) {
+        skipped.push(c);
+        return;
+      }
+      let feed: RssChannel | null;
+      try {
+        feed = await fetchFeedWithBackoff(c.id);
+      } catch (e) {
+        if (e instanceof RateLimitError) {
+          if (!aborted) {
+            aborted = true;
+            process.stderr.write(`⛔ 지속적 RSS rate-limit — 수집 중단하고 남은 후보를 보관합니다.\n`);
+          }
+          skipped.push(c);
+        } else {
+          fail++;
+        }
+        return;
+      }
       done++;
       if (!feed) {
         fail++;
         return;
       }
+      await sleep(jitter(REQ_DELAY)); // 다음 요청까지 간격 — IP throttle 회피
       const combined = [feed.title, ...feed.videos.map((v) => `${v.title} ${v.description}`)].join("\n");
       if (hangulRatio(combined) < 0.3) {
         foreign++;
@@ -148,6 +195,15 @@ async function main() {
   console.log(
     `\n✅ done — 삽입(한국,5만+)=${inserted}  외국제외=${foreign}  음악제외=${music}  RSS실패(404등)=${fail}  총=${cands.length}`,
   );
+
+  if (aborted) {
+    const out = path.resolve("discovered-pending-remaining.json");
+    fs.writeFileSync(out, JSON.stringify({ channels: skipped }));
+    console.log(
+      `\n⛔ RSS rate-limit 으로 중단 — 미처리 ${skipped.length}개를 ${out} 에 보관했습니다.` +
+        `\n   throttle 이 풀리도록 한참(수 시간) 쉰 뒤 재실행: npx tsx scripts/enrich-discovered.ts discovered-pending-remaining.json`,
+    );
+  }
   if (!DRY) {
     const total = await prisma.channel.count();
     console.log(`현재 DB Channel: ${total}`);

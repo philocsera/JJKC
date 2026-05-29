@@ -20,6 +20,7 @@ next-env.d.ts
 
 # 일회성/생성 카탈로그 데이터 산출물 (실제 데이터는 dev.db 에 있음)
 /channels-final.json
-/discovered-*.json
 /dump.sql
+# 발굴 중간 산출물 (경로 무관 — jhs/discovered-pending.json 등 포함)
+discovered-*.json
 jhs/data/sub-taxonomy.proposed.json

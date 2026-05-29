@@ -37,13 +37,27 @@ export type RssChannel = {
 const UA =
   "Mozilla/5.0 (compatible; yt-algo-share/0.1; +https://example.com/bot)";
 
+// YouTube 가 IP 단위로 공개 RSS 요청을 throttle 할 때 반환하는 상태(429/503).
+// 이걸 404(채널 없음)와 구분해야 "차단당하는 중에 계속 두드리는" 사고를 막을 수 있다.
+export class RateLimitError extends Error {
+  constructor(
+    public status: number,
+    url: string,
+  ) {
+    super(`RSS rate limited: ${status} ${url}`);
+    this.name = "RateLimitError";
+  }
+}
+
 async function fetchText(url: string, signal?: AbortSignal): Promise<string> {
   const res = await fetch(url, {
     headers: { "user-agent": UA, accept: "application/atom+xml,text/xml" },
     signal,
   });
   if (!res.ok) {
-    throw new Error(`RSS fetch failed: ${res.status} ${url}`);
+    const err = new Error(`RSS fetch failed: ${res.status} ${url}`) as Error & { status?: number };
+    err.status = res.status;
+    throw err;
   }
   return res.text();
 }
@@ -74,13 +88,19 @@ function entriesToVideos(entries: any[]): RssVideo[] {
 
 export async function fetchChannelFeed(
   channelId: string,
-  opts: { signal?: AbortSignal } = {},
+  // throwOnRateLimit: 429/503 을 RateLimitError 로 던진다(배치 스크립트가 백오프/중단 판단에 사용).
+  // 기본 false — 웹앱 호출부의 기존 동작(에러 시 null)을 그대로 유지한다.
+  opts: { signal?: AbortSignal; throwOnRateLimit?: boolean } = {},
 ): Promise<RssChannel | null> {
   const url = `https://www.youtube.com/feeds/videos.xml?channel_id=${encodeURIComponent(channelId)}`;
   let xml: string;
   try {
     xml = await fetchText(url, opts.signal);
-  } catch {
+  } catch (e) {
+    const status = (e as { status?: number })?.status;
+    if (opts.throwOnRateLimit && (status === 429 || status === 503)) {
+      throw new RateLimitError(status, url);
+    }
     return null;
   }
   const root = parser.parse(xml);
