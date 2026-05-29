@@ -7,7 +7,6 @@ const STATS = [
   { v: "6,540", l: "한국 채널" },
   { v: "14", l: "카테고리" },
   { v: "68", l: "세부 분류" },
-  { v: "0", l: "API 키" },
 ];
 
 const FEATURES = [
@@ -87,7 +86,7 @@ export default async function HomePage() {
         </div>
 
         {/* 통계 스트립 */}
-        <dl className="mt-16 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border/70 bg-border/40 sm:grid-cols-4">
+        <dl className="mt-16 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-border/70 bg-border/40 sm:grid-cols-3">
           {STATS.map((s) => (
             <div key={s.l} className="bg-card/60 px-5 py-6 backdrop-blur-sm">
               <dt className="label-mono">{s.l}</dt>
