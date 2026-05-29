@@ -61,6 +61,7 @@ export function rankChannels(
 ): ChannelRecommendation[] {
   const limit = opts.limit ?? 24;
   const exclude = opts.excludeIds ?? new Set<string>();
+  const titleById = new Map(channels.map((c) => [c.id, c.title]));
 
   const scored = channels
     .filter((ch) => !exclude.has(ch.id))
@@ -72,11 +73,17 @@ export function rankChannels(
       const score = Math.round(
         SIM_W * sim + METRIC_W * metricMatch(user, ch) + QUALITY_W * qualityPrior(ch),
       );
+      // 사전계산된 유사 채널 → 이름 해석(카탈로그에 있는 것만), 상위 3개.
+      const similar = ch.similarChannelIds
+        .map((s) => ({ id: s.id, name: titleById.get(s.id) ?? "", score: s.score }))
+        .filter((s) => s.name)
+        .slice(0, 3);
       return {
         channel: ch,
         score,
         clusterId: ch.clusterId,
         clusterLabel: ch.clusterId != null ? clusterLabelById.get(ch.clusterId) ?? null : null,
+        similar,
       };
     })
     .sort((a, b) => b.score - a.score);

@@ -139,7 +139,7 @@ npm run channels:cluster`}
           </p>
         ) : (
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {result.recommendations.map(({ channel, score, clusterLabel }) => (
+            {result.recommendations.map(({ channel, score, clusterLabel, similar }) => (
               <li key={channel.id}>
                 <a
                   href={`https://www.youtube.com/channel/${channel.id}`}
@@ -182,6 +182,11 @@ npm run channels:cluster`}
                       </Badge>
                     ))}
                   </div>
+                  {similar.length > 0 ? (
+                    <p className="truncate text-[10px] text-muted-foreground">
+                      비슷한 채널: {similar.map((s) => s.name).join(" · ")}
+                    </p>
+                  ) : null}
                 </a>
               </li>
             ))}

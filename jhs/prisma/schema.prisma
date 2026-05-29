@@ -155,6 +155,9 @@ model Channel {
   clusterId       Int?
   cluster         ChannelCluster? @relation(fields: [clusterId], references: [id], onDelete: SetNull)
 
+  // 채널↔채널 유사도(사전계산). JSON: [{ id, score }] top-N — scripts/compute-channel-similarity.ts
+  similarChannelIds String @default("[]")
+
   source          String   @default("seed") // seed|trending|search|snowball|mock
   fetchedAt       DateTime @default(now())
   refreshedAt     DateTime @updatedAt

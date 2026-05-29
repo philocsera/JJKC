@@ -68,6 +68,7 @@ async function main() {
         keywords: c.keywords ?? "[]",
         metrics: c.metrics ?? null,
         clusterId: c.clusterId ?? null,
+        similarChannelIds: c.similarChannelIds ?? "[]",
         source: c.source ?? "seed",
         fetchedAt: new Date(c.fetchedAt),
         refreshedAt: new Date(c.refreshedAt),

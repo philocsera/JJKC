@@ -43,6 +43,7 @@ type DbChannel = {
   metrics: string | null;
   clusterId: number | null;
   source: string;
+  similarChannelIds?: string;
 };
 
 export function unpackChannel(c: DbChannel): ChannelRecord {
@@ -63,6 +64,7 @@ export function unpackChannel(c: DbChannel): ChannelRecord {
     metrics: safeParse<ChannelMetrics>(c.metrics, DEFAULT_METRICS),
     clusterId: c.clusterId,
     source: c.source,
+    similarChannelIds: safeParse<{ id: string; score: number }[]>(c.similarChannelIds ?? "[]", []),
   };
 }
 
@@ -140,6 +142,20 @@ export async function getChannelsByIds(ids: string[]): Promise<ChannelRecord[]> 
   return ids
     .map((id) => byId.get(id))
     .filter((c): c is ChannelRecord => Boolean(c));
+}
+
+// 사전계산된 유사 채널을 레코드로 — 한 채널의 "비슷한 채널" 목록(점수 순).
+export async function getSimilarChannels(channelId: string, limit = 8): Promise<ChannelRecord[]> {
+  const row = await prisma.channel.findUnique({ where: { id: channelId } });
+  if (!row) return [];
+  const sims = safeParse<{ id: string; score: number }[]>(
+    (row as DbChannel).similarChannelIds ?? "[]",
+    [],
+  ).slice(0, limit);
+  if (sims.length === 0) return [];
+  const byId = await getChannelsByIds(sims.map((s) => s.id));
+  const map = new Map(byId.map((c) => [c.id, c]));
+  return sims.map((s) => map.get(s.id)).filter((c): c is ChannelRecord => Boolean(c));
 }
 
 export async function listClusters(): Promise<ClusterRecord[]> {

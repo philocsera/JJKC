@@ -76,6 +76,7 @@ export type ChannelRecord = {
   metrics: ChannelMetrics;
   clusterId: number | null;
   source: string;
+  similarChannelIds: { id: string; score: number }[]; // 사전계산된 유사 채널 top-N
 };
 
 export type ClusterRecord = {
@@ -93,6 +94,7 @@ export type ChannelRecommendation = {
   score: number;          // 0-100
   clusterId: number | null;
   clusterLabel: string | null;
+  similar: { id: string; name: string; score: number }[]; // 사전계산 유사 채널(이름 해석됨)
 };
 
 export type ClusterAssignment = {
