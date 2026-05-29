@@ -13,20 +13,40 @@
 
 ---
 
-## 처음 설정 (clone 후)
+## DB 구성 — 프로덕션(Postgres) vs 로컬(SQLite)
 
-`dev.db` 는 `.gitignore` 대상이라 clone 하면 **빈 DB** 입니다. 카탈로그(Channel 6,592개 · ChannelCluster 16개)는 `jhs/data/catalog-seed.json` 으로 커밋돼 있으니 복원하세요. (사용자/인증 데이터는 시드에 없음 — 토큰·이메일 미포함.)
+> **2026-05-29** — 프로덕션은 **Neon Postgres** 로 전환됨. `prisma/schema.prisma` 의 `provider = "postgresql"` 이 정본이고 Vercel 배포(`vercel-build`)가 이를 사용. **로컬 개발은 SQLite(`prisma/dev.db`)** 를 그대로 쓰며, 아래 `*:sqlite` / `dev:sqlite` 스크립트가 정본 스키마에서 SQLite 미러를 자동 파생한다.
+
+- 두 스키마는 **단일 진실 소스**: `prisma/schema.prisma`(Postgres). `scripts/gen-sqlite-schema.mjs` 가 datasource 블록만 SQLite 로 바꿔 `prisma/schema.sqlite.prisma`(gitignore·자동생성, 편집 금지)를 만든다. 모델/필드가 모두 스칼라(String/Int/BigInt/Boolean/DateTime)라 SQLite 와 100% 호환.
+- 로컬은 Neon 자격증명이 **불필요** — SQLite url 은 파생 스키마에 `file:./dev.db` 로 고정돼 있다. `.env` 에는 인증용(GOOGLE_*·AUTH_SECRET·NEXTAUTH_URL)만 있으면 된다.
+- **배포는 로컬 클라이언트 상태와 무관** — `vercel-build` 가 매번 `prisma generate`(Postgres)로 클라이언트를 재생성한다.
+
+## 처음 설정 (clone 후 — 로컬 SQLite 개발)
+
+`dev.db` 는 `.gitignore` 대상이라 clone 하면 **빈 DB** 입니다. 카탈로그(Channel 6,540개 · ChannelCluster 15개)는 `jhs/data/catalog-seed.json` 으로 커밋돼 있으니 복원하세요. (사용자/인증 데이터는 시드에 없음 — 토큰·이메일 미포함.)
 
 ```bash
 cd jhs
-npm install                 # postinstall 이 prisma generate 실행
-npm run db:push             # schema → 빈 dev.db 생성 (Account/Channel/… 테이블)
-npm run catalog:restore     # data/catalog-seed.json → Channel + ChannelCluster 적재
-# .env 생성 후 DATABASE_URL="file:./dev.db", GOOGLE_CLIENT_ID/SECRET 등 채우기
-npm run dev
+npm install                 # postinstall 이 prisma generate(Postgres) 실행
+npm run sqlite:push         # 파생 SQLite 스키마로 빈 dev.db 생성/동기화 + SQLite client 생성
+npm run catalog:restore     # data/catalog-seed.json → Channel + ChannelCluster 적재 (dev.db)
+# .env 에 GOOGLE_CLIENT_ID/SECRET·AUTH_SECRET·NEXTAUTH_URL 채우기 (DB url 은 불필요)
+npm run dev:sqlite          # 로컬 개발 서버 (SQLite/dev.db) — predev 가 SQLite client 자동 재생성
 ```
 
-- **카탈로그 갱신 후 재공유**: 발굴·재분류·재클러스터를 돌린 사람이 `npm run catalog:export` 로 `data/catalog-seed.json` 을 다시 만들어 커밋하면, 나머지는 `npm run catalog:restore` 로 동기화.
+SQLite 관련 스크립트:
+
+| 스크립트 | 동작 |
+| --- | --- |
+| `npm run dev:sqlite` | SQLite client 재생성 후 `next dev` (로컬 개발 기본) |
+| `npm run sqlite:push` | 파생 스키마로 `prisma db push` (dev.db 스키마 생성/동기화) |
+| `npm run sqlite:generate` | 파생 스키마로 `prisma generate` 만 (스크립트를 dev.db 대상으로 돌릴 때) |
+| `npm run sqlite:studio` | Prisma Studio 를 dev.db 로 열기 |
+| `npm run postgres:generate` | Postgres(정본) 클라이언트로 되돌리기 |
+
+> `catalog:restore`/`reclassify-*` 등 `tsx scripts/*.ts` 도구는 기본 `@prisma/client` 를 쓰므로, dev.db 를 대상으로 돌리려면 먼저 `npm run sqlite:generate`(또는 `sqlite:push`)로 SQLite 클라이언트를 생성해 둔다.
+
+- **카탈로그 갱신 후 재공유**: 발굴·재분류·재클러스터를 돌린 사람이 `npm run catalog:export` 로 `data/catalog-seed.json` 을 다시 만들어 커밋하면, 나머지는 `npm run catalog:restore` 로 동기화. 프로덕션 Neon 반영은 로컬 `.env` 에 Neon connection string(`POSTGRES_PRISMA_URL`·`POSTGRES_URL_NON_POOLING`)을 넣고 `npm run catalog:restore` 1회.
 - `catalog:restore` 는 멱등 — 기존 Channel/ChannelCluster 를 비우고 시드로 교체하며 사용자 테이블은 건드리지 않음.
 
 ---

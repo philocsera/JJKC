@@ -1,2 +1,5 @@
 .vercel
 TODO.md
+
+# 로컬 SQLite 개발용 파생 스키마 (npm run dev:sqlite 가 자동 생성 — 원본은 prisma/schema.prisma)
+prisma/schema.sqlite.prisma

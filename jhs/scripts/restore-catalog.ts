@@ -1,9 +1,15 @@
-// data/catalog-seed.json → dev.db 의 Channel + ChannelCluster 복원.
+// data/catalog-seed.json → 현재 @prisma/client 가 가리키는 DB 의 Channel + ChannelCluster 복원.
 // 협업자가 clone 후 카탈로그를 채울 때 사용. 사용자/인증 데이터는 건드리지 않음.
 //
-//   npx prisma migrate deploy   (또는 db push 로 스키마 생성)
-//   npx tsx scripts/restore-catalog.ts
+//   # 로컬 SQLite(dev.db): 스키마+SQLite client 생성 후 복원
+//   npm run sqlite:push
+//   npm run catalog:restore          # = npx tsx scripts/restore-catalog.ts
 //
+//   # 프로덕션 Neon: .env 에 POSTGRES_PRISMA_URL·POSTGRES_URL_NON_POOLING 채운 뒤
+//   npm run db:push                  # 정본 Postgres 스키마로 테이블 생성/동기화
+//   npm run catalog:restore
+//
+// (주의: prisma/migrations 는 레거시 SQLite 산출물 — 운영은 db push 가 정본. migrate 계열 사용 금지.)
 // 기존 Channel/ChannelCluster 를 비우고 시드로 교체(멱등). cluster id 는 그대로 보존.
 
 import fs from "node:fs";
