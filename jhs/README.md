@@ -23,7 +23,7 @@
 
 ## 처음 설정 (clone 후 — 로컬 SQLite 개발)
 
-`dev.db` 는 `.gitignore` 대상이라 clone 하면 **빈 DB** 입니다. 카탈로그(Channel 6,540개 · ChannelCluster 15개)는 `jhs/data/catalog-seed.json` 으로 커밋돼 있으니 복원하세요. (사용자/인증 데이터는 시드에 없음 — 토큰·이메일 미포함.)
+`dev.db` 는 `.gitignore` 대상이라 clone 하면 **빈 DB** 입니다. 카탈로그(Channel 6,602개 · ChannelCluster 17개)는 `jhs/data/catalog-seed.json` 으로 커밋돼 있으니 복원하세요. (사용자/인증 데이터는 시드에 없음 — 토큰·이메일 미포함.)
 
 ```bash
 cd jhs
