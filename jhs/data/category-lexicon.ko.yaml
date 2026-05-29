@@ -94,18 +94,42 @@ Food:
 # 여기 'Food' 라벨은 내부 임시 라벨이고 최종 분포에 반영하려면 mapping 필요.
 # → 데모 단계에서는 Food 를 'People & Blogs' 로 alias 처리 (alias 섹션 참고).
 
-"Howto & Style":
+"요리·먹방":
+  - { kw: "먹방", w: 3 }
+  - { kw: "mukbang", w: 2 }
+  - { kw: "요리", w: 2 }
+  - { kw: "레시피", w: 2 }
+  - { kw: "cooking", w: 2 }
+  - { kw: "쿠킹", w: 2 }
+  - { kw: "집밥", w: 2 }
+  - { kw: "베이킹", w: 2 }
+  - { kw: "맛집", w: 1 }
+  - { kw: "한식", w: 1 }
+  - { kw: "디저트", w: 1 }
+  - { kw: "eating", w: 2 }
+
+"뷰티·패션":
   - { kw: "뷰티", w: 2 }
   - { kw: "메이크업", w: 2 }
   - { kw: "make up", w: 2 }
   - { kw: "패션", w: 2 }
   - { kw: "하울", w: 2 }
   - { kw: "스킨케어", w: 2 }
-  - { kw: "diy", w: 2 }
+  - { kw: "화장품", w: 2 }
   - { kw: "스타일", w: 1 }
   - { kw: "코디", w: 1 }
   - { kw: "헤어", w: 1 }
-  - { kw: "vlog", w: 1 }
+
+"생활·하우투":
+  - { kw: "diy", w: 2 }
+  - { kw: "인테리어", w: 2 }
+  - { kw: "살림", w: 2 }
+  - { kw: "정리수납", w: 2 }
+  - { kw: "홈트", w: 2 }
+  - { kw: "홈카페", w: 1 }
+  - { kw: "다이어트", w: 1 }
+  - { kw: "만들기", w: 1 }
+  - { kw: "라이프스타일", w: 1 }
 
 "Science & Technology":
   - { kw: "ai", w: 3 }
@@ -196,14 +220,20 @@ Sports:
   - { kw: "백패킹", w: 2 }
   - { kw: "호텔", w: 1 }
 
-"Film & Animation":
-  - { kw: "영화", w: 2 }
-  - { kw: "리뷰", w: 1 }
+"영화":
+  - { kw: "영화", w: 3 }
+  - { kw: "영화리뷰", w: 3 }
   - { kw: "예고편", w: 2 }
   - { kw: "trailer", w: 2 }
-  - { kw: "애니메이션", w: 2 }
-  - { kw: "애니", w: 2 }
+  - { kw: "결말", w: 1 }
   - { kw: "단편", w: 1 }
+
+"애니메이션":
+  - { kw: "애니메이션", w: 3 }
+  - { kw: "애니", w: 2 }
+  - { kw: "anime", w: 2 }
+  - { kw: "cartoon", w: 2 }
+  - { kw: "만화", w: 1 }
 
 "Autos & Vehicles":
   - { kw: "자동차", w: 2 }
@@ -299,5 +329,4 @@ Sports:
 # Howto & Style 50% / People & Blogs 50% 로 흩뿌리는 게 KR 채널 실태와 가깝다.
 aliases:
   Food:
-    - { to: "Howto & Style", w: 0.5 }
-    - { to: "People & Blogs", w: 0.5 }
+    - { to: "요리·먹방", w: 1 }

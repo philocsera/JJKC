@@ -3,11 +3,10 @@ import { auth } from "@/lib/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SignOutButton } from "./sign-out-button";
 
-const NAV_PUBLIC = [{ href: "/explore", label: "다른 사람들의 유튜브 알고리즘 탐색" }];
+const NAV_PUBLIC = [{ href: "/explore", label: "다른 사람들의 알고리즘" }];
 const NAV_AUTH = [
   { href: "/dashboard", label: "내 알고리즘" },
   { href: "/discover", label: "추천" },
-  { href: "/compare", label: "비교" },
 ];
 
 export async function SiteNav() {
@@ -15,7 +14,7 @@ export async function SiteNav() {
   const user = session?.user as
     | { id: string; name?: string | null; email?: string | null; image?: string | null }
     | undefined;
-  const links = [...NAV_PUBLIC, ...(user?.id ? NAV_AUTH : [])];
+  const links = [...(user?.id ? NAV_AUTH : []), ...NAV_PUBLIC];
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">

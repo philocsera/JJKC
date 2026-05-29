@@ -5,7 +5,7 @@ export async function ChannelMarquee() {
   const channels = await prisma.channel.findMany({
     where: { isKorean: true, NOT: { thumbnail: "" } },
     orderBy: { subscriberCount: "desc" },
-    take: 36,
+    take: 100,
     select: { id: true, title: true, thumbnail: true },
   });
   if (channels.length === 0) return null;
@@ -14,12 +14,8 @@ export async function ChannelMarquee() {
   const row = [...channels, ...channels];
 
   return (
-    <section className="space-y-4">
-      <div className="flex items-center justify-between px-1">
-        <span className="label-mono">카탈로그 미리보기</span>
-        <span className="label-mono">{channels.length}+ channels</span>
-      </div>
-      <div className="marquee-wrap relative overflow-hidden rounded-2xl border border-border/70 bg-card/30 py-6 backdrop-blur-sm">
+    <section>
+      <div className="marquee-wrap relative overflow-hidden py-2">
         <div className="marquee-track flex gap-5">
           {row.map((c, i) => (
             <div key={`${c.id}-${i}`} className="group relative shrink-0" title={c.title}>

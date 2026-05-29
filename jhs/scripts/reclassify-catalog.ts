@@ -28,7 +28,8 @@ const ONLY_EMPTY = flag("only-empty");
 // 우리 표준 15 카테고리 namespace. 이 외 키가 categories 에 있으면 wikidata
 // 잔재(예: "Role-playing video game") 로 보고 재분류 대상.
 const KNOWN = new Set([
-  "Film & Animation",
+  "영화",
+  "애니메이션",
   "Autos & Vehicles",
   "Music",
   "Pets & Animals",
@@ -39,7 +40,9 @@ const KNOWN = new Set([
   "Comedy",
   "Entertainment",
   "News & Politics",
-  "Howto & Style",
+  "요리·먹방",
+  "뷰티·패션",
+  "생활·하우투",
   "Education",
   "Science & Technology",
   "Nonprofits & Activism",

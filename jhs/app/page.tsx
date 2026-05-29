@@ -12,10 +12,10 @@ const STATS = [
 ];
 
 const FEATURES = [
-  { idx: "01", href: "/onboard", title: "알고리즘 만들기", body: "3단계로 내 취향 벡터 생성", Icon: Sparkles },
-  { idx: "02", href: "/discover", title: "채널 추천", body: "벡터 공간 유사도 랭킹", Icon: Radar },
-  { idx: "03", href: "/explore", title: "알고리즘 탐색", body: "다른 사람의 알고리즘 둘러보기", Icon: Telescope },
-  { idx: "04", href: "/compare", title: "비교 & 팔로우", body: "두 알고리즘 레이더 비교", Icon: GitCompareArrows },
+  { idx: "01", href: "/onboard", title: "알고리즘 만들기", body: "내 취향으로 프로필 만들기", Icon: Sparkles },
+  { idx: "02", href: "/discover", title: "채널 추천", body: "취향에 맞는 채널 찾기", Icon: Radar },
+  { idx: "03", href: "/explore", title: "알고리즘 탐색", body: "남들은 뭘 보는지 구경하기", Icon: Telescope },
+  { idx: "04", href: "/compare", title: "비교 & 팔로우", body: "내 취향과 닮았는지 비교하기", Icon: GitCompareArrows },
 ];
 
 export default async function HomePage() {
@@ -28,7 +28,7 @@ export default async function HomePage() {
       <section className="grid items-center gap-10 pt-2 lg:grid-cols-2 lg:gap-14">
         {/* 좌: 히어로 */}
         <div className="space-y-7">
-          <h1 className="text-balance text-5xl font-extrabold leading-[1.08] lg:text-6xl">
+          <h1 className="text-balance text-5xl font-extrabold leading-[1.32] lg:text-6xl">
             내 취향을 읽는
             <br />
             <span className="text-accent">한국 유튜브</span> 알고리즘.
@@ -60,27 +60,27 @@ export default async function HomePage() {
         </div>
 
         {/* 우: 기능 2×2 — 아이콘 카드로 한눈에 */}
-        <div className="grid grid-cols-2 gap-3.5">
+        <div className="grid auto-rows-fr grid-cols-2 gap-4">
           {FEATURES.map((f) => (
             <Link
               key={f.href}
               href={f.href}
-              className="lift group relative flex aspect-[4/3] flex-col justify-between overflow-hidden rounded-2xl border border-border/70 bg-card/50 p-5 backdrop-blur-sm"
+              className="lift group relative flex flex-col justify-between gap-7 overflow-hidden rounded-2xl border border-border/70 bg-card/50 p-6 backdrop-blur-sm"
             >
               <div className="flex items-start justify-between">
-                <span className="grid h-11 w-11 place-items-center rounded-xl bg-accent/15 text-accent ring-1 ring-accent/20">
-                  <f.Icon className="h-5 w-5" strokeWidth={2} />
+                <span className="grid h-12 w-12 place-items-center rounded-xl bg-accent/15 text-accent ring-1 ring-accent/20">
+                  <f.Icon className="h-6 w-6" strokeWidth={2} />
                 </span>
                 <span className="label-mono opacity-60">{f.idx}</span>
               </div>
-              <div className="space-y-1">
-                <div className="flex items-center gap-1.5 font-semibold leading-tight">
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-1.5 text-lg font-bold leading-tight">
                   {f.title}
-                  <span className="font-mono text-muted-foreground opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100">
+                  <span className="font-mono text-sm text-muted-foreground opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100">
                     →
                   </span>
                 </div>
-                <div className="text-xs leading-snug text-muted-foreground">{f.body}</div>
+                <p className="text-[13px] leading-snug text-muted-foreground">{f.body}</p>
               </div>
               {/* 호버 시 은은한 레드 글로우 */}
               <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-accent/10 opacity-0 blur-2xl transition-opacity group-hover:opacity-100" />
@@ -89,18 +89,18 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── 통계 스트립 ─────────────────────────────────────── */}
-      <dl className="grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-border/70 bg-border/40 sm:grid-cols-3">
-        {STATS.map((s) => (
-          <div key={s.l} className="bg-card/60 px-5 py-6 backdrop-blur-sm">
-            <dt className="label-mono">{s.l}</dt>
-            <dd className="mt-1.5 font-display text-3xl font-bold tabular-nums">{s.v}</dd>
-          </div>
-        ))}
-      </dl>
-
-      {/* ── 채널 마퀴 ──────────────────────────────────────── */}
-      <ChannelMarquee />
+      {/* ── 통계 + 채널 마퀴 ──────────────────────────────── */}
+      <div className="space-y-3">
+        <dl className="grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-border/70 bg-border/40 sm:grid-cols-3">
+          {STATS.map((s) => (
+            <div key={s.l} className="bg-card/60 px-5 py-6 backdrop-blur-sm">
+              <dt className="label-mono">{s.l}</dt>
+              <dd className="mt-1.5 font-display text-3xl font-bold tabular-nums">{s.v}</dd>
+            </div>
+          ))}
+        </dl>
+        <ChannelMarquee />
+      </div>
     </div>
   );
 }
