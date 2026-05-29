@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Bricolage_Grotesque, IBM_Plex_Sans_KR, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { SiteNav } from "@/components/site-nav";
-import { SiteFooter } from "@/components/site-footer";
 
 // 디스플레이: 표현력 있는 그로테스크 / 본문: 한글까지 일관된 IBM Plex / 라벨·수치: 모노
 const display = Bricolage_Grotesque({
@@ -42,7 +41,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className="mx-auto w-full max-w-6xl px-5 pb-24 pt-10 sm:px-8">
           {children}
         </main>
-        <SiteFooter />
       </body>
     </html>
   );
