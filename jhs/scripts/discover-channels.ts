@@ -97,7 +97,11 @@ function loadQueries(): string[] {
 // "구독자 67.6만명" / "1100만" / "3.08만" / "1.2억" / "980명" / "1.2M" / "850K" → 정수
 function parseSubs(text: string | undefined): number | null {
   if (!text) return null;
-  const t = text.replace(/,/g, "");
+  const t = text.replace(/,/g, "").trim();
+  // 핸들(@xxx)이 구독자 텍스트 자리에 들어온 경우 즉시 거부.
+  // 자동생성 핸들 "@김민석-n8m2s" / "@모바일게임-k7m" / "@100mishop" 의 "8m"/"7m"/"100m"을
+  // 아래 M/K/B 분기가 "8M/7M/100M 구독자"로 오파싱하던 버그 방지.
+  if (t.startsWith("@")) return null;
   let m = t.match(/([\d.]+)\s*(억|만|천)?/);
   if (m) {
     const n = parseFloat(m[1]);
@@ -110,7 +114,9 @@ function parseSubs(text: string | undefined): number | null {
       if (/명/.test(t)) return Math.round(n);
     }
   }
-  m = t.match(/([\d.]+)\s*([MKB])/i);
+  // 영문 약식(1.2M/850K) — 숫자 앞이 단어문자가 아니고(핸들 "k7m"의 7m 배제),
+  // 뒤가 단어경계여야 함(핸들 "8m2s"의 8m 배제). YouTube hl=ko 응답에선 드물지만 방어.
+  m = t.match(/(?:^|[^A-Za-z0-9.])([\d.]+)\s*([MKB])\b/i);
   if (m) {
     const n = parseFloat(m[1]);
     const u = m[2].toUpperCase();
@@ -138,12 +144,14 @@ function extractChannels(renderers: any[], query: string): Found[] {
     const id = c.channelId;
     if (typeof id !== "string" || !id.startsWith("UC")) continue;
     const title = c.title?.simpleText ?? "";
-    const subsText = c.videoCountText?.simpleText ?? c.subscriberCountText?.simpleText;
-    const subs = parseSubs(subsText);
+    // videoCountText / subscriberCountText 는 응답에 따라 구독자수·핸들이 뒤섞여 온다.
+    // parseSubs 가 핸들(@…)을 거부하므로, 두 필드를 모두 시도해 실제 구독자 텍스트만 통과시킨다.
+    const subs = parseSubs(c.videoCountText?.simpleText) ?? parseSubs(c.subscriberCountText?.simpleText);
     if (subs == null) continue;
-    const handle = c.subscriberCountText?.simpleText?.startsWith("@")
-      ? c.subscriberCountText.simpleText
-      : c.navigationEndpoint?.browseEndpoint?.canonicalBaseUrl ?? null;
+    const handleText = [c.subscriberCountText?.simpleText, c.videoCountText?.simpleText].find((s) =>
+      s?.startsWith("@"),
+    );
+    const handle = handleText ?? c.navigationEndpoint?.browseEndpoint?.canonicalBaseUrl ?? null;
     res.push({ id, title, subs, handle: handle && handle.startsWith("/@") ? handle.slice(1) : handle, query });
   }
   return res;
