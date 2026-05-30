@@ -232,7 +232,7 @@ async function CompareView({ aId, bId }: { aId: string; bId: string }) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {sharedVideos.map((v) => (
                 <li key={v.videoId}>
                   <a
@@ -247,13 +247,13 @@ async function CompareView({ aId, bId }: { aId: string; bId: string }) {
                           src={v.thumbnail}
                           alt={v.title}
                           fill
-                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 20vw"
                           className="object-cover transition-transform group-hover:scale-105"
                           unoptimized
                         />
                       ) : null}
                     </div>
-                    <p className="mt-3 line-clamp-2 text-xl font-semibold leading-snug transition-colors group-hover:text-accent">
+                    <p className="mt-3 line-clamp-2 text-base font-semibold leading-snug transition-colors group-hover:text-accent">
                       {v.title}
                     </p>
                     <p className="mt-1 truncate text-sm text-muted-foreground">{v.channelName}</p>
