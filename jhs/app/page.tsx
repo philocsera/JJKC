@@ -14,7 +14,7 @@ const STATS = [
 const FEATURES = [
   { idx: "01", href: "/onboard", title: "알고리즘 만들기", body: "내 취향으로 프로필 만들기", Icon: Sparkles },
   { idx: "02", href: "/discover", title: "채널 추천", body: "취향에 맞는 채널 찾기", Icon: Radar },
-  { idx: "03", href: "/explore", title: "알고리즘 탐색", body: "남들은 뭘 보는지 구경하기", Icon: Telescope },
+  { idx: "03", href: "/explore", title: "알고리즘 탐색", body: "다른 사람들의 알고리즘 구경하기", Icon: Telescope },
 ];
 
 export default async function HomePage() {
