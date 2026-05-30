@@ -157,10 +157,21 @@ export async function recommendForUser(
   const clusterLabelById = new Map(clusters.map((c) => [c.id, c.label]));
   const assignments = assignClusters(profile.categories, clusters, 2);
 
-  // 제외: 이미 구독한 채널 + 프로필의 대표 채널.
+  // 싫어요한 채널과 "관련 채널"(similarChannelIds) 도 제외.
+  const channelById = new Map(channels.map((c) => [c.id, c]));
+  const relatedToDisliked = new Set<string>();
+  for (const did of profile.dislikedChannelIds) {
+    const ch = channelById.get(did);
+    if (ch) for (const s of ch.similarChannelIds) relatedToDisliked.add(s.id);
+  }
+
+  // 제외: 구독 + 대표 채널 + 좋아요(이미 목록에 추가됨) + 싫어요 + 싫어요 관련 채널.
   const exclude = new Set<string>([
     ...profile.subscribedChannelIds,
     ...profile.topChannels.map((c) => c.id),
+    ...profile.likedChannelIds,
+    ...profile.dislikedChannelIds,
+    ...relatedToDisliked,
   ]);
 
   const recommendations = rankChannels(profile, channels, clusterLabelById, {

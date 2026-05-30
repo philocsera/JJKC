@@ -40,6 +40,8 @@ type DbProfile = {
   sampleVideoIds: string;
   metrics: string | null;
   subscribedChannelIds?: string | null;
+  likedChannelIds?: string | null;
+  dislikedChannelIds?: string | null;
   lastSyncedAt: Date;
 };
 
@@ -53,8 +55,39 @@ function unpack(p: DbProfile): AlgoProfileShape {
     sampleVideoIds: safeParse<string[]>(p.sampleVideoIds, []),
     metrics: safeParse<ProfileMetrics>(p.metrics, DEFAULT_METRICS),
     subscribedChannelIds: safeParse<string[]>(p.subscribedChannelIds, []),
+    likedChannelIds: safeParse<string[]>(p.likedChannelIds, []),
+    dislikedChannelIds: safeParse<string[]>(p.dislikedChannelIds, []),
     lastSyncedAt: p.lastSyncedAt.toISOString(),
   };
+}
+
+// 추천 화면 좋아요/싫어요 — 채널 id 를 liked/disliked 목록에 추가(멱등).
+export async function addLikedChannel(userId: string, channelId: string) {
+  const row = await prisma.algoProfile.findUnique({
+    where: { userId },
+    select: { likedChannelIds: true },
+  });
+  if (!row) return;
+  const liked = safeParse<string[]>(row.likedChannelIds, []);
+  if (liked.includes(channelId)) return;
+  await prisma.algoProfile.update({
+    where: { userId },
+    data: { likedChannelIds: JSON.stringify([...liked, channelId]) },
+  });
+}
+
+export async function addDislikedChannel(userId: string, channelId: string) {
+  const row = await prisma.algoProfile.findUnique({
+    where: { userId },
+    select: { dislikedChannelIds: true },
+  });
+  if (!row) return;
+  const disliked = safeParse<string[]>(row.dislikedChannelIds, []);
+  if (disliked.includes(channelId)) return;
+  await prisma.algoProfile.update({
+    where: { userId },
+    data: { dislikedChannelIds: JSON.stringify([...disliked, channelId]) },
+  });
 }
 
 export async function getProfile(userId: string): Promise<AlgoProfileShape | null> {

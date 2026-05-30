@@ -29,6 +29,8 @@ export type AlgoProfileShape = {
   sampleVideoIds: string[];
   metrics: ProfileMetrics;
   subscribedChannelIds: string[];
+  likedChannelIds: string[];
+  dislikedChannelIds: string[];
   lastSyncedAt: string;
 };
 

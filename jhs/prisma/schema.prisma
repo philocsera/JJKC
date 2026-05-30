@@ -101,6 +101,10 @@ model AlgoProfile {
   // sync 시 subscriptions.list 결과(추가 쿼터 0)에서 채워진다.
   subscribedChannelIds String @default("[]") // JSON: string[]
 
+  // 추천 화면 좋아요/싫어요. liked → 좋아하는 채널 목록, disliked → 추천 제외(+관련 채널 제외).
+  likedChannelIds    String @default("[]") // JSON: string[]
+  dislikedChannelIds String @default("[]") // JSON: string[]
+
   lastSyncedAt    DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
