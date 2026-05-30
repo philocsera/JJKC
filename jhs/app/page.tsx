@@ -94,7 +94,7 @@ export default async function HomePage() {
       </section>
 
       {/* ── 통계 + 채널 마퀴 ──────────────────────────────── */}
-      <div className="space-y-3">
+      <div className="space-y-8">
         <dl className="grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-border/70 bg-border/40 sm:grid-cols-3">
           {STATS.map((s) => (
             <div key={s.l} className="bg-card/60 px-6 py-8 backdrop-blur-sm">
