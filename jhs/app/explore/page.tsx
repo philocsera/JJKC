@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { listPublic } from "@/lib/profile-service";
+import { categoryLabel } from "@/lib/categories";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 
@@ -39,7 +40,7 @@ export default async function ExplorePage() {
                       <div className="min-w-0 flex-1">
                         <div className="truncate font-semibold">{owner.name}</div>
                         <div className="label-mono mt-0.5">
-                          {top ? `${top[0]}` : "no data"}
+                          {top ? categoryLabel(top[0]) : "no data"}
                         </div>
                       </div>
                       <span className="font-mono text-xs text-muted-foreground">→</span>
@@ -50,7 +51,7 @@ export default async function ExplorePage() {
                       {cats.map(([name, pct]) => (
                         <div key={name} className="space-y-1">
                           <div className="flex justify-between text-xs">
-                            <span className="truncate text-muted-foreground">{name}</span>
+                            <span className="truncate text-muted-foreground">{categoryLabel(name)}</span>
                             <span className="font-mono tabular-nums text-foreground">{pct}%</span>
                           </div>
                           <div className="h-1 overflow-hidden rounded-full bg-muted">

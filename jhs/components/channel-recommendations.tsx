@@ -4,6 +4,8 @@
 import Image from "next/image";
 import { getProfile } from "@/lib/profile-service";
 import { recommendForUser } from "@/lib/channel-recommender";
+import { getRecentVideosBatch } from "@/lib/recent-videos";
+import { categoryLabel, clusterLabel } from "@/lib/categories";
 import { CategoryRadar, type RadarRow } from "@/components/category-radar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,6 +55,12 @@ npm run channels:cluster`}
 
   const top = result.assignments[0];
 
+  // 추천 채널별 최근 영상 2개 (RSS, 키 0, 캐시).
+  const recentMap = await getRecentVideosBatch(
+    result.recommendations.map((r) => r.channel.id),
+    2,
+  );
+
   // 사용자 vs 배정 클러스터 centroid radar.
   let radar: RadarRow[] = [];
   if (me && top) {
@@ -63,7 +71,7 @@ npm run channels:cluster`}
       ]),
     ).slice(0, 8);
     radar = names.map((category) => ({
-      category,
+      category: categoryLabel(category),
       a: me.categories[category] ?? 0,
       b: top.cluster.centroid[category] ?? 0,
     }));
@@ -86,7 +94,7 @@ npm run channels:cluster`}
                     style={{ background: top.cluster.color }}
                   />
                 ) : null}
-                <span className="text-lg font-semibold">{top.cluster.label}</span>
+                <span className="text-lg font-semibold">{clusterLabel(top.cluster.label)}</span>
                 <Badge variant="accent">{top.score}% 일치</Badge>
               </div>
               <p className="text-xs text-muted-foreground">
@@ -102,7 +110,7 @@ npm run channels:cluster`}
               </div>
               {result.assignments[1] ? (
                 <p className="text-xs text-muted-foreground">
-                  다음으로 가까운 묶음: {result.assignments[1].cluster.label} (
+                  다음으로 가까운 묶음: {clusterLabel(result.assignments[1].cluster.label)} (
                   {result.assignments[1].score}%)
                 </p>
               ) : null}
@@ -119,7 +127,7 @@ npm run channels:cluster`}
             </CardHeader>
             <CardContent>
               {radar.length > 0 ? (
-                <CategoryRadar rows={radar} aLabel="나" bLabel={top.cluster.label} />
+                <CategoryRadar rows={radar} aLabel="나" bLabel={clusterLabel(top.cluster.label)} />
               ) : (
                 <p className="text-sm text-muted-foreground">비교할 카테고리가 없습니다.</p>
               )}
@@ -139,15 +147,20 @@ npm run channels:cluster`}
           </p>
         ) : (
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {result.recommendations.map(({ channel, score, clusterLabel, similar }) => (
-              <li key={channel.id}>
-                <a
-                  href={`https://www.youtube.com/channel/${channel.id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex h-full flex-col gap-2 rounded-xl border p-4 transition-colors hover:bg-muted"
+            {result.recommendations.map(({ channel }) => {
+              const videos = recentMap.get(channel.id) ?? [];
+              return (
+                <li
+                  key={channel.id}
+                  className="flex h-full flex-col gap-3 rounded-xl border p-4"
                 >
-                  <div className="flex items-center gap-3">
+                  {/* 채널 헤더 — 프로필/이름/구독자수만 */}
+                  <a
+                    href={`https://www.youtube.com/channel/${channel.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 transition-opacity hover:opacity-80"
+                  >
                     {channel.thumbnail ? (
                       <Image
                         src={channel.thumbnail}
@@ -168,28 +181,43 @@ npm run channels:cluster`}
                         구독자 {fmtSubs(channel.subscriberCount)}
                       </div>
                     </div>
-                    <Badge variant="accent">{score}</Badge>
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {clusterLabel ? (
-                      <Badge variant="outline" className="text-[10px]">
-                        {clusterLabel}
-                      </Badge>
-                    ) : null}
-                    {channel.keywords.slice(0, 3).map((kw) => (
-                      <Badge key={kw} variant="muted" className="text-[10px]">
-                        {kw}
-                      </Badge>
-                    ))}
-                  </div>
-                  {similar.length > 0 ? (
-                    <p className="truncate text-[10px] text-muted-foreground">
-                      비슷한 채널: {similar.map((s) => s.name).join(" · ")}
-                    </p>
-                  ) : null}
-                </a>
-              </li>
-            ))}
+                  </a>
+
+                  {/* 최근 영상 2개 — 썸네일 + 제목 */}
+                  {videos.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-2">
+                      {videos.map((v) => (
+                        <a
+                          key={v.videoId}
+                          href={`https://www.youtube.com/watch?v=${v.videoId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="group block space-y-1"
+                        >
+                          <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
+                            {v.thumbnail ? (
+                              <Image
+                                src={v.thumbnail}
+                                alt={v.title}
+                                fill
+                                sizes="(max-width: 640px) 50vw, 200px"
+                                className="object-cover transition-transform group-hover:scale-105"
+                                unoptimized
+                              />
+                            ) : null}
+                          </div>
+                          <p className="line-clamp-2 text-[11px] leading-snug text-muted-foreground group-hover:text-foreground">
+                            {v.title}
+                          </p>
+                        </a>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-[11px] text-muted-foreground">최근 영상을 불러오지 못했습니다.</p>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>

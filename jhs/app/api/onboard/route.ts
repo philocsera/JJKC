@@ -46,7 +46,7 @@ export async function GET() {
 
 const Body = z.object({
   channelIds: z.array(z.string().min(1)).max(10).default([]),
-  categories: z.array(z.string()).max(5).default([]),
+  categories: z.array(z.string()).max(17).default([]),
   subCategories: z.array(z.string()).max(40).default([]),
 });
 
@@ -62,7 +62,7 @@ export async function POST(req: Request) {
   }
 
   const channelIds = dedupe(parsed.data.channelIds).slice(0, 10);
-  const categories = dedupe(parsed.data.categories.filter(isCategoryName)).slice(0, 5);
+  const categories = dedupe(parsed.data.categories.filter(isCategoryName));
   // 세부 카테고리: 택소노미에 존재하고 + 부모가 선택된 것만 인정.
   const valid = validSubKeys();
   const subCategories = dedupe(parsed.data.subCategories).filter(

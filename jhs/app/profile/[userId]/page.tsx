@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Play } from "lucide-react";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import { getProfileWithOwner } from "@/lib/profile-service";
 import { CategoryRadar } from "@/components/category-radar";
 import { ChannelList } from "@/components/channel-list";
 import { ChannelRecommendations } from "@/components/channel-recommendations";
-import { FollowButton } from "@/components/follow-button";
+import { fingerprintRows } from "@/lib/categories";
 import { ProfileMetricsCard } from "@/components/profile-metrics";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,16 +26,8 @@ export default async function ProfilePage({
   if (!hit) notFound();
   const { owner, profile } = hit;
 
-  const initialFollowing = me
-    ? !!(await prisma.follow.findUnique({
-        where: { followerId_followingId: { followerId: me, followingId: userId } },
-      }))
-    : false;
-
-  const radarRows = Object.entries(profile.categories).map(([category, pct]) => ({
-    category,
-    a: pct,
-  }));
+  // 모든 사용자가 동일한 최상위 카테고리 축을 갖는 fingerprint.
+  const radarRows = fingerprintRows(profile.categories);
 
   return (
     <section className="space-y-12">
@@ -56,12 +48,13 @@ export default async function ProfilePage({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {me && me !== owner.id ? (
-            <FollowButton
-              targetUserId={owner.id}
-              initialFollowing={initialFollowing}
-            />
-          ) : null}
+          <Link
+            href={`/watch-as/${owner.id}`}
+            className="inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2 text-sm font-semibold text-accent-foreground shadow-[0_0_24px_-6px_hsl(var(--accent)/0.8)] transition-transform hover:scale-[1.03]"
+          >
+            <Play className="h-4 w-4 fill-current" />
+            {owner.name}님의 알고리즘으로 유튜브 보기
+          </Link>
           {me ? (
             <Link
               href={`/compare?a=${me}&b=${owner.id}`}

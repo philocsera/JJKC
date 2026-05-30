@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { getProfile, listPublic } from "@/lib/profile-service";
 import { profileSimilarity } from "@/lib/profiler";
+import { categoryLabel } from "@/lib/categories";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -78,7 +79,7 @@ export async function SimilarUsers({
                       {owner.name}
                     </div>
                     <div className="truncate text-xs text-muted-foreground">
-                      {top ? `${top[0]} · ${top[1]}%` : "—"}
+                      {top ? `${categoryLabel(top[0])} · ${top[1]}%` : "—"}
                     </div>
                   </div>
                   <Badge variant="accent">{similarity}%</Badge>

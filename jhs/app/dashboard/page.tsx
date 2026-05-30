@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getProfile } from "@/lib/profile-service";
 import { CategoryRadar } from "@/components/category-radar";
 import { CategoryBar } from "@/components/category-bar";
+import { fingerprintRows, categoryLabel } from "@/lib/categories";
 import { ChannelList } from "@/components/channel-list";
 import { ChannelRecommendations } from "@/components/channel-recommendations";
 import { ProfileMetricsCard } from "@/components/profile-metrics";
@@ -47,12 +48,10 @@ export default async function DashboardPage() {
     );
   }
 
-  const radar = Object.entries(profile.categories).map(([category, pct]) => ({
-    category,
-    a: pct,
-  }));
+  // 모든 사용자가 동일한 최상위 카테고리 축을 갖는 fingerprint.
+  const radar = fingerprintRows(profile.categories);
   const bars = Object.entries(profile.categories)
-    .map(([category, pct]) => ({ category, pct }))
+    .map(([category, pct]) => ({ category: categoryLabel(category), pct }))
     .sort((a, b) => b.pct - a.pct);
 
   return (

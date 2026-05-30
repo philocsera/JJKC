@@ -27,8 +27,6 @@ export type OnboardInitial = {
   subCategories: string[]; // "Parent/Sub" 키
 };
 
-const MAX_CHANNELS = 10;
-const MAX_CATEGORIES = 5;
 
 function fmtSubs(n: number): string {
   if (n >= 10_000_000) return `${(n / 10_000_000).toFixed(1)}천만`;
@@ -42,9 +40,20 @@ const STEPS = ["관심 카테고리", "세부 관심사", "채널 선택"];
 export function OnboardForm({
   initial,
   subLabels,
+  submitUrl = "/api/onboard",
+  extraBody,
+  extraValidate,
+  onSuccess,
+  submitLabel,
 }: {
   initial: OnboardInitial;
   subLabels: Record<string, string[]>;
+  // 재사용용(예: 디버그 유저 생성) — 기본값은 일반 온보딩 동작.
+  submitUrl?: string;
+  extraBody?: Record<string, unknown>;
+  extraValidate?: () => string | null; // 에러 메시지 반환 시 제출 중단
+  onSuccess?: (data: unknown) => void; // 미지정 시 /dashboard 로 이동
+  submitLabel?: string;
 }) {
   const router = useRouter();
   const [step, setStep] = useState(0);
@@ -93,7 +102,6 @@ export function OnboardForm({
   function toggleChannel(c: ChannelLite) {
     setSelected((prev) => {
       if (prev.some((x) => x.id === c.id)) return prev.filter((x) => x.id !== c.id);
-      if (prev.length >= MAX_CHANNELS) return prev;
       return [...prev, c];
     });
   }
@@ -104,7 +112,6 @@ export function OnboardForm({
       // 카테고리 해제 시 그 카테고리의 세부 선택도 제거.
       setCheckedSubs((s) => s.filter((k) => !k.startsWith(`${name}/`)));
     } else {
-      if (checked.length >= MAX_CATEGORIES) return;
       setChecked((p) => [...p, name]);
     }
   }
@@ -118,13 +125,22 @@ export function OnboardForm({
 
   async function submit() {
     if (!canSubmit || submitting) return;
+    // 호출부 추가 검증(예: 디버그의 이름 필수).
+    if (extraValidate) {
+      const msg = extraValidate();
+      if (msg) {
+        setError(msg);
+        return;
+      }
+    }
     setSubmitting(true);
     setError(null);
     try {
-      const res = await fetch("/api/onboard", {
+      const res = await fetch(submitUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          ...extraBody,
           channelIds: selected.map((c) => c.id),
           categories: checked,
           subCategories: checkedSubs,
@@ -133,6 +149,12 @@ export function OnboardForm({
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         setError(data.message ?? "저장에 실패했습니다. 입력을 확인해 주세요.");
+        setSubmitting(false);
+        return;
+      }
+      if (onSuccess) {
+        const data = await res.json().catch(() => ({}));
+        onSuccess(data);
         setSubmitting(false);
         return;
       }
@@ -173,29 +195,24 @@ export function OnboardForm({
           <div className="space-y-1">
             <h2 className="text-lg font-medium">관심 카테고리를 골라 주세요</h2>
             <p className="text-sm text-muted-foreground">
-              최대 {MAX_CATEGORIES}개. 다음 단계에서 카테고리별 세부 관심사를 고릅니다.{" "}
-              <span className="text-foreground">
-                {checked.length}/{MAX_CATEGORIES}
-              </span>{" "}
-              선택됨
+              다음 단계에서 카테고리별 세부 관심사를 고릅니다.{" "}
+              <span className="text-foreground">{checked.length}개</span> 선택됨
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <div className="flex flex-wrap gap-2">
             {CATEGORY_NAMESPACE.map((name) => {
               const on = checked.includes(name);
-              const full = checked.length >= MAX_CATEGORIES;
               return (
                 <button
                   key={name}
                   type="button"
                   onClick={() => toggleCategory(name)}
-                  disabled={!on && full}
-                  className={`flex items-center justify-between rounded-xl border px-3 py-2.5 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
                     on ? "border-accent bg-accent/10 text-foreground" : "hover:bg-muted"
                   }`}
                 >
                   <span>{CATEGORY_LABELS_KO[name]}</span>
-                  {on ? <Check className="h-4 w-4 text-accent" /> : null}
+                  {on ? <Check className="h-3.5 w-3.5 text-accent" /> : null}
                 </button>
               );
             })}
@@ -264,13 +281,6 @@ export function OnboardForm({
         <div className="space-y-5">
           <div className="space-y-1">
             <h2 className="text-lg font-medium">이 중에 관심 있는 채널이 있나요?</h2>
-            <p className="text-sm text-muted-foreground">
-              고른 세부 관심사의 인기 채널입니다. 5~10개를 추천합니다.{" "}
-              <span className="text-foreground">
-                {selected.length}/{MAX_CHANNELS}
-              </span>{" "}
-              선택됨
-            </p>
           </div>
 
           {/* 선택된 채널 chips */}
@@ -311,16 +321,14 @@ export function OnboardForm({
           ) : channels.length === 0 ? (
             <p className="text-sm text-muted-foreground">표시할 채널이 없습니다.</p>
           ) : (
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {channels.map((c) => {
                 const on = isSelected(c.id);
-                const full = selected.length >= MAX_CHANNELS;
                 return (
                   <button
                     key={c.id}
                     type="button"
                     onClick={() => toggleChannel(c)}
-                    disabled={!on && full}
                     className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
                       on ? "border-accent bg-accent/10" : "hover:bg-muted"
                     }`}
@@ -342,7 +350,7 @@ export function OnboardForm({
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-sm font-medium">{c.title}</div>
                       <div className="text-xs text-muted-foreground">
-                        {c.handle ? `${c.handle} · ` : ""}구독자 {fmtSubs(c.subscriberCount)}
+                        구독자 {fmtSubs(c.subscriberCount)}
                       </div>
                     </div>
                     {on ? <Check className="h-4 w-4 shrink-0 text-accent" /> : null}
@@ -389,7 +397,7 @@ export function OnboardForm({
             disabled={!canSubmit || submitting}
           >
             {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
-            알고리즘 만들기
+            {submitLabel ?? "알고리즘 만들기"}
           </Button>
         </div>
       </Card>

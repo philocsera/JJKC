@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { getProfileWithOwner, listPublic } from "@/lib/profile-service";
 import { CategoryRadar } from "@/components/category-radar";
 import { KeywordCloud } from "@/components/keyword-cloud";
+import { categoryLabel } from "@/lib/categories";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -107,7 +108,7 @@ async function CompareView({ aId, bId }: { aId: string; bId: string }) {
   );
   const rows = keys
     .map((cat) => ({
-      category: cat,
+      category: categoryLabel(cat),
       a: a.profile.categories[cat] ?? 0,
       b: b.profile.categories[cat] ?? 0,
     }))
