@@ -85,7 +85,7 @@ export default async function ProfilePage({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium">Top channels</CardTitle>
+          <CardTitle className="text-sm font-medium">좋아하는 채널</CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
           <ChannelList channels={profile.topChannels} />

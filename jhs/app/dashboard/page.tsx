@@ -6,7 +6,6 @@ import { CategoryRadar } from "@/components/category-radar";
 import { CategoryBar } from "@/components/category-bar";
 import { fingerprintGroups, categoryLabel } from "@/lib/categories";
 import { ChannelList } from "@/components/channel-list";
-import { ChannelRecommendations } from "@/components/channel-recommendations";
 import { SimilarUsers } from "@/components/similar-users";
 import { SyncButton } from "@/components/sync-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -66,12 +65,14 @@ export default async function DashboardPage() {
             </AvatarFallback>
           </Avatar>
           <div className="space-y-2">
-            <h1 className="text-3xl font-extrabold sm:text-4xl">
+            <h1 className="text-base font-extrabold sm:text-lg">
               {user.name ?? "나"}
             </h1>
           </div>
         </div>
-        <SyncButton label="내 알고리즘 수정하기" size="lg" />
+        <span style={{ ["--font-scale" as string]: "1.4" }}>
+          <SyncButton label="내 알고리즘 수정하기" size="lg" />
+        </span>
       </header>
 
       <Card>
@@ -103,7 +104,7 @@ export default async function DashboardPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium">Top channels</CardTitle>
+          <CardTitle className="text-sm font-medium">좋아하는 채널</CardTitle>
         </CardHeader>
         <CardContent>
           <ChannelList channels={profile.topChannels} />
@@ -111,14 +112,6 @@ export default async function DashboardPage() {
       </Card>
 
       <SimilarUsers userId={userId} />
-
-
-      <section className="space-y-3">
-        <h2 className="text-sm font-medium">
-          내 알고리즘이 추천하는 채널
-        </h2>
-        <ChannelRecommendations userId={userId} />
-      </section>
     </section>
     </div>
   );

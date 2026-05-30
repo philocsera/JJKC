@@ -38,7 +38,7 @@ export async function SimilarUsers({
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium">닮은 알고리즘</CardTitle>
+          <CardTitle className="text-sm font-medium">나와 알고리즘이 비슷한 사람 찾기</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-xs text-muted-foreground">
