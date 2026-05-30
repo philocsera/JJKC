@@ -48,11 +48,12 @@ export function VideoRerank() {
 
   return (
     <section className="space-y-5">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="space-y-1">
-          <h2 className="text-2xl font-bold tracking-tight">AI 추천 영상</h2>
-          <p className="text-sm text-muted-foreground">
-            내 알고리즘을 분석해 지금 볼 만한 영상을 골라드려요. (최신순이 아닌 취향 관련성순)
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div className="space-y-3">
+          <p className="label-mono">Channel discovery</p>
+          <h1 className="text-4xl font-extrabold sm:text-5xl">추천</h1>
+          <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
+            당신의 알고리즘에 맞는 영상과 채널을 추천합니다.
           </p>
         </div>
         <button
@@ -68,7 +69,7 @@ export function VideoRerank() {
           ) : (
             <Sparkles className="h-4 w-4" />
           )}
-          {loading ? "분석 중…" : videos ? "다시 추천" : "AI로 영상 추천받기"}
+          {loading ? "분석 중…" : videos ? "다시 추천" : "Gemini에게 영상 추천받기"}
         </button>
       </div>
 
