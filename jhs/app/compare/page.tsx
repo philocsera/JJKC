@@ -225,7 +225,9 @@ async function CompareView({ aId, bId }: { aId: string; bId: string }) {
       ) : null}
 
       {sharedVideos.length > 0 ? (
-        <Card>
+        // 영상 섹션만 창 전체 폭(최대 1800px)으로 넓혀, 5열이어도 썸네일이 작아지지 않게.
+        <div className="mx-[calc(50%-50vw)] w-screen px-5 sm:px-8">
+        <Card className="mx-auto max-w-[1800px]">
           <CardHeader>
             <CardTitle className="text-sm font-medium">
               {a.owner.name} · {b.owner.name} 가 둘 다 좋아할만한 영상
@@ -263,6 +265,7 @@ async function CompareView({ aId, bId }: { aId: string; bId: string }) {
             </ul>
           </CardContent>
         </Card>
+        </div>
       ) : null}
     </div>
   );
