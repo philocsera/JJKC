@@ -1,7 +1,6 @@
 // channel_analyze_plan §6: /discover — 클러스터 기반 채널 추천 페이지.
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { ChannelRecommendations } from "@/components/channel-recommendations";
 import { VideoRerank } from "@/components/video-rerank";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +15,6 @@ export default async function DiscoverPage() {
     <div className="mx-[calc(50%-50vw)] w-screen px-5 sm:px-8">
     <section className="mx-auto max-w-[1800px] space-y-8">
       <VideoRerank />
-      <ChannelRecommendations userId={userId} />
     </section>
     </div>
   );
