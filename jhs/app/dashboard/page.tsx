@@ -67,13 +67,9 @@ export default async function DashboardPage() {
             </AvatarFallback>
           </Avatar>
           <div className="space-y-2">
-            <p className="label-mono">My algorithm</p>
             <h1 className="text-3xl font-extrabold sm:text-4xl">
               {user.name ?? "나"}
             </h1>
-            <p className="font-mono text-xs text-muted-foreground">
-              last synced · {new Date(profile.lastSyncedAt).toLocaleString()}
-            </p>
           </div>
         </div>
         <SyncButton label="Re-sync" />
