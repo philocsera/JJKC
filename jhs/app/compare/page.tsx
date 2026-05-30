@@ -186,14 +186,14 @@ async function CompareView({ aId, bId }: { aId: string; bId: string }) {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-medium">
-            공통 관심 채널 {sharedChannels.length ? `(${sharedChannels.length})` : ""}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {sharedChannels.length ? (
+      {sharedChannels.length > 0 ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">
+              공통 관심 채널 ({sharedChannels.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
             <ul className="flex flex-wrap gap-2">
               {sharedChannels.map((c) => (
                 <li key={c.id}>
@@ -220,60 +220,50 @@ async function CompareView({ aId, bId }: { aId: string; bId: string }) {
                 </li>
               ))}
             </ul>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              두 사람이 공통으로 고른 채널이 없습니다.
-            </p>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      ) : null}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-medium">
-            {a.owner.name} · {b.owner.name} 가 둘 다 좋아할만한 영상
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {sharedVideos.length ? (
-            <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      {sharedVideos.length > 0 ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">
+              {a.owner.name} · {b.owner.name} 가 둘 다 좋아할만한 영상
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {sharedVideos.map((v) => (
                 <li key={v.videoId}>
                   <a
                     href={`https://www.youtube.com/watch?v=${v.videoId}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group flex gap-3"
+                    className="group block"
                   >
-                    <div className="relative aspect-video w-32 shrink-0 overflow-hidden rounded-lg bg-muted">
+                    <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-muted">
                       {v.thumbnail ? (
                         <Image
                           src={v.thumbnail}
                           alt={v.title}
                           fill
-                          sizes="128px"
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                           className="object-cover transition-transform group-hover:scale-105"
                           unoptimized
                         />
                       ) : null}
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="line-clamp-2 text-xs font-medium leading-snug transition-colors group-hover:text-accent">
-                        {v.title}
-                      </p>
-                      <p className="mt-1 truncate text-[11px] text-muted-foreground">{v.channelName}</p>
-                    </div>
+                    <p className="mt-3 line-clamp-2 text-xl font-semibold leading-snug transition-colors group-hover:text-accent">
+                      {v.title}
+                    </p>
+                    <p className="mt-1 truncate text-sm text-muted-foreground">{v.channelName}</p>
                   </a>
                 </li>
               ))}
             </ul>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              두 알고리즘이 겹치는 영상을 찾지 못했습니다.
-            </p>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      ) : null}
     </div>
   );
 }
