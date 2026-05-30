@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ChannelMarquee } from "@/components/channel-marquee";
 
 const STATS = [
-  { v: "6,540", l: "한국 채널" },
+  { v: "6,540", l: "채널" },
   { v: "14", l: "카테고리" },
   { v: "68", l: "세부 분류" },
 ];
@@ -32,7 +32,7 @@ export default async function HomePage() {
           <h1 className="text-balance text-6xl font-extrabold leading-[1.28] lg:text-7xl">
             내 취향을 읽는
             <br />
-            <span className="text-accent">한국 유튜브</span>
+            <span className="text-accent">유튜브</span>
             <br />
             알고리즘.
           </h1>
