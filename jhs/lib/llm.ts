@@ -21,6 +21,7 @@ export interface ChatOpts {
   maxTokens?: number;
   temperature?: number;
   timeoutMs?: number;
+  model?: string; // 호출별 모델 오버라이드(예: 무거운 재랭킹은 별도 쿼터의 flash-lite)
 }
 
 // system + user 단발 대화. 실패/키없음 → null (호출부가 graceful 처리).
@@ -38,7 +39,7 @@ export async function llmChat(
         Authorization: `Bearer ${API_KEY}`,
       },
       body: JSON.stringify({
-        model: MODEL,
+        model: opts.model ?? MODEL,
         messages: [
           { role: "system", content: system },
           { role: "user", content: user },

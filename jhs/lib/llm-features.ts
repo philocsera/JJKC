@@ -5,6 +5,10 @@ import { llmChat } from "./llm";
 import { categoryLabel } from "./categories";
 import type { AlgoProfileShape, PublicUser } from "./types";
 
+// 영상 재랭킹은 호출이 잦고 프롬프트가 무거우므로, 요약·비교(기본 모델)와 분리해
+// 별도 일일 쿼터를 가진 모델로 라우팅한다(무료 한도가 모델별이라 예산이 배가됨).
+const RERANK_MODEL = process.env.LLM_RERANK_MODEL || "gemini-2.5-flash-lite";
+
 function topCats(cats: Record<string, number>, n = 4): string {
   return Object.entries(cats)
     .sort((a, b) => b[1] - a[1])
@@ -90,7 +94,7 @@ export async function rerankVideos(
     `싫어한 채널: ${taste.dislikedNames.slice(0, 8).join(", ") || "없음"}\n\n` +
     `후보 영상:\n${list}`;
 
-  const raw = await llmChat(system, user, { maxTokens: 1400, temperature: 0.4 });
+  const raw = await llmChat(system, user, { maxTokens: 1400, temperature: 0.4, model: RERANK_MODEL });
   const parsed = parseRerank(raw, candidates.length);
   if (!parsed) return null;
 
