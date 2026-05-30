@@ -7,11 +7,17 @@ import Link from "next/link";
 import { Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function SyncButton({ label = "알고리즘 입력하기" }: { label?: string }) {
+export function SyncButton({
+  label = "알고리즘 입력하기",
+  size = "sm",
+}: {
+  label?: string;
+  size?: "sm" | "default" | "lg";
+}) {
   return (
-    <Button asChild variant="accent" size="sm">
+    <Button asChild variant="accent" size={size}>
       <Link href="/onboard">
-        <Pencil className="h-3.5 w-3.5" />
+        <Pencil className="h-4 w-4" />
         {label}
       </Link>
     </Button>

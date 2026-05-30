@@ -7,7 +7,6 @@ import { CategoryBar } from "@/components/category-bar";
 import { fingerprintGroups, categoryLabel } from "@/lib/categories";
 import { ChannelList } from "@/components/channel-list";
 import { ChannelRecommendations } from "@/components/channel-recommendations";
-import { ProfileMetricsCard } from "@/components/profile-metrics";
 import { SimilarUsers } from "@/components/similar-users";
 import { SyncButton } from "@/components/sync-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -72,7 +71,7 @@ export default async function DashboardPage() {
             </h1>
           </div>
         </div>
-        <SyncButton label="Re-sync" />
+        <SyncButton label="내 알고리즘 수정하기" size="lg" />
       </header>
 
       <Card>
@@ -82,11 +81,11 @@ export default async function DashboardPage() {
         <CardContent>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div>
-              <p className="mb-2 text-center text-xs font-medium text-muted-foreground">{fp.a.title}</p>
+              <p className="mb-2 text-center text-sm font-medium text-muted-foreground">{fp.a.title}</p>
               <CategoryRadar rows={fp.a.rows} aLabel={user.name ?? "Me"} />
             </div>
             <div>
-              <p className="mb-2 text-center text-xs font-medium text-muted-foreground">{fp.b.title}</p>
+              <p className="mb-2 text-center text-sm font-medium text-muted-foreground">{fp.b.title}</p>
               <CategoryRadar rows={fp.b.rows} aLabel={user.name ?? "Me"} />
             </div>
           </div>
@@ -102,18 +101,14 @@ export default async function DashboardPage() {
         </CardContent>
       </Card>
 
-      <ProfileMetricsCard metrics={profile.metrics} />
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Top channels</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ChannelList channels={profile.topChannels} />
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm font-medium">Top channels</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ChannelList channels={profile.topChannels} />
+        </CardContent>
+      </Card>
 
       <SimilarUsers userId={userId} />
 

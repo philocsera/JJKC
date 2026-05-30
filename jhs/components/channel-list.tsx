@@ -8,7 +8,7 @@ export function ChannelList({ channels }: { channels: TopChannel[] }) {
     );
   }
   return (
-    <ul className="space-y-3">
+    <ul className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {channels.map((c) => (
         <li key={c.id} className="flex items-center gap-3">
           {c.thumbnail ? (

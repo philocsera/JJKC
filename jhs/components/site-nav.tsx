@@ -17,7 +17,11 @@ export async function SiteNav() {
   const links = [...(user?.id ? NAV_AUTH : []), ...NAV_PUBLIC];
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
+    <header
+      className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl"
+      // 상단바만 전역 폰트의 0.7배 (전역 2배 × 0.7 = 1.4)
+      style={{ ["--font-scale" as string]: "1.4" }}
+    >
       <div className="flex w-full items-center justify-between gap-4 px-5 py-3.5 sm:px-8">
         {/* 워드마크 — 레드 인덱스 + 모노 */}
         <Link href="/" className="group flex items-center gap-2.5">

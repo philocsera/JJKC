@@ -7,7 +7,6 @@ import { CategoryRadar } from "@/components/category-radar";
 import { ChannelList } from "@/components/channel-list";
 import { ChannelRecommendations } from "@/components/channel-recommendations";
 import { fingerprintGroups } from "@/lib/categories";
-import { ProfileMetricsCard } from "@/components/profile-metrics";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -73,11 +72,11 @@ export default async function ProfilePage({
         <CardContent>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div>
-              <p className="mb-2 text-center text-xs font-medium text-muted-foreground">{fp.a.title}</p>
+              <p className="mb-2 text-center text-sm font-medium text-muted-foreground">{fp.a.title}</p>
               <CategoryRadar rows={fp.a.rows} aLabel={owner.name} />
             </div>
             <div>
-              <p className="mb-2 text-center text-xs font-medium text-muted-foreground">{fp.b.title}</p>
+              <p className="mb-2 text-center text-sm font-medium text-muted-foreground">{fp.b.title}</p>
               <CategoryRadar rows={fp.b.rows} aLabel={owner.name} />
             </div>
           </div>
@@ -92,8 +91,6 @@ export default async function ProfilePage({
           <ChannelList channels={profile.topChannels} />
         </CardContent>
       </Card>
-
-      <ProfileMetricsCard metrics={profile.metrics} />
 
       <div className="space-y-3">
         <h2 className="text-sm font-medium">

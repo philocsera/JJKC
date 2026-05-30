@@ -66,7 +66,7 @@ npm run channels:cluster`}
             추천할 채널이 없습니다. 카탈로그를 더 모으거나 클러스터링을 다시 실행해 보세요.
           </p>
         ) : (
-          <ul className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          <ul className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {result.recommendations.map(({ channel }) => {
               const videos = recentMap.get(channel.id) ?? [];
               return (
@@ -103,9 +103,9 @@ npm run channels:cluster`}
                     </div>
                   </a>
 
-                  {/* 최근 영상 2개 — 썸네일 + 제목 */}
+                  {/* 최근 영상 2개 — 위아래로 배치(제목 잘림 방지) */}
                   {videos.length > 0 ? (
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 gap-3">
                       {videos.map((v) => (
                         <a
                           key={v.videoId}
