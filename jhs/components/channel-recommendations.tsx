@@ -58,9 +58,6 @@ npm run channels:cluster`}
     <div className="space-y-8">
       {/* 추천 채널 그리드 */}
       <section className="space-y-3">
-        <h2 className="text-sm font-medium">
-          추천 채널 — 내 알고리즘에 맞고 아직 구독하지 않은 채널
-        </h2>
         {result.recommendations.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             추천할 채널이 없습니다. 카탈로그를 더 모으거나 클러스터링을 다시 실행해 보세요.
