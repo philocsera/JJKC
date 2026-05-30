@@ -26,8 +26,10 @@ export async function POST(req: Request) {
   const [a, b] = await Promise.all([getProfileWithOwner(aId), getProfileWithOwner(bId)]);
   if (!a || !b) return NextResponse.json({ error: "not_found" }, { status: 404 });
 
+  // 프롬프트 변경 시 PROMPT_VER 를 올려 기존 캐시(예: A/B 익명 표기) 무효화.
+  const PROMPT_VER = "v2";
   const ver = `${new Date(a.profile.lastSyncedAt).getTime()}-${new Date(b.profile.lastSyncedAt).getTime()}`;
-  const key = `compare-insight:${aId}:${bId}:${ver}`;
+  const key = `compare-insight:${PROMPT_VER}:${aId}:${bId}:${ver}`;
 
   let insight = await cache.get<string>(key);
   if (!insight) {

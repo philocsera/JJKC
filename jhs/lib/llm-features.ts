@@ -43,12 +43,13 @@ export async function generateCompareInsight(
   sharedChannelNames: string[],
 ): Promise<string | null> {
   const system =
-    "너는 두 사람의 유튜브 취향을 비교 분석한다. 공통점과 차이를 4~6문장의 자연스러운 한국어로 " +
+    "너는 두 사람의 유튜브 취향을 비교 분석한다. 반드시 주어진 두 사람의 실제 이름을 그대로 사용하고, " +
+    "'A','B' 같은 익명 표기는 절대 쓰지 마라. 공통점과 차이를 4~6문장의 자연스러운 한국어로 " +
     "친근하고 구체적으로 설명한다. 이모지·과장·불릿 없이 문단으로.";
   const user =
-    `A(${a.owner.name}) 카테고리: ${topCats(a.profile.categories)}\n` +
-    `B(${b.owner.name}) 카테고리: ${topCats(b.profile.categories)}\n` +
-    `공통 관심 채널: ${sharedChannelNames.length ? sharedChannelNames.join(", ") : "없음"}`;
+    `${a.owner.name} 의 카테고리: ${topCats(a.profile.categories)}\n` +
+    `${b.owner.name} 의 카테고리: ${topCats(b.profile.categories)}\n` +
+    `두 사람의 공통 관심 채널: ${sharedChannelNames.length ? sharedChannelNames.join(", ") : "없음"}`;
   const raw = await llmChat(system, user, { maxTokens: 420, temperature: 0.6 });
   return raw ? raw.replace(/\*\*/g, "").trim() || null : null;
 }
