@@ -45,6 +45,9 @@ export async function rerankedVideosForUser(userId: string): Promise<RerankResul
   const topChannels = rec.recommendations.slice(0, CHANNEL_FANOUT);
   const recentMap = await getRecentVideosBatch(topChannels.map((r) => r.channel.id), PER_CHANNEL);
 
+  // 싫어요한 영상은 후보에서 제외(다시 추천되지 않게).
+  const disliked = new Set(profile.dislikedVideoIds);
+
   // 후보 풀 — 채널별 메타와 함께. videoId 중복 제거.
   const meta = new Map<string, RerankedVideo>();
   const candidates: VideoCandidate[] = [];
@@ -53,7 +56,7 @@ export async function rerankedVideosForUser(userId: string): Promise<RerankResul
     let perCh = 0;
     for (const v of recentMap.get(r.channel.id) ?? []) {
       if (perCh >= POOL_PER_CHANNEL) break;
-      if (meta.has(v.videoId)) continue;
+      if (disliked.has(v.videoId) || meta.has(v.videoId)) continue;
       perCh++;
       meta.set(v.videoId, {
         videoId: v.videoId,

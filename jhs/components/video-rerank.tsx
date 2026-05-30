@@ -2,10 +2,11 @@
 
 // AI 영상 추천 — 버튼 클릭 시에만 LLM 이 추천 채널들의 최근 영상을 내 취향순으로 재랭킹.
 // (최신순 → 관련성순). 결과는 서버에서 프로필 버전 기준 3h 캐시 → 재요청은 호출 없이 반환.
+// 버튼 누르기 전엔 블러 처리된 카드(숨겨진 카드) 위에 안내문구. 각 영상엔 좋아요/싫어요.
 
 import { useState } from "react";
 import Image from "next/image";
-import { Sparkles, Loader2, RefreshCw } from "lucide-react";
+import { Sparkles, Loader2, RefreshCw, ThumbsUp, ThumbsDown } from "lucide-react";
 
 type RerankedVideo = {
   videoId: string;
@@ -23,8 +24,34 @@ const ERROR_MSG: Record<string, string> = {
   llm_failed: "AI 추천 생성에 실패했습니다. 잠시 후 다시 시도해 주세요.",
 };
 
+// 블러 처리된 더미 카드 그리드 위에 안내(또는 로딩) 문구를 올리는 "숨겨진 카드" 연출.
+function Teaser({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="relative">
+      <ul
+        aria-hidden
+        className="pointer-events-none grid select-none grid-cols-1 gap-6 blur-[6px] sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+      >
+        {Array.from({ length: 10 }).map((_, i) => (
+          <li key={i} className="space-y-3 opacity-50">
+            <div className="aspect-video w-full rounded-xl bg-muted" />
+            <div className="h-4 w-5/6 rounded bg-muted" />
+            <div className="h-3 w-1/2 rounded bg-muted" />
+          </li>
+        ))}
+      </ul>
+      <div className="absolute inset-0 flex items-center justify-center p-4">
+        <div className="max-w-sm rounded-2xl border border-border/60 bg-background/75 px-6 py-5 text-center shadow-xl backdrop-blur-sm">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function VideoRerank() {
   const [videos, setVideos] = useState<RerankedVideo[] | null>(null);
+  const [liked, setLiked] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,12 +65,35 @@ export function VideoRerank() {
         setError(ERROR_MSG[data?.error] ?? data?.message ?? "생성 실패");
         return;
       }
+      setLiked(new Set());
       setVideos(data.videos ?? []);
     } catch {
       setError("네트워크 오류");
     } finally {
       setLoading(false);
     }
+  }
+
+  function sendFeedback(videoId: string, action: "like" | "dislike") {
+    fetch("/api/discover/feedback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ videoId, action }),
+    }).catch(() => {});
+  }
+
+  function onLike(videoId: string) {
+    setLiked((prev) => {
+      const next = new Set(prev);
+      next.has(videoId) ? next.delete(videoId) : next.add(videoId);
+      return next;
+    });
+    sendFeedback(videoId, "like");
+  }
+
+  function onDislike(videoId: string) {
+    setVideos((prev) => (prev ? prev.filter((v) => v.videoId !== videoId) : prev));
+    sendFeedback(videoId, "dislike");
   }
 
   return (
@@ -105,17 +155,43 @@ export function VideoRerank() {
                   <p className="mt-1.5 line-clamp-1 text-xs font-medium text-accent">★ {v.reason}</p>
                 ) : null}
               </a>
+              <div className="mt-2 flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => onLike(v.videoId)}
+                  aria-pressed={liked.has(v.videoId)}
+                  className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-colors ${
+                    liked.has(v.videoId)
+                      ? "border-accent/50 bg-accent/10 text-accent"
+                      : "border-border/60 text-muted-foreground hover:bg-muted"
+                  }`}
+                >
+                  <ThumbsUp className="h-3.5 w-3.5" /> 좋아요
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onDislike(v.videoId)}
+                  className="inline-flex items-center gap-1 rounded-full border border-border/60 px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted"
+                >
+                  <ThumbsDown className="h-3.5 w-3.5" /> 싫어요
+                </button>
+              </div>
             </li>
           ))}
         </ul>
       ) : loading ? (
-        <div className="flex items-center justify-center gap-2 rounded-2xl border border-dashed border-border/60 bg-card/30 py-16 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" /> 취향에 맞는 영상을 고르는 중…
-        </div>
+        <Teaser>
+          <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" /> 취향에 맞는 영상을 고르는 중…
+          </span>
+        </Teaser>
       ) : !error ? (
-        <div className="rounded-2xl border border-dashed border-border/60 bg-card/30 px-6 py-16 text-center text-sm text-muted-foreground">
-          위의 <span className="font-medium text-accent">Gemini에게 영상 추천받기</span> 버튼을 눌러 내 알고리즘에 맞는 영상을 받아보세요.
-        </div>
+        <Teaser>
+          <p className="text-sm text-muted-foreground">
+            위의 <span className="font-medium text-accent">Gemini에게 영상 추천받기</span> 버튼을 눌러
+            <br />내 알고리즘에 맞는 영상을 받아보세요.
+          </p>
+        </Teaser>
       ) : null}
     </section>
   );

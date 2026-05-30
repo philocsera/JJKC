@@ -31,6 +31,8 @@ export type AlgoProfileShape = {
   subscribedChannelIds: string[];
   likedChannelIds: string[];
   dislikedChannelIds: string[];
+  likedVideoIds: string[];
+  dislikedVideoIds: string[];
   summaryText: string;
   lastSyncedAt: string;
 };

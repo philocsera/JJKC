@@ -42,6 +42,8 @@ type DbProfile = {
   subscribedChannelIds?: string | null;
   likedChannelIds?: string | null;
   dislikedChannelIds?: string | null;
+  likedVideoIds?: string | null;
+  dislikedVideoIds?: string | null;
   summaryText?: string | null;
   lastSyncedAt: Date;
 };
@@ -58,6 +60,8 @@ function unpack(p: DbProfile): AlgoProfileShape {
     subscribedChannelIds: safeParse<string[]>(p.subscribedChannelIds, []),
     likedChannelIds: safeParse<string[]>(p.likedChannelIds, []),
     dislikedChannelIds: safeParse<string[]>(p.dislikedChannelIds, []),
+    likedVideoIds: safeParse<string[]>(p.likedVideoIds, []),
+    dislikedVideoIds: safeParse<string[]>(p.dislikedVideoIds, []),
     summaryText: p.summaryText ?? "",
     lastSyncedAt: p.lastSyncedAt.toISOString(),
   };
@@ -103,6 +107,32 @@ export async function addDislikedChannel(userId: string, channelId: string) {
   await prisma.algoProfile.update({
     where: { userId },
     data: { dislikedChannelIds: JSON.stringify([...disliked, channelId]) },
+  });
+}
+
+// /discover 영상 좋아요/싫어요(영상 단위). like↔dislike 는 상호배타 — 한쪽에 넣으면 다른쪽서 제거.
+export async function setVideoFeedback(
+  userId: string,
+  videoId: string,
+  action: "like" | "dislike",
+) {
+  const row = await prisma.algoProfile.findUnique({
+    where: { userId },
+    select: { likedVideoIds: true, dislikedVideoIds: true },
+  });
+  if (!row) return;
+  const liked = new Set(safeParse<string[]>(row.likedVideoIds, []));
+  const disliked = new Set(safeParse<string[]>(row.dislikedVideoIds, []));
+  liked.delete(videoId);
+  disliked.delete(videoId);
+  if (action === "like") liked.add(videoId);
+  else disliked.add(videoId);
+  await prisma.algoProfile.update({
+    where: { userId },
+    data: {
+      likedVideoIds: JSON.stringify([...liked]),
+      dislikedVideoIds: JSON.stringify([...disliked]),
+    },
   });
 }
 

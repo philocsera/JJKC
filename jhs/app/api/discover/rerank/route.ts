@@ -24,7 +24,7 @@ export async function POST() {
   const profile = await getProfile(me);
   if (!profile) return NextResponse.json({ error: "no_profile" }, { status: 404 });
 
-  const ver = `${profile.lastSyncedAt}:${profile.likedChannelIds.length}:${profile.dislikedChannelIds.length}`;
+  const ver = `${profile.lastSyncedAt}:${profile.likedChannelIds.length}:${profile.dislikedChannelIds.length}:${profile.likedVideoIds.length}:${profile.dislikedVideoIds.length}`;
   const key = `discover-rerank:${PROMPT_VER}:${me}:${ver}`;
 
   const cached = await cache.get<RerankedVideo[]>(key);
