@@ -108,3 +108,18 @@ export function fingerprintRows(
   }
   return rows;
 }
+
+// Category fingerprint 를 두 도형(레이더)으로 분할 — 축이 14개라 한 도형에 담으면
+// 빽빽하므로 "엔터·취미" / "정보·생활" 두 그룹으로 나눈다. 두 그룹 모두 고정 축.
+const FP_GROUP_A = new Set(["게임", "예능·코미디", "요리·먹방", "영화·애니메이션", "스포츠", "뷰티·패션", "동물·펫"]);
+
+export function fingerprintGroups(categories: Record<string, number>): {
+  a: { title: string; rows: { category: string; a: number }[] };
+  b: { title: string; rows: { category: string; a: number }[] };
+} {
+  const rows = fingerprintRows(categories);
+  return {
+    a: { title: "엔터·취미", rows: rows.filter((r) => FP_GROUP_A.has(r.category)) },
+    b: { title: "정보·생활", rows: rows.filter((r) => !FP_GROUP_A.has(r.category)) },
+  };
+}

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getProfile } from "@/lib/profile-service";
 import { CategoryRadar } from "@/components/category-radar";
 import { CategoryBar } from "@/components/category-bar";
-import { fingerprintRows, categoryLabel } from "@/lib/categories";
+import { fingerprintGroups, categoryLabel } from "@/lib/categories";
 import { ChannelList } from "@/components/channel-list";
 import { ChannelRecommendations } from "@/components/channel-recommendations";
 import { ProfileMetricsCard } from "@/components/profile-metrics";
@@ -48,8 +48,8 @@ export default async function DashboardPage() {
     );
   }
 
-  // 모든 사용자가 동일한 최상위 카테고리 축을 갖는 fingerprint.
-  const radar = fingerprintRows(profile.categories);
+  // 모든 사용자가 동일한 최상위 카테고리 축을 갖는 fingerprint — 두 도형으로 분할.
+  const fp = fingerprintGroups(profile.categories);
   const bars = Object.entries(profile.categories)
     .map(([category, pct]) => ({ category: categoryLabel(category), pct }))
     .sort((a, b) => b.pct - a.pct);
@@ -77,24 +77,32 @@ export default async function DashboardPage() {
         <SyncButton label="Re-sync" />
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Category fingerprint</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CategoryRadar rows={radar} aLabel={user.name ?? "Me"} />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Top categories</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CategoryBar data={bars} />
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm font-medium">Category fingerprint</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div>
+              <p className="mb-2 text-center text-xs font-medium text-muted-foreground">{fp.a.title}</p>
+              <CategoryRadar rows={fp.a.rows} aLabel={user.name ?? "Me"} />
+            </div>
+            <div>
+              <p className="mb-2 text-center text-xs font-medium text-muted-foreground">{fp.b.title}</p>
+              <CategoryRadar rows={fp.b.rows} aLabel={user.name ?? "Me"} />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm font-medium">Top categories</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <CategoryBar data={bars} />
+        </CardContent>
+      </Card>
 
       <ProfileMetricsCard metrics={profile.metrics} />
 

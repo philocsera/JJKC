@@ -1,8 +1,10 @@
 import Link from "next/link";
+import Image from "next/image";
 import { auth } from "@/lib/auth";
 import { getProfileWithOwner, listPublic } from "@/lib/profile-service";
+import { recommendForUser } from "@/lib/channel-recommender";
+import { getRecentVideosBatch } from "@/lib/recent-videos";
 import { CategoryRadar } from "@/components/category-radar";
-import { KeywordCloud } from "@/components/keyword-cloud";
 import { categoryLabel } from "@/lib/categories";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -28,7 +30,7 @@ export default async function ComparePage({
       <header className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">Compare</h1>
         <p className="text-sm text-muted-foreground">
-          두 알고리즘의 카테고리 분포와 공통 키워드를 비교합니다.
+          두 알고리즘의 카테고리 분포, 공통 관심 채널, 둘 다 좋아할 영상을 비교합니다.
         </p>
       </header>
 
@@ -115,9 +117,39 @@ async function CompareView({ aId, bId }: { aId: string; bId: string }) {
     .sort((x, y) => y.a + y.b - (x.a + x.b))
     .slice(0, 10);
 
-  const shared = a.profile.topKeywords.filter((k) =>
-    b.profile.topKeywords.includes(k),
-  );
+  // 공통 관심 채널 — 둘 다 top/구독 채널에 있는 채널.
+  const bChannelIds = new Set<string>([
+    ...b.profile.topChannels.map((c) => c.id),
+    ...b.profile.subscribedChannelIds,
+  ]);
+  const sharedChannels = a.profile.topChannels.filter((c) => bChannelIds.has(c.id));
+
+  // 둘 다 좋아할만한 영상 — 양쪽 추천의 교집합 채널 + 공통 채널의 최근 영상.
+  const [recA, recB] = await Promise.all([
+    recommendForUser(aId, { limit: 50 }),
+    recommendForUser(bId, { limit: 50 }),
+  ]);
+  const recBIds = new Set(recB.ok ? recB.recommendations.map((r) => r.channel.id) : []);
+  const bothRec = recA.ok
+    ? recA.recommendations.filter((r) => recBIds.has(r.channel.id)).map((r) => r.channel)
+    : [];
+
+  const poolMap = new Map<string, { id: string; title: string; thumbnail: string }>();
+  for (const c of sharedChannels) poolMap.set(c.id, { id: c.id, title: c.name, thumbnail: c.thumbnail });
+  for (const c of bothRec) if (!poolMap.has(c.id)) poolMap.set(c.id, { id: c.id, title: c.title, thumbnail: c.thumbnail });
+  const pool = [...poolMap.values()].slice(0, 12);
+
+  const recentMap = await getRecentVideosBatch(pool.map((c) => c.id), 2);
+  const sharedVideos: { videoId: string; title: string; thumbnail: string; channelName: string }[] = [];
+  for (let round = 0; round < 2 && sharedVideos.length < 10; round++) {
+    for (const c of pool) {
+      const v = (recentMap.get(c.id) ?? [])[round];
+      if (v) {
+        sharedVideos.push({ videoId: v.videoId, title: v.title, thumbnail: v.thumbnail, channelName: c.title });
+        if (sharedVideos.length >= 10) break;
+      }
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -157,15 +189,87 @@ async function CompareView({ aId, bId }: { aId: string; bId: string }) {
       <Card>
         <CardHeader>
           <CardTitle className="text-sm font-medium">
-            Shared keywords {shared.length ? `(${shared.length})` : ""}
+            공통 관심 채널 {sharedChannels.length ? `(${sharedChannels.length})` : ""}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {shared.length ? (
-            <KeywordCloud keywords={shared} />
+          {sharedChannels.length ? (
+            <ul className="flex flex-wrap gap-2">
+              {sharedChannels.map((c) => (
+                <li key={c.id}>
+                  <a
+                    href={`https://www.youtube.com/channel/${c.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 rounded-full border py-1 pl-1 pr-3 text-xs hover:bg-muted"
+                  >
+                    {c.thumbnail ? (
+                      <Image
+                        src={c.thumbnail}
+                        alt={c.name}
+                        width={24}
+                        height={24}
+                        className="h-6 w-6 rounded-full object-cover"
+                        unoptimized
+                      />
+                    ) : (
+                      <span className="h-6 w-6 rounded-full bg-muted" />
+                    )}
+                    <span className="max-w-[10rem] truncate">{c.name}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
           ) : (
             <p className="text-sm text-muted-foreground">
-              공통 키워드가 없습니다. 두 알고리즘이 거의 겹치지 않네요.
+              두 사람이 공통으로 고른 채널이 없습니다.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm font-medium">
+            {a.owner.name} · {b.owner.name} 가 둘 다 좋아할만한 영상
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {sharedVideos.length ? (
+            <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {sharedVideos.map((v) => (
+                <li key={v.videoId}>
+                  <a
+                    href={`https://www.youtube.com/watch?v=${v.videoId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex gap-3"
+                  >
+                    <div className="relative aspect-video w-32 shrink-0 overflow-hidden rounded-lg bg-muted">
+                      {v.thumbnail ? (
+                        <Image
+                          src={v.thumbnail}
+                          alt={v.title}
+                          fill
+                          sizes="128px"
+                          className="object-cover transition-transform group-hover:scale-105"
+                          unoptimized
+                        />
+                      ) : null}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="line-clamp-2 text-xs font-medium leading-snug transition-colors group-hover:text-accent">
+                        {v.title}
+                      </p>
+                      <p className="mt-1 truncate text-[11px] text-muted-foreground">{v.channelName}</p>
+                    </div>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              두 알고리즘이 겹치는 영상을 찾지 못했습니다.
             </p>
           )}
         </CardContent>

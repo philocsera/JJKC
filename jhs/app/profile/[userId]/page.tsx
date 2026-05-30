@@ -6,7 +6,7 @@ import { getProfileWithOwner } from "@/lib/profile-service";
 import { CategoryRadar } from "@/components/category-radar";
 import { ChannelList } from "@/components/channel-list";
 import { ChannelRecommendations } from "@/components/channel-recommendations";
-import { fingerprintRows } from "@/lib/categories";
+import { fingerprintGroups } from "@/lib/categories";
 import { ProfileMetricsCard } from "@/components/profile-metrics";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,8 +26,8 @@ export default async function ProfilePage({
   if (!hit) notFound();
   const { owner, profile } = hit;
 
-  // 모든 사용자가 동일한 최상위 카테고리 축을 갖는 fingerprint.
-  const radarRows = fingerprintRows(profile.categories);
+  // 모든 사용자가 동일한 최상위 카테고리 축을 갖는 fingerprint — 두 도형으로 분할.
+  const fp = fingerprintGroups(profile.categories);
 
   return (
     <section className="space-y-12">
@@ -55,35 +55,43 @@ export default async function ProfilePage({
             <Play className="h-4 w-4 fill-current" />
             {owner.name}님의 알고리즘으로 유튜브 보기
           </Link>
-          {me ? (
+          {me && me !== owner.id ? (
             <Link
               href={`/compare?a=${me}&b=${owner.id}`}
-              className="rounded-full border border-border px-4 py-1.5 font-mono text-xs uppercase tracking-wider text-muted-foreground transition-colors hover:border-accent/60 hover:text-foreground"
+              className="rounded-full border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:border-accent/60 hover:text-foreground"
             >
-              Compare
+              내 알고리즘과 비교하기
             </Link>
           ) : null}
         </div>
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Category fingerprint</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CategoryRadar rows={radarRows} aLabel={owner.name} />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Top channels</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <ChannelList channels={profile.topChannels} />
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm font-medium">Category fingerprint</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div>
+              <p className="mb-2 text-center text-xs font-medium text-muted-foreground">{fp.a.title}</p>
+              <CategoryRadar rows={fp.a.rows} aLabel={owner.name} />
+            </div>
+            <div>
+              <p className="mb-2 text-center text-xs font-medium text-muted-foreground">{fp.b.title}</p>
+              <CategoryRadar rows={fp.b.rows} aLabel={owner.name} />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm font-medium">Top channels</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <ChannelList channels={profile.topChannels} />
+        </CardContent>
+      </Card>
 
       <ProfileMetricsCard metrics={profile.metrics} />
 
