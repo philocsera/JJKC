@@ -1,23 +1,19 @@
-"use client";
+// 로그아웃 — Auth.js v5 서버 액션 form (sign-in 과 동일 패턴).
 
-import { useTransition } from "react";
-import { signOut } from "next-auth/react";
+import { signOut } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 
 export function SignOutButton() {
-  const [pending, start] = useTransition();
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      disabled={pending}
-      onClick={() =>
-        start(async () => {
-          await signOut({ callbackUrl: "/" });
-        })
-      }
+    <form
+      action={async () => {
+        "use server";
+        await signOut({ redirectTo: "/" });
+      }}
     >
-      {pending ? "…" : "Sign out"}
-    </Button>
+      <Button variant="ghost" size="sm" type="submit">
+        Sign out
+      </Button>
+    </form>
   );
 }
