@@ -44,16 +44,6 @@ export async function SiteNav() {
             </Link>
           ))}
 
-          {/* 디버그용 유저 생성 — 프로덕션 제외 */}
-          {process.env.VERCEL_ENV !== "production" ? (
-            <Link
-              href="/debug/new-user"
-              className="whitespace-nowrap rounded-full border border-amber-500/40 px-3 py-1.5 text-sm font-medium text-amber-500 transition-colors hover:bg-amber-500/10"
-            >
-              🛠 유저 만들기
-            </Link>
-          ) : null}
-
           {user?.id ? (
             <span className="ml-2 flex items-center gap-2.5 border-l border-border/60 pl-3">
               <Avatar className="h-7 w-7 ring-1 ring-border">
