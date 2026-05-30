@@ -28,12 +28,6 @@ function Stat({
 }
 
 export function ProfileMetricsCard({ metrics }: { metrics: ProfileMetrics }) {
-  const shortsLabel =
-    metrics.shortsRatio >= 60
-      ? "Shorts 위주"
-      : metrics.shortsRatio >= 30
-        ? "Shorts 섞어보는"
-        : "Long-form 중심";
   const diversityLabel =
     metrics.diversity >= 75
       ? "잡식 (Diverse)"
@@ -53,7 +47,7 @@ export function ProfileMetricsCard({ metrics }: { metrics: ProfileMetrics }) {
         <CardTitle className="text-sm font-medium">Algorithm signals</CardTitle>
       </CardHeader>
       <CardContent className="space-y-5">
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           <Stat
             label="Diversity"
             value={`${metrics.diversity}`}
@@ -65,11 +59,6 @@ export function ProfileMetricsCard({ metrics }: { metrics: ProfileMetrics }) {
             sub="가장 큰 카테고리 비중"
           />
           <Stat
-            label="Shorts ratio"
-            value={`${metrics.shortsRatio}%`}
-            sub={shortsLabel}
-          />
-          <Stat
             label="Niche score"
             value={`${metrics.nicheChannelScore}`}
             sub={nicheLabel}
@@ -79,9 +68,6 @@ export function ProfileMetricsCard({ metrics }: { metrics: ProfileMetrics }) {
         <div className="flex flex-wrap gap-1 pt-1">
           <Badge variant="outline">
             Mainstream {metrics.mainstreamScore}/100
-          </Badge>
-          <Badge variant="outline">
-            Long-form {metrics.longFormRatio}%
           </Badge>
         </div>
       </CardContent>

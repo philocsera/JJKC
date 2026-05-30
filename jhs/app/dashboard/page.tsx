@@ -55,7 +55,9 @@ export default async function DashboardPage() {
     .sort((a, b) => b.pct - a.pct);
 
   return (
-    <section className="space-y-12">
+    // 대시보드 전체를 창 전체 폭(최대 1800px)으로 — compare 화면과 동일.
+    <div className="mx-[calc(50%-50vw)] w-screen px-5 sm:px-8">
+    <section className="mx-auto max-w-[1800px] space-y-12">
       <header className="flex flex-wrap items-end justify-between gap-5 border-b border-border/60 pb-8">
         <div className="flex items-center gap-4">
           <Avatar className="h-16 w-16 ring-1 ring-border">
@@ -127,5 +129,6 @@ export default async function DashboardPage() {
         <ChannelRecommendations userId={userId} />
       </section>
     </section>
+    </div>
   );
 }

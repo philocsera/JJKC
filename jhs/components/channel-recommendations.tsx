@@ -66,7 +66,7 @@ npm run channels:cluster`}
             추천할 채널이 없습니다. 카탈로그를 더 모으거나 클러스터링을 다시 실행해 보세요.
           </p>
         ) : (
-          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {result.recommendations.map(({ channel }) => {
               const videos = recentMap.get(channel.id) ?? [];
               return (
@@ -85,19 +85,19 @@ npm run channels:cluster`}
                       <Image
                         src={channel.thumbnail}
                         alt={channel.title}
-                        width={40}
-                        height={40}
-                        className="h-10 w-10 rounded-full object-cover"
+                        width={48}
+                        height={48}
+                        className="h-12 w-12 rounded-full object-cover"
                         unoptimized
                       />
                     ) : (
-                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-semibold">
+                      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-base font-semibold">
                         {channel.title.slice(0, 1)}
                       </span>
                     )}
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-medium">{channel.title}</div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="truncate text-base font-semibold">{channel.title}</div>
+                      <div className="text-sm text-muted-foreground">
                         구독자 {fmtSubs(channel.subscriberCount)}
                       </div>
                     </div>
@@ -126,14 +126,14 @@ npm run channels:cluster`}
                               />
                             ) : null}
                           </div>
-                          <p className="line-clamp-2 text-[11px] leading-snug text-muted-foreground group-hover:text-foreground">
+                          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground group-hover:text-foreground">
                             {v.title}
                           </p>
                         </a>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-[11px] text-muted-foreground">최근 영상을 불러오지 못했습니다.</p>
+                    <p className="text-sm text-muted-foreground">최근 영상을 불러오지 못했습니다.</p>
                   )}
                 </li>
               );
