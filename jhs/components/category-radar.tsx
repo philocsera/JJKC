@@ -13,9 +13,12 @@ import {
 
 export type RadarRow = { category: string; a: number; b?: number };
 
-// 뾰족함 완화용 제곱근 스케일 — 작은 값도 면적에 잡히되 순서·최대(100)는 보존.
-// (100→100, 50→71, 25→50, 9→30) 한 분야 집중형이 가는 선으로 무너지지 않게.
-const scale = (v: number) => Math.round(Math.sqrt(Math.max(0, v)) * 10);
+// 베이스 N각형 + 꼭짓점 이동 방식: 최소 반지름을 외곽의 1/3 로 두고(값 0 도 중심으로
+// 무너지지 않음), 값이 클수록 꼭짓점을 바깥으로 민다. 그래서 항상 N각형 도형이 보이고
+// 선으로 붕괴하지 않는다. 0→33, 100→100 (제곱근으로 작은 값도 또렷).
+const BASE = 33; // 외곽 대비 약 1/3 지점이 최소 반지름
+const scale = (v: number) =>
+  Math.round(BASE + (100 - BASE) * Math.sqrt(Math.max(0, Math.min(100, v)) / 100));
 
 // 값 0 인 꼭짓점(중심에 겹치는 점)은 숨기고, 나머지만 점으로 표시.
 function dotRenderer(color: string) {
