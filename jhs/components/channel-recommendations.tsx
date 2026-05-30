@@ -2,12 +2,8 @@
 // 서버 컴포넌트 — similar-users.tsx 의 패턴을 따른다. YouTube 호출 0u.
 
 import Image from "next/image";
-import { getProfile } from "@/lib/profile-service";
 import { recommendForUser } from "@/lib/channel-recommender";
 import { getRecentVideosBatch } from "@/lib/recent-videos";
-import { categoryLabel, clusterLabel } from "@/lib/categories";
-import { CategoryRadar, type RadarRow } from "@/components/category-radar";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 function fmtSubs(n: number): string {
@@ -18,7 +14,6 @@ function fmtSubs(n: number): string {
 }
 
 export async function ChannelRecommendations({ userId }: { userId: string }) {
-  const me = await getProfile(userId);
   const result = await recommendForUser(userId, { limit: 24, maxPerCluster: 6 });
 
   if (!result.ok && result.reason === "no_profile") {
@@ -53,89 +48,14 @@ npm run channels:cluster`}
     );
   }
 
-  const top = result.assignments[0];
-
   // 추천 채널별 최근 영상 2개 (RSS, 키 0, 캐시).
   const recentMap = await getRecentVideosBatch(
     result.recommendations.map((r) => r.channel.id),
     2,
   );
 
-  // 사용자 vs 배정 클러스터 centroid radar.
-  let radar: RadarRow[] = [];
-  if (me && top) {
-    const names = Array.from(
-      new Set([
-        ...Object.keys(me.categories),
-        ...Object.keys(top.cluster.centroid),
-      ]),
-    ).slice(0, 8);
-    radar = names.map((category) => ({
-      category: categoryLabel(category),
-      a: me.categories[category] ?? 0,
-      b: top.cluster.centroid[category] ?? 0,
-    }));
-  }
-
   return (
     <div className="space-y-8">
-      {/* 클러스터 배정 */}
-      {top ? (
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">당신의 알고리즘 부족</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center gap-2">
-                {top.cluster.color ? (
-                  <span
-                    className="h-3 w-3 rounded-full"
-                    style={{ background: top.cluster.color }}
-                  />
-                ) : null}
-                <span className="text-lg font-semibold">{clusterLabel(top.cluster.label)}</span>
-                <Badge variant="accent">{top.score}% 일치</Badge>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                전체 {result.catalogSize.toLocaleString()}개 한국 채널을{" "}
-                {result.clusterCount}개 클러스터로 묶은 결과 중 당신과 가장 가까운 묶음입니다.
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {top.cluster.topKeywords.slice(0, 8).map((kw) => (
-                  <Badge key={kw} variant="muted">
-                    {kw}
-                  </Badge>
-                ))}
-              </div>
-              {result.assignments[1] ? (
-                <p className="text-xs text-muted-foreground">
-                  다음으로 가까운 묶음: {clusterLabel(result.assignments[1].cluster.label)} (
-                  {result.assignments[1].score}%)
-                </p>
-              ) : null}
-              {result.coldStart ? (
-                <p className="text-xs text-amber-600">
-                  프로필이 아직 빈약합니다 — 동기화를 한 번 더 하면 추천이 정확해집니다.
-                </p>
-              ) : null}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">나 vs 클러스터 중심</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {radar.length > 0 ? (
-                <CategoryRadar rows={radar} aLabel="나" bLabel={clusterLabel(top.cluster.label)} />
-              ) : (
-                <p className="text-sm text-muted-foreground">비교할 카테고리가 없습니다.</p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      ) : null}
-
       {/* 추천 채널 그리드 */}
       <section className="space-y-3">
         <h2 className="text-sm font-medium">
