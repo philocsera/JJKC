@@ -18,7 +18,7 @@ export async function SiteNav() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3.5 sm:px-8">
+      <div className="flex w-full items-center justify-between gap-4 px-5 py-3.5 sm:px-8">
         {/* 워드마크 — 레드 인덱스 + 모노 */}
         <Link href="/" className="group flex items-center gap-2.5">
           <span className="grid h-7 w-7 place-items-center rounded-md bg-accent font-display text-sm font-extrabold text-accent-foreground shadow-[0_0_20px_-4px_hsl(var(--accent)/0.7)]">
@@ -34,7 +34,7 @@ export async function SiteNav() {
             <Link
               key={l.href}
               href={l.href}
-              className="whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               {l.label}
             </Link>
@@ -44,7 +44,7 @@ export async function SiteNav() {
           {process.env.VERCEL_ENV !== "production" ? (
             <Link
               href="/debug/new-user"
-              className="whitespace-nowrap rounded-full border border-amber-500/40 px-3 py-1.5 text-[13px] font-medium text-amber-500 transition-colors hover:bg-amber-500/10"
+              className="whitespace-nowrap rounded-full border border-amber-500/40 px-3 py-1.5 text-sm font-medium text-amber-500 transition-colors hover:bg-amber-500/10"
             >
               🛠 유저 만들기
             </Link>

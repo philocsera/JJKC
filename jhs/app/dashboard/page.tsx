@@ -71,7 +71,7 @@ export default async function DashboardPage() {
             <h1 className="text-3xl font-extrabold sm:text-4xl">
               {user.name ?? "나"}
             </h1>
-            <p className="font-mono text-[11px] text-muted-foreground">
+            <p className="font-mono text-xs text-muted-foreground">
               last synced · {new Date(profile.lastSyncedAt).toLocaleString()}
             </p>
           </div>

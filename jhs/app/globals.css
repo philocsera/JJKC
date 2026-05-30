@@ -30,6 +30,26 @@
     --destructive-foreground: 210 40% 98%;
 
     --radius: 0.75rem;
+
+    /* ── 타이포그래피 스케일 ──────────────────────────────
+       --font-scale 하나로 사이트 전체 폰트 크기를 조절한다(현재 2배).
+       각 --fs-* 는 용도별 크기(tailwind text-* 에 연결됨). */
+    --font-scale: 2;
+    --fs-xs: calc(0.75rem * var(--font-scale));   /* 캡션·배지 보조 */
+    --fs-sm: calc(0.875rem * var(--font-scale));  /* 본문 보조·라벨 */
+    --fs-base: calc(1rem * var(--font-scale));    /* 기본 본문 */
+    --fs-lg: calc(1.125rem * var(--font-scale));  /* 강조 본문 */
+    --fs-xl: calc(1.25rem * var(--font-scale));   /* 소제목 */
+    --fs-2xl: calc(1.5rem * var(--font-scale));   /* 제목 */
+    --fs-3xl: calc(1.875rem * var(--font-scale));
+    --fs-4xl: calc(2.25rem * var(--font-scale));  /* 페이지 헤드라인 */
+    --fs-5xl: calc(3rem * var(--font-scale));     /* 히어로 */
+    --fs-6xl: calc(3.75rem * var(--font-scale));
+  }
+
+  /* text-* 클래스가 없는 일반 텍스트도 스케일을 따르도록 본문 기본 크기 지정. */
+  body {
+    font-size: var(--fs-base);
   }
 
   /* 다크가 기본 테마. 순수 검정 대신 약간 푸른 slate 톤 + 살짝 밝혀 가독성↑. */
@@ -81,7 +101,7 @@
   /* 모노 메타 라벨 — uppercase, 넓은 트래킹 */
   .label-mono {
     font-family: var(--font-mono), monospace;
-    font-size: 0.6875rem;
+    font-size: calc(0.6875rem * var(--font-scale));
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: hsl(var(--muted-foreground));

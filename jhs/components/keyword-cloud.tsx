@@ -15,7 +15,7 @@ export function KeywordCloud({
       {keywords.map((k, i) => {
         // 앞쪽이 더 큰 가중치 → 글자 크기로 시각화
         const size =
-          i < 2 ? "text-sm" : i < 5 ? "text-xs" : "text-[10px]";
+          i < 2 ? "text-sm" : i < 5 ? "text-xs" : "text-xs";
         return (
           <span
             key={k}

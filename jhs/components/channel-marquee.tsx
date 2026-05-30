@@ -26,7 +26,7 @@ export async function ChannelMarquee() {
                 loading="lazy"
                 className="h-16 w-16 rounded-full object-cover ring-1 ring-border transition-all duration-200 group-hover:scale-110 group-hover:ring-accent/60"
               />
-              <span className="pointer-events-none absolute left-1/2 top-full z-10 mt-2 -translate-x-1/2 whitespace-nowrap rounded-md border border-border bg-card px-2 py-1 text-[11px] text-foreground opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+              <span className="pointer-events-none absolute left-1/2 top-full z-10 mt-2 -translate-x-1/2 whitespace-nowrap rounded-md border border-border bg-card px-2 py-1 text-xs text-foreground opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
                 {c.title}
               </span>
             </div>

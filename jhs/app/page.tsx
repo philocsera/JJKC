@@ -80,7 +80,7 @@ export default async function HomePage() {
                     →
                   </span>
                 </div>
-                <p className="text-[13px] leading-snug text-muted-foreground">{f.body}</p>
+                <p className="text-sm leading-snug text-muted-foreground">{f.body}</p>
               </div>
               {/* 호버 시 은은한 레드 글로우 */}
               <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-accent/10 opacity-0 blur-2xl transition-opacity group-hover:opacity-100" />

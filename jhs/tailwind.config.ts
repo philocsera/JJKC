@@ -20,6 +20,20 @@ const config: Config = {
         display: ["var(--font-display)", "var(--font-sans)", "sans-serif"],
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
+      // 폰트 크기는 globals.css 의 --fs-* 변수(= 기본값 × --font-scale)에 연결.
+      // --font-scale 하나로 사이트 전체 폰트를 한 번에 조절한다.
+      fontSize: {
+        xs: ["var(--fs-xs)", { lineHeight: "1.45" }],
+        sm: ["var(--fs-sm)", { lineHeight: "1.5" }],
+        base: ["var(--fs-base)", { lineHeight: "1.55" }],
+        lg: ["var(--fs-lg)", { lineHeight: "1.5" }],
+        xl: ["var(--fs-xl)", { lineHeight: "1.4" }],
+        "2xl": ["var(--fs-2xl)", { lineHeight: "1.3" }],
+        "3xl": ["var(--fs-3xl)", { lineHeight: "1.2" }],
+        "4xl": ["var(--fs-4xl)", { lineHeight: "1.1" }],
+        "5xl": ["var(--fs-5xl)", { lineHeight: "1.05" }],
+        "6xl": ["var(--fs-6xl)", { lineHeight: "1.0" }],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
