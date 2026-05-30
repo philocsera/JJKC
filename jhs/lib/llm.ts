@@ -45,6 +45,9 @@ export async function llmChat(
         ],
         max_tokens: opts.maxTokens ?? 300,
         temperature: opts.temperature ?? 0.5,
+        // Gemini 2.5 계열은 thinking 모델 — 끄지 않으면 thinking 이 토큰을 다 먹어 출력이 빔.
+        // (다른 OpenAI 호환 제공자는 이 필드를 무시한다.)
+        reasoning_effort: "none",
       }),
       signal: AbortSignal.timeout(opts.timeoutMs ?? 15000),
     });

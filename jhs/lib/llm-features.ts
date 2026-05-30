@@ -22,10 +22,18 @@ export async function generateProfileSummary(profile: AlgoProfileShape): Promise
 
   const system =
     "너는 한국 유튜브 취향 분석가다. 사용자의 카테고리 분포·키워드·즐겨보는 채널을 보고 " +
-    "그 사람의 시청 취향을 한 문장(40~60자)으로 구체적이고 매력적으로 요약한다. " +
-    "이모지·인용부호·과장 없이 자연스러운 한국어 한 문장만 출력한다.";
+    "그 사람의 시청 취향을 40~60자 한국어 한 문장으로 구체적이고 매력적으로 요약한다. " +
+    "규칙: 오직 한 문장. 따옴표·별표·머리말·다른 표현 제안·줄바꿈·이모지 없이 문장 본문만 출력.";
   const user = `카테고리: ${cats}\n키워드: ${kws || "(없음)"}\n즐겨보는 채널: ${chans || "(없음)"}`;
-  return llmChat(system, user, { maxTokens: 120, temperature: 0.6 });
+  const raw = await llmChat(system, user, { maxTokens: 200, temperature: 0.6 });
+  return cleanLine(raw);
+}
+
+// 첫 줄만, 마크다운(**·따옴표·불릿) 제거 — 모델이 장황하게 옵션을 붙일 때 대비.
+function cleanLine(s: string | null): string | null {
+  if (!s) return null;
+  const first = s.split("\n").map((l) => l.trim()).find((l) => l.length > 0) ?? s;
+  return first.replace(/^[*"'`\s•\-]+|[*"'`\s]+$/g, "").trim() || null;
 }
 
 // 두 사람 취향 비교 코멘트(4~6문장). runtime + 캐시.
@@ -41,5 +49,6 @@ export async function generateCompareInsight(
     `A(${a.owner.name}) 카테고리: ${topCats(a.profile.categories)}\n` +
     `B(${b.owner.name}) 카테고리: ${topCats(b.profile.categories)}\n` +
     `공통 관심 채널: ${sharedChannelNames.length ? sharedChannelNames.join(", ") : "없음"}`;
-  return llmChat(system, user, { maxTokens: 320, temperature: 0.6 });
+  const raw = await llmChat(system, user, { maxTokens: 420, temperature: 0.6 });
+  return raw ? raw.replace(/\*\*/g, "").trim() || null : null;
 }
