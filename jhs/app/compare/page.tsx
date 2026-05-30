@@ -26,7 +26,9 @@ export default async function ComparePage({
   const others = items.filter((it) => it.owner.id !== aId);
 
   return (
-    <section className="space-y-8">
+    // 비교 페이지 전체를 창 전체 폭(최대 1800px)으로 — 영상 섹션과 가로 폭 통일.
+    <div className="mx-[calc(50%-50vw)] w-screen px-5 sm:px-8">
+    <section className="mx-auto max-w-[1800px] space-y-8">
       <header className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">Compare</h1>
         <p className="text-sm text-muted-foreground">
@@ -80,6 +82,7 @@ export default async function ComparePage({
 
       {aId && bId ? <CompareView aId={aId} bId={bId} /> : null}
     </section>
+    </div>
   );
 }
 
@@ -225,9 +228,7 @@ async function CompareView({ aId, bId }: { aId: string; bId: string }) {
       ) : null}
 
       {sharedVideos.length > 0 ? (
-        // 영상 섹션만 창 전체 폭(최대 1800px)으로 넓혀, 5열이어도 썸네일이 작아지지 않게.
-        <div className="mx-[calc(50%-50vw)] w-screen px-5 sm:px-8">
-        <Card className="mx-auto max-w-[1800px]">
+        <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium">
               {a.owner.name} · {b.owner.name} 가 둘 다 좋아할만한 영상
@@ -265,7 +266,6 @@ async function CompareView({ aId, bId }: { aId: string; bId: string }) {
             </ul>
           </CardContent>
         </Card>
-        </div>
       ) : null}
     </div>
   );
