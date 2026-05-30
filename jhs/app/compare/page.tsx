@@ -2,9 +2,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { auth } from "@/lib/auth";
 import { getProfileWithOwner, listPublic } from "@/lib/profile-service";
-import { recommendForUser } from "@/lib/channel-recommender";
-import { getRecentVideosBatch } from "@/lib/recent-videos";
 import { CompareInsightButton } from "@/components/compare-insight-button";
+import { GeminiVideoFeed } from "@/components/gemini-video-feed";
 import { CategoryRadar } from "@/components/category-radar";
 import { categoryLabel } from "@/lib/categories";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -128,33 +127,6 @@ async function CompareView({ aId, bId }: { aId: string; bId: string }) {
   ]);
   const sharedChannels = a.profile.topChannels.filter((c) => bChannelIds.has(c.id));
 
-  // 둘 다 좋아할만한 영상 — 양쪽 추천의 교집합 채널 + 공통 채널의 최근 영상.
-  const [recA, recB] = await Promise.all([
-    recommendForUser(aId, { limit: 50 }),
-    recommendForUser(bId, { limit: 50 }),
-  ]);
-  const recBIds = new Set(recB.ok ? recB.recommendations.map((r) => r.channel.id) : []);
-  const bothRec = recA.ok
-    ? recA.recommendations.filter((r) => recBIds.has(r.channel.id)).map((r) => r.channel)
-    : [];
-
-  const poolMap = new Map<string, { id: string; title: string; thumbnail: string }>();
-  for (const c of sharedChannels) poolMap.set(c.id, { id: c.id, title: c.name, thumbnail: c.thumbnail });
-  for (const c of bothRec) if (!poolMap.has(c.id)) poolMap.set(c.id, { id: c.id, title: c.title, thumbnail: c.thumbnail });
-  const pool = [...poolMap.values()].slice(0, 12);
-
-  const recentMap = await getRecentVideosBatch(pool.map((c) => c.id), 2);
-  const sharedVideos: { videoId: string; title: string; thumbnail: string; channelName: string }[] = [];
-  for (let round = 0; round < 2 && sharedVideos.length < 10; round++) {
-    for (const c of pool) {
-      const v = (recentMap.get(c.id) ?? [])[round];
-      if (v) {
-        sharedVideos.push({ videoId: v.videoId, title: v.title, thumbnail: v.thumbnail, channelName: c.title });
-        if (sharedVideos.length >= 10) break;
-      }
-    }
-  }
-
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-4">
@@ -230,46 +202,21 @@ async function CompareView({ aId, bId }: { aId: string; bId: string }) {
         </Card>
       ) : null}
 
-      {sharedVideos.length > 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">
-              {a.owner.name} · {b.owner.name} 가 둘 다 좋아할만한 영상
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-              {sharedVideos.map((v) => (
-                <li key={v.videoId}>
-                  <a
-                    href={`https://www.youtube.com/watch?v=${v.videoId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group block"
-                  >
-                    <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-muted">
-                      {v.thumbnail ? (
-                        <Image
-                          src={v.thumbnail}
-                          alt={v.title}
-                          fill
-                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 20vw"
-                          className="object-cover transition-transform group-hover:scale-105"
-                          unoptimized
-                        />
-                      ) : null}
-                    </div>
-                    <p className="mt-3 line-clamp-2 text-base font-semibold leading-snug transition-colors group-hover:text-accent">
-                      {v.title}
-                    </p>
-                    <p className="mt-1 truncate text-sm text-muted-foreground">{v.channelName}</p>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      ) : null}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm font-medium">
+            {a.owner.name} · {b.owner.name} 가 둘 다 좋아할 영상
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <GeminiVideoFeed
+            endpoint="/api/compare/videos"
+            body={{ aId, bId }}
+            buttonLabel="Gemini로 둘 다 좋아할 영상 보기"
+            hint={`위의 버튼을 눌러 ${a.owner.name} · ${b.owner.name} 가 둘 다 좋아할 영상을 받아보세요.`}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }

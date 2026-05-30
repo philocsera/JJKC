@@ -7,6 +7,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Sparkles, Loader2, RefreshCw, ThumbsUp, ThumbsDown } from "lucide-react";
+import { TeaserGrid } from "@/components/teaser-grid";
 
 type RerankedVideo = {
   videoId: string;
@@ -23,31 +24,6 @@ const ERROR_MSG: Record<string, string> = {
   no_videos: "추천 채널의 최근 영상을 불러오지 못했습니다.",
   llm_failed: "AI 추천 생성에 실패했습니다. 잠시 후 다시 시도해 주세요.",
 };
-
-// 블러 처리된 더미 카드 그리드 위에 안내(또는 로딩) 문구를 올리는 "숨겨진 카드" 연출.
-function Teaser({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="relative">
-      <ul
-        aria-hidden
-        className="pointer-events-none grid select-none grid-cols-1 gap-6 blur-[6px] sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
-      >
-        {Array.from({ length: 10 }).map((_, i) => (
-          <li key={i} className="space-y-3 opacity-50">
-            <div className="aspect-video w-full rounded-xl bg-muted" />
-            <div className="h-4 w-5/6 rounded bg-muted" />
-            <div className="h-3 w-1/2 rounded bg-muted" />
-          </li>
-        ))}
-      </ul>
-      <div className="absolute inset-0 flex items-center justify-center p-4">
-        <div className="max-w-sm rounded-2xl border border-border/60 bg-background/75 px-6 py-5 text-center shadow-xl backdrop-blur-sm">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export function VideoRerank() {
   const [videos, setVideos] = useState<RerankedVideo[] | null>(null);
@@ -180,18 +156,17 @@ export function VideoRerank() {
           ))}
         </ul>
       ) : loading ? (
-        <Teaser>
+        <TeaserGrid>
           <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" /> 취향에 맞는 영상을 고르는 중…
           </span>
-        </Teaser>
+        </TeaserGrid>
       ) : !error ? (
-        <Teaser>
-          <p className="text-sm text-muted-foreground">
-            위의 <span className="font-medium text-accent">Gemini에게 영상 추천받기</span> 버튼을 눌러
-            <br />내 알고리즘에 맞는 영상을 받아보세요.
+        <TeaserGrid>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            위의 <span className="font-medium text-accent">Gemini에게 영상 추천받기</span> 버튼을 눌러 내 알고리즘에 맞는 영상을 받아보세요.
           </p>
-        </Teaser>
+        </TeaserGrid>
       ) : null}
     </section>
   );

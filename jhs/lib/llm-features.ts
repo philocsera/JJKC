@@ -130,3 +130,39 @@ function parseRerank(raw: string | null, n: number): { i: number; why: string }[
 function cleanReason(s: string): string {
   return s.replace(/^[*"'`\s•\-]+|[*"'`\s]+$/g, "").trim().slice(0, 40);
 }
+
+// 두 사람이 "둘 다 좋아할" 영상 재랭킹 — /compare 용.
+export async function rerankSharedVideos(
+  a: { name: string; categories: Record<string, number>; topKeywords: string[] },
+  b: { name: string; categories: Record<string, number>; topKeywords: string[] },
+  candidates: VideoCandidate[],
+  topN = 12,
+): Promise<{ videoId: string; reason: string }[] | null> {
+  if (candidates.length === 0) return null;
+
+  const system =
+    "너는 두 사람이 함께 볼 만한 유튜브 영상을 고르는 큐레이터다. 두 사람의 취향을 모두 고려해 " +
+    `둘 다 좋아할 가능성이 높은 영상을 관련성 높은 순으로 정확히 ${topN}개(후보가 적으면 가능한 만큼) 고른다. ` +
+    "한쪽만 좋아할 영상은 피하고 공통 관심사를 우선한다. 같은 영상 중복 금지. " +
+    '출력은 오직 JSON 배열: [{"i": 후보번호, "why": "두 사람에게 추천하는 이유(한국어 18자 내외)"}] — 다른 텍스트·마크다운 금지.';
+
+  const list = candidates.map((c, i) => `[${i}] ${c.title} — ${c.channelName} (${c.category})`).join("\n");
+  const user =
+    `${a.name} 취향 → 카테고리: ${topCats(a.categories, 5)} / 키워드: ${a.topKeywords.slice(0, 8).join(", ") || "(없음)"}\n` +
+    `${b.name} 취향 → 카테고리: ${topCats(b.categories, 5)} / 키워드: ${b.topKeywords.slice(0, 8).join(", ") || "(없음)"}\n\n` +
+    `후보 영상:\n${list}`;
+
+  const raw = await llmChat(system, user, { maxTokens: 1200, temperature: 0.4 });
+  const parsed = parseRerank(raw, candidates.length);
+  if (!parsed) return null;
+
+  const seen = new Set<number>();
+  const out: { videoId: string; reason: string }[] = [];
+  for (const { i, why } of parsed) {
+    if (!Number.isInteger(i) || i < 0 || i >= candidates.length || seen.has(i)) continue;
+    seen.add(i);
+    out.push({ videoId: candidates[i].videoId, reason: cleanReason(why) });
+    if (out.length >= topN) break;
+  }
+  return out.length ? out : null;
+}

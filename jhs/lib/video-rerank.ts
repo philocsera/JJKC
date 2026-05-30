@@ -5,9 +5,9 @@
 import { prisma } from "./prisma";
 import { recommendForUser } from "./channel-recommender";
 import { getRecentVideosBatch } from "./recent-videos";
-import { getProfile } from "./profile-service";
+import { getProfile, getProfileWithOwner } from "./profile-service";
 import { categoryLabel } from "./categories";
-import { rerankVideos, type VideoCandidate } from "./llm-features";
+import { rerankVideos, rerankSharedVideos, type VideoCandidate } from "./llm-features";
 
 const CHANNEL_FANOUT = 18;   // 후보 영상을 모을 추천 상위 채널 수
 const PER_CHANNEL = 8;       // 채널당 가져올 최근 영상 수(RSS)
@@ -93,6 +93,73 @@ export async function rerankedVideosForUser(userId: string): Promise<RerankResul
     },
     candidates,
     TOP_N,
+  );
+  if (!ranked) return { ok: false, reason: "llm_failed" };
+
+  const videos = ranked
+    .map(({ videoId, reason }) => {
+      const m = meta.get(videoId);
+      return m ? { ...m, reason } : null;
+    })
+    .filter(Boolean) as RerankedVideo[];
+
+  return videos.length ? { ok: true, videos } : { ok: false, reason: "llm_failed" };
+}
+
+// /compare — 두 사람이 "둘 다 좋아할" 영상 재랭킹.
+// 후보 풀: 양쪽 추천 교집합 채널 + 공통 관심 채널의 최근 영상.
+export async function rerankedSharedVideosForPair(aId: string, bId: string): Promise<RerankResult> {
+  const [a, b] = await Promise.all([getProfileWithOwner(aId), getProfileWithOwner(bId)]);
+  if (!a || !b) return { ok: false, reason: "no_profile" };
+
+  const [recA, recB] = await Promise.all([
+    recommendForUser(aId, { limit: 50, maxPerCluster: 8 }),
+    recommendForUser(bId, { limit: 50, maxPerCluster: 8 }),
+  ]);
+
+  // 풀 채널: 양쪽 추천 교집합(전체 메타 보유) + 공통 top 채널.
+  const poolCh = new Map<string, { id: string; title: string; categories: Record<string, number> }>();
+  if (recA.ok && recB.ok) {
+    const recBIds = new Set(recB.recommendations.map((r) => r.channel.id));
+    for (const r of recA.recommendations) {
+      if (recBIds.has(r.channel.id)) {
+        poolCh.set(r.channel.id, { id: r.channel.id, title: r.channel.title, categories: r.channel.categories });
+      }
+    }
+  }
+  const bIds = new Set<string>([...b.profile.topChannels.map((c) => c.id), ...b.profile.subscribedChannelIds]);
+  for (const c of a.profile.topChannels) {
+    if (bIds.has(c.id) && !poolCh.has(c.id)) poolCh.set(c.id, { id: c.id, title: c.name, categories: {} });
+  }
+  const channels = [...poolCh.values()].slice(0, CHANNEL_FANOUT);
+  if (channels.length === 0) return { ok: false, reason: "no_videos" };
+
+  const recentMap = await getRecentVideosBatch(channels.map((c) => c.id), PER_CHANNEL);
+  const meta = new Map<string, RerankedVideo>();
+  const candidates: VideoCandidate[] = [];
+  for (const ch of channels) {
+    const label = dominantLabel(ch.categories);
+    let perCh = 0;
+    for (const v of recentMap.get(ch.id) ?? []) {
+      if (perCh >= POOL_PER_CHANNEL) break;
+      if (meta.has(v.videoId)) continue;
+      perCh++;
+      meta.set(v.videoId, {
+        videoId: v.videoId, title: v.title, thumbnail: v.thumbnail,
+        channelId: ch.id, channelName: ch.title, reason: "",
+      });
+      candidates.push({ videoId: v.videoId, title: v.title, channelName: ch.title, category: label });
+      if (candidates.length >= POOL_CAP) break;
+    }
+    if (candidates.length >= POOL_CAP) break;
+  }
+  if (candidates.length === 0) return { ok: false, reason: "no_videos" };
+
+  const ranked = await rerankSharedVideos(
+    { name: a.owner.name, categories: a.profile.categories, topKeywords: a.profile.topKeywords },
+    { name: b.owner.name, categories: b.profile.categories, topKeywords: b.profile.topKeywords },
+    candidates,
+    12,
   );
   if (!ranked) return { ok: false, reason: "llm_failed" };
 
