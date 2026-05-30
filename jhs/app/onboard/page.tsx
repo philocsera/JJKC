@@ -4,7 +4,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getChannelsByIds } from "@/lib/channel-service";
 import { getSubLabels } from "@/lib/sub-taxonomy";
-import { OnboardForm, type OnboardInitial } from "@/components/onboard-form";
+import { type OnboardInitial } from "@/components/onboard-form";
+import { OnboardMethods } from "@/components/onboard-methods";
 
 export const dynamic = "force-dynamic";
 
@@ -46,7 +47,7 @@ export default async function OnboardPage() {
         </span>
         <h1 className="text-2xl font-semibold tracking-tight">당신의 알고리즘을 알려주세요</h1>
       </header>
-      <OnboardForm initial={initial} subLabels={subLabels} />
+      <OnboardMethods initial={initial} subLabels={subLabels} />
     </section>
   );
 }
