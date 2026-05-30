@@ -26,7 +26,7 @@ const mono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "JJKC — 한국 유튜브 알고리즘",
   description:
-    "내 시청 취향으로 한국 유튜브 채널을 추천받고, 내 알고리즘을 공유·비교하세요. YouTube API 없이.",
+    "구독자 5만명 이상의 한국 유튜브 채널 중에서 내 알고리즘을 분석하고, 채널을 추천받고, 다른 사람들의 알고리즘을 구경하세요.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

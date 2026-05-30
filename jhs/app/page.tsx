@@ -31,12 +31,13 @@ export default async function HomePage() {
           <h1 className="text-balance text-5xl font-extrabold leading-[1.32] lg:text-6xl">
             내 취향을 읽는
             <br />
-            <span className="text-accent">한국 유튜브</span> 알고리즘.
+            <span className="text-accent">한국 유튜브</span>
+            <br />
+            알고리즘.
           </h1>
           <p className="max-w-lg text-pretty text-base leading-relaxed text-muted-foreground">
-            구독자 5만+ 한국 채널 카탈로그 위에서 내 시청 취향으로 채널을 추천받고,
-            내 &ldquo;알고리즘&rdquo;을 공유·비교합니다.
-            <span className="text-foreground"> YouTube API 없이</span> 동작합니다.
+            구독자 5만명 이상의 한국 유튜브 채널 중에서 내 알고리즘을 분석하고,
+            채널을 추천받고, 다른 사람들의 알고리즘을 구경할 수 있습니다.
           </p>
           <div className="flex flex-wrap items-center gap-3">
             {signedIn ? (
