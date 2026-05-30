@@ -14,7 +14,8 @@ export async function SiteNav() {
   const user = session?.user as
     | { id: string; name?: string | null; email?: string | null; image?: string | null }
     | undefined;
-  const links = [...(user?.id ? NAV_AUTH : []), ...NAV_PUBLIC];
+  // 로그인 안 하면 상단바 메뉴(다른 사람들의 알고리즘 포함)는 숨긴다.
+  const links = user?.id ? [...NAV_AUTH, ...NAV_PUBLIC] : [];
 
   return (
     <header
@@ -58,12 +59,12 @@ export async function SiteNav() {
               <SignOutButton />
             </span>
           ) : (
-            <Link
-              href="/"
+            <a
+              href="/login"
               className="ml-2 rounded-full bg-accent px-4 py-1.5 text-xs font-semibold text-accent-foreground transition-transform hover:scale-[1.03]"
             >
               로그인
-            </Link>
+            </a>
           )}
         </nav>
       </div>
