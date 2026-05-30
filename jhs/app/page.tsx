@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Sparkles, Radar, Telescope, GitCompareArrows } from "lucide-react";
+import { Sparkles, Radar, Telescope } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { SignInButton } from "@/components/sign-in-button";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,6 @@ const FEATURES = [
   { idx: "01", href: "/onboard", title: "알고리즘 만들기", body: "내 취향으로 프로필 만들기", Icon: Sparkles },
   { idx: "02", href: "/discover", title: "채널 추천", body: "취향에 맞는 채널 찾기", Icon: Radar },
   { idx: "03", href: "/explore", title: "알고리즘 탐색", body: "남들은 뭘 보는지 구경하기", Icon: Telescope },
-  { idx: "04", href: "/compare", title: "비교 & 팔로우", body: "내 취향과 닮았는지 비교하기", Icon: GitCompareArrows },
 ];
 
 export default async function HomePage() {
@@ -60,13 +59,15 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* 우: 기능 2×2 — 아이콘 카드로 한눈에 */}
+        {/* 우: 기능 1+2 배치 — 첫 카드는 전체 폭, 나머지 둘은 아래 한 줄 */}
         <div className="grid auto-rows-fr grid-cols-2 gap-4">
-          {FEATURES.map((f) => (
+          {FEATURES.map((f, i) => (
             <Link
               key={f.href}
               href={f.href}
-              className="lift group relative flex flex-col justify-between gap-7 overflow-hidden rounded-2xl border border-border/70 bg-card/50 p-6 backdrop-blur-sm"
+              className={`lift group relative flex flex-col justify-between gap-7 overflow-hidden rounded-2xl border border-border/70 bg-card/50 p-6 backdrop-blur-sm${
+                i === 0 ? " col-span-2" : ""
+              }`}
             >
               <div className="flex items-start justify-between">
                 <span className="grid h-12 w-12 place-items-center rounded-xl bg-accent/15 text-accent ring-1 ring-accent/20">
