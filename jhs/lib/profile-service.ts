@@ -42,6 +42,7 @@ type DbProfile = {
   subscribedChannelIds?: string | null;
   likedChannelIds?: string | null;
   dislikedChannelIds?: string | null;
+  summaryText?: string | null;
   lastSyncedAt: Date;
 };
 
@@ -57,8 +58,22 @@ function unpack(p: DbProfile): AlgoProfileShape {
     subscribedChannelIds: safeParse<string[]>(p.subscribedChannelIds, []),
     likedChannelIds: safeParse<string[]>(p.likedChannelIds, []),
     dislikedChannelIds: safeParse<string[]>(p.dislikedChannelIds, []),
+    summaryText: p.summaryText ?? "",
     lastSyncedAt: p.lastSyncedAt.toISOString(),
   };
+}
+
+// 프로필 페르소나 요약(LLM) 생성 후 저장. 키 없거나 실패하면 조용히 패스.
+export async function generateAndStoreProfileSummary(userId: string): Promise<void> {
+  const profile = await getProfile(userId);
+  if (!profile) return;
+  const { generateProfileSummary } = await import("./llm-features");
+  const text = await generateProfileSummary(profile);
+  if (!text) return;
+  await prisma.algoProfile.update({
+    where: { userId },
+    data: { summaryText: text },
+  });
 }
 
 // 추천 화면 좋아요/싫어요 — 채널 id 를 liked/disliked 목록에 추가(멱등).

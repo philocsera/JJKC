@@ -8,7 +8,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { saveProfile } from "@/lib/profile-service";
+import { saveProfile, generateAndStoreProfileSummary } from "@/lib/profile-service";
 import { buildOnboardProfile } from "@/lib/onboard-profile";
 import { isCategoryName } from "@/lib/categories";
 import { validSubKeys } from "@/lib/sub-taxonomy";
@@ -71,6 +71,8 @@ export async function POST(req: Request) {
       subCategories: JSON.stringify(subCategories),
     },
   });
+
+  await generateAndStoreProfileSummary(user.id);
 
   return NextResponse.json({
     ok: true,

@@ -40,6 +40,9 @@ export default async function ProfilePage({
           <div className="space-y-2">
             <p className="label-mono">Algorithm profile</p>
             <h1 className="text-3xl font-extrabold sm:text-4xl">{owner.name}</h1>
+            {profile.summaryText ? (
+              <p className="max-w-xl text-sm text-muted-foreground">{profile.summaryText}</p>
+            ) : null}
           </div>
         </div>
         <div className="flex items-center gap-2">

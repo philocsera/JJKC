@@ -24,16 +24,16 @@ const scale = (v: number) =>
 function dotRenderer(color: string) {
   return (props: any) => {
     const { cx, cy, value, index } = props;
-    if (!value) return null;
+    // 값 0(중심) 은 투명 점으로 — recharts dot 타입은 항상 element 를 요구.
     return (
       <circle
         key={`dot-${index}-${cx}-${cy}`}
         cx={cx}
         cy={cy}
-        r={3.5}
+        r={value ? 3.5 : 0}
         fill={color}
         stroke="hsl(var(--background))"
-        strokeWidth={1}
+        strokeWidth={value ? 1 : 0}
       />
     );
   };

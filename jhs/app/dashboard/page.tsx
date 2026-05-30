@@ -69,6 +69,9 @@ export default async function DashboardPage() {
             <h1 className="text-base font-extrabold sm:text-lg">
               {user.name ?? "나"}
             </h1>
+            {profile.summaryText ? (
+              <p className="max-w-xl text-sm text-muted-foreground">{profile.summaryText}</p>
+            ) : null}
           </div>
         </div>
         <span style={{ ["--font-scale" as string]: "1.4" }}>

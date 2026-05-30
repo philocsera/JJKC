@@ -105,6 +105,9 @@ model AlgoProfile {
   likedChannelIds    String @default("[]") // JSON: string[]
   dislikedChannelIds String @default("[]") // JSON: string[]
 
+  // LLM(Gemini) 생성 페르소나 한 줄 요약. 프로필 저장 시 1회 생성.
+  summaryText     String?
+
   lastSyncedAt    DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }

@@ -4,6 +4,9 @@ import { auth } from "@/lib/auth";
 import { getProfileWithOwner, listPublic } from "@/lib/profile-service";
 import { recommendForUser } from "@/lib/channel-recommender";
 import { getRecentVideosBatch } from "@/lib/recent-videos";
+import { generateCompareInsight } from "@/lib/llm-features";
+import { llmEnabled } from "@/lib/llm";
+import { cache } from "@/lib/cache";
 import { CategoryRadar } from "@/components/category-radar";
 import { categoryLabel } from "@/lib/categories";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -127,6 +130,18 @@ async function CompareView({ aId, bId }: { aId: string; bId: string }) {
   ]);
   const sharedChannels = a.profile.topChannels.filter((c) => bChannelIds.has(c.id));
 
+  // AI 비교 코멘트 — LLM(Gemini), 24h 캐시. 키 없으면 null(코멘트 카드 숨김).
+  let insight: string | null = null;
+  if (llmEnabled()) {
+    const ver = `${new Date(a.profile.lastSyncedAt).getTime()}-${new Date(b.profile.lastSyncedAt).getTime()}`;
+    const key = `compare-insight:${aId}:${bId}:${ver}`;
+    insight = await cache.get<string>(key);
+    if (!insight) {
+      insight = await generateCompareInsight(a, b, sharedChannels.map((c) => c.name));
+      if (insight) await cache.set(key, insight, 60 * 60 * 24);
+    }
+  }
+
   // 둘 다 좋아할만한 영상 — 양쪽 추천의 교집합 채널 + 공통 채널의 최근 영상.
   const [recA, recB] = await Promise.all([
     recommendForUser(aId, { limit: 50 }),
@@ -175,6 +190,17 @@ async function CompareView({ aId, bId }: { aId: string; bId: string }) {
           </Card>
         ))}
       </div>
+
+      {insight ? (
+        <Card className="border-accent/30 bg-accent/5">
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-accent">AI 비교 분석</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="whitespace-pre-line text-sm leading-relaxed">{insight}</p>
+          </CardContent>
+        </Card>
+      ) : null}
 
       <Card>
         <CardHeader>
