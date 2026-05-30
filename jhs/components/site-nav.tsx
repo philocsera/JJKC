@@ -19,8 +19,8 @@ export async function SiteNav() {
   return (
     <header
       className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl"
-      // 상단바만 전역 폰트보다 작게 (--font-scale 1.12 ≈ 전역 2배의 0.56배)
-      style={{ ["--font-scale" as string]: "1.12" }}
+      // 상단바만 전역 폰트보다 작게 (--font-scale 0.9 — 기본 rem 보다도 작은 컴팩트 네비)
+      style={{ ["--font-scale" as string]: "0.9" }}
     >
       <div className="flex w-full items-center justify-between gap-4 px-5 py-3.5 sm:px-8">
         {/* 워드마크 — 레드 인덱스 + 모노 */}
