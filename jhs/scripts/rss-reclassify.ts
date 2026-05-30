@@ -40,11 +40,17 @@ function needsWork(stored: Record<string, number>, kwCats: Record<string, number
 
 async function main() {
   const all = await prisma.channel.findMany({
-    select: { id: true, title: true, description: true, keywords: true, categories: true },
+    select: { id: true, title: true, description: true, keywords: true, categories: true, metrics: true },
   });
 
   // 대상 선별 (RSS 없이 classify 만으로).
   const targets = all.filter((r) => {
+    // LLM(영상제목 의미판정)으로 분류된 채널은 키워드로 지지 안 돼도 정상이므로 제외
+    // — rss-reclassify 가 이들을 재-비움하던 순환을 끊는다.
+    let m: any = {};
+    try { m = JSON.parse(r.metrics || "{}") || {}; } catch {}
+    if (m.classifiedBy === "llm") return false;
+
     let stored: Record<string, number> = {};
     try { stored = JSON.parse(r.categories || "{}"); } catch {}
     let kw: string[] = [];
@@ -61,7 +67,7 @@ async function main() {
     return;
   }
 
-  let updated = 0, toEmpty = 0, rss404 = 0, rateLimited = 0, topChanged = 0;
+  let updated = 0, toEmpty = 0, rss404 = 0, rateLimited = 0, topChanged = 0, keptNonEmpty = 0;
   const samples: string[] = [];
 
   let i = 0;
@@ -85,6 +91,14 @@ async function main() {
       const titles = feed.videos.map((v) => v.title).join("  ");
       const text = [r.title || "", r.description || "", titles, oldKw.join(" ")].join("\n");
       const { categories, keywords } = classify({ text, hintCategory: null });
+
+      // Guard: RSS 재분류 결과가 비었는데 기존 카테고리가 있으면 덮어쓰지 않는다
+      // (영상제목이 lexicon 과 안 맞는 채널을 빈값으로 강등하는 사고 방지).
+      if (Object.keys(categories).length === 0 && Object.keys(stored).length > 0) {
+        keptNonEmpty++;
+        continue;
+      }
+
       const subs = subClassify({ text, parentCategories: categories });
 
       if (topCat(stored) !== topCat(categories)) topChanged++;
@@ -106,7 +120,7 @@ async function main() {
   }
   await Promise.all(Array.from({ length: Math.min(CONCURRENCY, work.length) }, worker));
 
-  console.log(`갱신: ${updated}개 (최상위 바뀜 ${topChanged}, 빈값 ${toEmpty})  RSS실패 ${rss404}, 레이트리밋 ${rateLimited}\n`);
+  console.log(`갱신: ${updated}개 (최상위 바뀜 ${topChanged}, 빈값 ${toEmpty})  보존(비-empty 유지) ${keptNonEmpty}, RSS실패 ${rss404}, 레이트리밋 ${rateLimited}\n`);
   console.log("최상위 바뀐 표본:\n" + samples.join("\n") + "\n✅ 적용 완료");
   await prisma.$disconnect();
 }

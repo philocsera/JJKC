@@ -38,7 +38,7 @@ async function main() {
 
     const ch = await prisma.channel.findUnique({
       where: { id: a.id },
-      select: { id: true, title: true, description: true, keywords: true, categories: true },
+      select: { id: true, title: true, description: true, keywords: true, categories: true, metrics: true },
     });
     if (!ch) { skipInvalid++; continue; }
     // 그 사이 비어있지 않게 됐으면 건너뜀(안전).
@@ -50,12 +50,21 @@ async function main() {
     const cats = { [a.category]: 100 };
     const subs = subClassify({ text, parentCategories: cats });
 
+    // 마커: LLM(영상제목 의미판정)으로 분류됨 → rss-reclassify 가 재-비움하지 않도록.
+    let metrics: Record<string, unknown> = {};
+    try { metrics = JSON.parse(ch.metrics || "{}") || {}; } catch {}
+    metrics.classifiedBy = "llm";
+
     catTally[a.category] = (catTally[a.category] || 0) + 1;
     applied++;
     if (APPLY) {
       await prisma.channel.update({
         where: { id: ch.id },
-        data: { categories: JSON.stringify(cats), subCategories: JSON.stringify(subs) },
+        data: {
+          categories: JSON.stringify(cats),
+          subCategories: JSON.stringify(subs),
+          metrics: JSON.stringify(metrics),
+        },
       });
     }
   }
