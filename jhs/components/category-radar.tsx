@@ -73,7 +73,7 @@ export function CategoryRadar({
           <PolarGrid stroke="hsl(var(--border))" strokeOpacity={0.45} gridType="polygon" />
           <PolarAngleAxis
             dataKey="category"
-            tick={{ fontSize: 22, fill: "hsl(var(--muted-foreground))" }}
+            tick={{ fontSize: 15, fill: "hsl(var(--muted-foreground))" }}
           />
           <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
 
@@ -104,7 +104,7 @@ export function CategoryRadar({
 
           <Tooltip
             contentStyle={{
-              fontSize: 18,
+              fontSize: 13,
               borderRadius: 8,
               border: "1px solid hsl(var(--border))",
               background: "hsl(var(--card))",
@@ -114,7 +114,7 @@ export function CategoryRadar({
               [`${item?.dataKey === "bS" ? item?.payload?.b ?? 0 : item?.payload?.a ?? 0}%`, name]
             }
           />
-          {bLabel ? <Legend wrapperStyle={{ fontSize: 18 }} /> : null}
+          {bLabel ? <Legend wrapperStyle={{ fontSize: 13 }} /> : null}
         </RadarChart>
       </ResponsiveContainer>
     </div>

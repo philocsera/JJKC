@@ -32,21 +32,21 @@ function PersonCard({ owner, profile, sim }: { owner: Item["owner"]; profile: It
     <li>
       <Link
         href={`/profile/${owner.id}`}
-        className="lift flex items-center gap-3 rounded-xl border p-3 hover:bg-muted"
+        className="lift flex h-full flex-col gap-2 rounded-xl border p-4 hover:bg-muted"
       >
-        <Avatar className="h-10 w-10 ring-1 ring-border">
-          {owner.image ? <AvatarImage src={owner.image} alt={owner.name} /> : null}
-          <AvatarFallback>{owner.name.slice(0, 1).toUpperCase()}</AvatarFallback>
-        </Avatar>
-        <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-medium">{owner.name}</div>
-          <div className="truncate text-xs text-muted-foreground">
+        <div className="flex items-center justify-between gap-2">
+          <Avatar className="h-10 w-10 shrink-0 ring-1 ring-border">
+            {owner.image ? <AvatarImage src={owner.image} alt={owner.name} /> : null}
+            <AvatarFallback>{owner.name.slice(0, 1).toUpperCase()}</AvatarFallback>
+          </Avatar>
+          {sim !== undefined ? <Badge variant="accent">{sim}%</Badge> : null}
+        </div>
+        <div className="min-w-0">
+          <div className="line-clamp-2 break-words text-base font-medium leading-snug">{owner.name}</div>
+          <div className="mt-0.5 truncate text-sm text-muted-foreground">
             {theirTop ? `${categoryLabel(theirTop[0])} 중심` : "—"}
           </div>
         </div>
-        {sim !== undefined ? <Badge variant="accent">{sim}%</Badge> : (
-          <span className="font-mono text-xs text-muted-foreground">→</span>
-        )}
       </Link>
     </li>
   );
@@ -89,7 +89,8 @@ export default async function ExplorePage() {
     const rest = others.filter((o) => !groupedIds.has(o.owner.id));
 
     return (
-      <section className="space-y-12">
+      <div className="mx-[calc(50%-50vw)] w-screen px-5 sm:px-8">
+      <section className="mx-auto max-w-[1800px] space-y-12">
         <header className="space-y-3">
           <p className="label-mono">Algorithm explorer</p>
           <h1 className="text-4xl font-extrabold sm:text-5xl">다른 사람들의 알고리즘</h1>
@@ -134,12 +135,14 @@ export default async function ExplorePage() {
           </Card>
         ) : null}
       </section>
+      </div>
     );
   }
 
   // ── 비로그인 / 프로필 없음 → 전체 공개 프로필 목록 ──
   return (
-    <section className="space-y-8">
+    <div className="mx-[calc(50%-50vw)] w-screen px-5 sm:px-8">
+    <section className="mx-auto max-w-[1800px] space-y-8">
       <header className="space-y-3">
         <p className="label-mono">Public algorithms</p>
         <h1 className="text-4xl font-extrabold sm:text-5xl">다른 사람들의 알고리즘</h1>
@@ -162,5 +165,6 @@ export default async function ExplorePage() {
         </ul>
       )}
     </section>
+    </div>
   );
 }

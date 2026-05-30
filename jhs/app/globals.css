@@ -34,7 +34,7 @@
     /* ── 타이포그래피 스케일 ──────────────────────────────
        --font-scale 하나로 사이트 전체 폰트 크기를 조절한다(현재 2배).
        각 --fs-* 는 용도별 크기(tailwind text-* 에 연결됨). */
-    --font-scale: 2;
+    --font-scale: 1.4;
     --fs-xs: calc(0.75rem * var(--font-scale));   /* 캡션·배지 보조 */
     --fs-sm: calc(0.875rem * var(--font-scale));  /* 본문 보조·라벨 */
     --fs-base: calc(1rem * var(--font-scale));    /* 기본 본문 */
