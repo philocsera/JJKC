@@ -92,10 +92,7 @@ export default async function ExplorePage() {
       <section className="space-y-12">
         <header className="space-y-3">
           <p className="label-mono">Algorithm explorer</p>
-          <h1 className="text-4xl font-extrabold sm:text-5xl">알고리즘 탐색</h1>
-          <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
-            나와 취향이 비슷한 사람들을 함께 공유하는 카테고리별로 모았습니다. 아래에서 그 밖의 사람들도 둘러보세요.
-          </p>
+          <h1 className="text-4xl font-extrabold sm:text-5xl">다른 사람들의 알고리즘</h1>
         </header>
 
         {sections.map(({ cat, users }) => (
@@ -107,7 +104,7 @@ export default async function ExplorePage() {
                 {users.length}
               </span>
             </h2>
-            <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {users.map((u) => (
                 <PersonCard key={u.owner.id} owner={u.owner} profile={u.profile} sim={u.sim} />
               ))}
@@ -123,7 +120,7 @@ export default async function ExplorePage() {
                 {rest.length}
               </span>
             </h2>
-            <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {rest.map(({ owner, profile }) => (
                 <PersonCard key={owner.id} owner={owner} profile={profile} />
               ))}
@@ -145,7 +142,7 @@ export default async function ExplorePage() {
     <section className="space-y-8">
       <header className="space-y-3">
         <p className="label-mono">Public algorithms</p>
-        <h1 className="text-4xl font-extrabold sm:text-5xl">알고리즘 탐색</h1>
+        <h1 className="text-4xl font-extrabold sm:text-5xl">다른 사람들의 알고리즘</h1>
         <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
           {meId
             ? "다른 사람들의 알고리즘 프로필. 온보딩을 마치면 나와 비슷한 사람을 카테고리별로 모아 보여드립니다."
@@ -158,7 +155,7 @@ export default async function ExplorePage() {
           아직 알고리즘 프로필이 없습니다. 로그인 후 온보딩을 마치면 여기에 표시됩니다.
         </Card>
       ) : (
-        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {others.map(({ owner, profile }) => (
             <PersonCard key={owner.id} owner={owner} profile={profile} />
           ))}
