@@ -29,12 +29,18 @@ export function GeminiVideoFeed({
   body,
   buttonLabel,
   hint,
+  columns = "default",
 }: {
   endpoint: string;
   body: Record<string, unknown>;
   buttonLabel: string;
   hint: string;
+  columns?: "default" | "large"; // large = 적은 열 = 큰 썸네일
 }) {
+  const gridCls =
+    columns === "large"
+      ? "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+      : "grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5";
   const [videos, setVideos] = useState<V[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -82,7 +88,7 @@ export function GeminiVideoFeed({
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
       {videos && videos.length > 0 ? (
-        <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <ul className={gridCls}>
           {videos.map((v) => (
             <li key={v.videoId}>
               <a

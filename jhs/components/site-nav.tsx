@@ -2,11 +2,13 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SignOutButton } from "./sign-out-button";
+import { prisma } from "@/lib/prisma";
 
-const NAV_PUBLIC = [{ href: "/explore", label: "다른 사람들의 알고리즘" }];
-const NAV_AUTH = [
-  { href: "/dashboard", label: "내 알고리즘" },
+const NAV_DASHBOARD = { href: "/dashboard", label: "내 알고리즘" };
+// 알고리즘 프로필이 있어야 노출되는 메뉴
+const NAV_AFTER_PROFILE = [
   { href: "/discover", label: "추천" },
+  { href: "/explore", label: "다른 사람들의 알고리즘" },
 ];
 
 export async function SiteNav() {
@@ -14,8 +16,16 @@ export async function SiteNav() {
   const user = session?.user as
     | { id: string; name?: string | null; email?: string | null; image?: string | null }
     | undefined;
-  // 로그인 안 하면 상단바 메뉴(다른 사람들의 알고리즘 포함)는 숨긴다.
-  const links = user?.id ? [...NAV_AUTH, ...NAV_PUBLIC] : [];
+  // 로그인 안 했으면 메뉴 숨김. 로그인했어도 아직 알고리즘 프로필이 없으면
+  // '내 알고리즘'(대시보드)만 노출하고 추천·다른 사람들의 알고리즘은 숨긴다.
+  let links: { href: string; label: string }[] = [];
+  if (user?.id) {
+    const hasProfile = !!(await prisma.algoProfile.findUnique({
+      where: { userId: user.id },
+      select: { userId: true },
+    }));
+    links = hasProfile ? [NAV_DASHBOARD, ...NAV_AFTER_PROFILE] : [NAV_DASHBOARD];
+  }
 
   return (
     <header
