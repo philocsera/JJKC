@@ -65,6 +65,7 @@ export default async function DashboardPage() {
             </AvatarFallback>
           </Avatar>
           <div className="space-y-2">
+            <p className="label-mono">Algorithm profile</p>
             <h1 className="text-base font-extrabold sm:text-lg">
               {user.name ?? "나"}
             </h1>

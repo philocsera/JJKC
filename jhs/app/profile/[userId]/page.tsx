@@ -5,7 +5,6 @@ import { auth } from "@/lib/auth";
 import { getProfileWithOwner } from "@/lib/profile-service";
 import { CategoryRadar } from "@/components/category-radar";
 import { ChannelList } from "@/components/channel-list";
-import { ChannelRecommendations } from "@/components/channel-recommendations";
 import { fingerprintGroups } from "@/lib/categories";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,9 +40,6 @@ export default async function ProfilePage({
           <div className="space-y-2">
             <p className="label-mono">Algorithm profile</p>
             <h1 className="text-3xl font-extrabold sm:text-4xl">{owner.name}</h1>
-            <p className="font-mono text-xs text-muted-foreground">
-              last synced · {new Date(profile.lastSyncedAt).toLocaleString()}
-            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -91,16 +87,6 @@ export default async function ProfilePage({
           <ChannelList channels={profile.topChannels} />
         </CardContent>
       </Card>
-
-      <div className="space-y-3">
-        <h2 className="text-sm font-medium">
-          {owner.name} 의 알고리즘으로 보기
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          {owner.name} 의 취향(카테고리·세부·키워드)으로 카탈로그에서 추천한 채널입니다.
-        </p>
-        <ChannelRecommendations userId={userId} />
-      </div>
     </section>
   );
 }
