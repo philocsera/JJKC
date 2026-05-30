@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { getProfileWithOwner } from "@/lib/profile-service";
 import { CategoryRadar } from "@/components/category-radar";
 import { ChannelList } from "@/components/channel-list";
+import { GenerateSummaryButton } from "@/components/generate-summary-button";
 import { fingerprintGroups } from "@/lib/categories";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,9 +41,7 @@ export default async function ProfilePage({
           <div className="space-y-2">
             <p className="label-mono">Algorithm profile</p>
             <h1 className="text-3xl font-extrabold sm:text-4xl">{owner.name}</h1>
-            {profile.summaryText ? (
-              <p className="max-w-xl text-sm text-muted-foreground">{profile.summaryText}</p>
-            ) : null}
+            <GenerateSummaryButton userId={userId} initial={profile.summaryText} />
           </div>
         </div>
         <div className="flex items-center gap-2">

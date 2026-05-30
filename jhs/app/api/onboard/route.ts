@@ -8,7 +8,7 @@ import { getSessionUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { cache } from "@/lib/cache";
 import { profileCacheKey } from "@/lib/keys";
-import { saveProfile, generateAndStoreProfileSummary } from "@/lib/profile-service";
+import { saveProfile } from "@/lib/profile-service";
 import { buildOnboardProfile } from "@/lib/onboard-profile";
 import { getChannelsByIds } from "@/lib/channel-service";
 import { isCategoryName } from "@/lib/categories";
@@ -101,9 +101,6 @@ export async function POST(req: Request) {
   });
 
   await cache.del(profileCacheKey(me));
-
-  // 페르소나 요약(LLM) 생성·저장 — 키 없으면 graceful 패스.
-  await generateAndStoreProfileSummary(me);
 
   return NextResponse.json({ ok: true });
 }

@@ -7,6 +7,7 @@ import { CategoryBar } from "@/components/category-bar";
 import { fingerprintGroups, categoryLabel } from "@/lib/categories";
 import { ChannelList } from "@/components/channel-list";
 import { SimilarUsers } from "@/components/similar-users";
+import { GenerateSummaryButton } from "@/components/generate-summary-button";
 import { SyncButton } from "@/components/sync-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -69,9 +70,7 @@ export default async function DashboardPage() {
             <h1 className="text-base font-extrabold sm:text-lg">
               {user.name ?? "나"}
             </h1>
-            {profile.summaryText ? (
-              <p className="max-w-xl text-sm text-muted-foreground">{profile.summaryText}</p>
-            ) : null}
+            <GenerateSummaryButton userId={userId} initial={profile.summaryText} />
           </div>
         </div>
         <span style={{ ["--font-scale" as string]: "1.4" }}>
