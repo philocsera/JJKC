@@ -38,7 +38,7 @@ function GoogleConnectPanel() {
         <p className="text-sm text-muted-foreground">
           내 YouTube 구독 채널을 가져와 자동으로 알고리즘을 만듭니다.
           <br />
-          연동 시 <code className="text-foreground">youtube.readonly</code> 권한(읽기 전용)에 동의가 필요합니다.
+          현재 테스트 사용자 등록을 받으신 계정에서만 사용 가능합니다.
         </p>
       </div>
       {err ? <p className="text-sm text-destructive">{err}</p> : null}
