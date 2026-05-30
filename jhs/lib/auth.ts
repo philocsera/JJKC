@@ -12,6 +12,7 @@ import { prisma } from "./prisma";
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   providers: [
+    // 기본 로그인 — 가벼운 스코프(YouTube 권한 요청 안 함).
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
@@ -19,6 +20,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       authorization: {
         params: {
           scope: ["openid", "email", "profile"].join(" "),
+          response_type: "code",
+        },
+      },
+    }),
+    // 온보딩 "Google 연동" 전용 — youtube.readonly 로 구독 자동 분석.
+    // 이미 로그인된 사용자가 같은 구글 계정으로 추가 연동하므로 email 링크 허용.
+    Google({
+      id: "google-youtube",
+      name: "Google (YouTube)",
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      checks: ["state"],
+      allowDangerousEmailAccountLinking: true,
+      authorization: {
+        params: {
+          scope: ["openid", "email", "profile", "https://www.googleapis.com/auth/youtube.readonly"].join(" "),
+          access_type: "offline",
+          prompt: "consent",
           response_type: "code",
         },
       },
