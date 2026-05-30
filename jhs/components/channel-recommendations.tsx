@@ -100,9 +100,9 @@ npm run channels:cluster`}
                     </div>
                   </a>
 
-                  {/* 최근 영상 2개 — 위아래로 배치(제목 잘림 방지) */}
+                  {/* 최근 영상 2개 — 가로 배치 */}
                   {videos.length > 0 ? (
-                    <div className="grid grid-cols-1 gap-3">
+                    <div className="grid grid-cols-2 gap-2">
                       {videos.map((v) => (
                         <a
                           key={v.videoId}
