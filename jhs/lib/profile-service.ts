@@ -117,12 +117,12 @@ export async function setVideoFeedback(
   videoId: string,
   action: "like" | "dislike",
   channelId?: string,
-) {
+): Promise<boolean> {
   const row = await prisma.algoProfile.findUnique({
     where: { userId },
     select: { likedVideoIds: true, dislikedVideoIds: true, likedChannelIds: true },
   });
-  if (!row) return;
+  if (!row) return false;
   const liked = new Set(safeParse<string[]>(row.likedVideoIds, []));
   const disliked = new Set(safeParse<string[]>(row.dislikedVideoIds, []));
   liked.delete(videoId);
@@ -139,11 +139,17 @@ export async function setVideoFeedback(
     dislikedVideoIds: JSON.stringify([...disliked]),
   };
   // 좋아요한 영상의 채널을 "좋아하는 채널"로 등록 → recommendForUser 가 다음부터 추천에서 제외.
+  let likedChannelAdded = false;
   if (action === "like" && channelId) {
     const likedCh = safeParse<string[]>(row.likedChannelIds, []);
-    if (!likedCh.includes(channelId)) data.likedChannelIds = JSON.stringify([...likedCh, channelId]);
+    if (!likedCh.includes(channelId)) {
+      data.likedChannelIds = JSON.stringify([...likedCh, channelId]);
+      likedChannelAdded = true;
+    }
   }
   await prisma.algoProfile.update({ where: { userId }, data });
+  // 좋아요한 채널이 새로 추가됐으면, 호출부가 카테고리 벡터를 재계산하도록 알린다.
+  return likedChannelAdded;
 }
 
 export async function getProfile(userId: string): Promise<AlgoProfileShape | null> {
