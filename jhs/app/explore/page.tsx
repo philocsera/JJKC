@@ -11,6 +11,9 @@ export const dynamic = "force-dynamic";
 
 type Item = Awaited<ReturnType<typeof listPublic>>["items"][number];
 
+// "취향을 공유하는 사람" 최소 유사도(%) — 미만은 그룹에서 제외(→ "그 밖의 사람들"로).
+const MIN_SHARED_SIM = 10;
+
 // 나의 카테고리 분포와 가장 강하게 겹치는 카테고리(공유 카테고리) 1개.
 function bestShared(mine: Record<string, number>, theirs: Record<string, number>): string | null {
   let best: string | null = null;
@@ -73,7 +76,7 @@ export default async function ExplorePage() {
     const byCat = new Map<string, typeof scored>();
     const groupedIds = new Set<string>();
     for (const s of scored) {
-      if (s.sim > 0 && s.shared) {
+      if (s.sim >= MIN_SHARED_SIM && s.shared) {
         if (!byCat.has(s.shared)) byCat.set(s.shared, []);
         byCat.get(s.shared)!.push(s);
         groupedIds.add(s.owner.id);
