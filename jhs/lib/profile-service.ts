@@ -111,14 +111,16 @@ export async function addDislikedChannel(userId: string, channelId: string) {
 }
 
 // /discover 영상 좋아요/싫어요(영상 단위). like↔dislike 는 상호배타 — 한쪽에 넣으면 다른쪽서 제거.
+// 좋아요 시 channelId 가 오면 그 채널을 likedChannelIds 에 추가 → 다음 추천에서 제외(이미 아는 채널).
 export async function setVideoFeedback(
   userId: string,
   videoId: string,
   action: "like" | "dislike",
+  channelId?: string,
 ) {
   const row = await prisma.algoProfile.findUnique({
     where: { userId },
-    select: { likedVideoIds: true, dislikedVideoIds: true },
+    select: { likedVideoIds: true, dislikedVideoIds: true, likedChannelIds: true },
   });
   if (!row) return;
   const liked = new Set(safeParse<string[]>(row.likedVideoIds, []));
@@ -127,13 +129,21 @@ export async function setVideoFeedback(
   disliked.delete(videoId);
   if (action === "like") liked.add(videoId);
   else disliked.add(videoId);
-  await prisma.algoProfile.update({
-    where: { userId },
-    data: {
-      likedVideoIds: JSON.stringify([...liked]),
-      dislikedVideoIds: JSON.stringify([...disliked]),
-    },
-  });
+
+  const data: {
+    likedVideoIds: string;
+    dislikedVideoIds: string;
+    likedChannelIds?: string;
+  } = {
+    likedVideoIds: JSON.stringify([...liked]),
+    dislikedVideoIds: JSON.stringify([...disliked]),
+  };
+  // 좋아요한 영상의 채널을 "좋아하는 채널"로 등록 → recommendForUser 가 다음부터 추천에서 제외.
+  if (action === "like" && channelId) {
+    const likedCh = safeParse<string[]>(row.likedChannelIds, []);
+    if (!likedCh.includes(channelId)) data.likedChannelIds = JSON.stringify([...likedCh, channelId]);
+  }
+  await prisma.algoProfile.update({ where: { userId }, data });
 }
 
 export async function getProfile(userId: string): Promise<AlgoProfileShape | null> {

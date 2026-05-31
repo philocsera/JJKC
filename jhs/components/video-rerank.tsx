@@ -50,26 +50,26 @@ export function VideoRerank() {
     }
   }
 
-  function sendFeedback(videoId: string, action: "like" | "dislike") {
+  function sendFeedback(videoId: string, channelId: string, action: "like" | "dislike") {
     fetch("/api/discover/feedback", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ videoId, action }),
+      body: JSON.stringify({ videoId, channelId, action }),
     }).catch(() => {});
   }
 
-  function onLike(videoId: string) {
+  function onLike(videoId: string, channelId: string) {
     setLiked((prev) => {
       const next = new Set(prev);
       next.has(videoId) ? next.delete(videoId) : next.add(videoId);
       return next;
     });
-    sendFeedback(videoId, "like");
+    sendFeedback(videoId, channelId, "like");
   }
 
-  function onDislike(videoId: string) {
+  function onDislike(videoId: string, channelId: string) {
     setVideos((prev) => (prev ? prev.filter((v) => v.videoId !== videoId) : prev));
-    sendFeedback(videoId, "dislike");
+    sendFeedback(videoId, channelId, "dislike");
   }
 
   return (
@@ -134,7 +134,7 @@ export function VideoRerank() {
               <div className="mt-2 flex items-center gap-1.5">
                 <button
                   type="button"
-                  onClick={() => onLike(v.videoId)}
+                  onClick={() => onLike(v.videoId, v.channelId)}
                   aria-pressed={liked.has(v.videoId)}
                   className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-colors ${
                     liked.has(v.videoId)
@@ -146,7 +146,7 @@ export function VideoRerank() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => onDislike(v.videoId)}
+                  onClick={() => onDislike(v.videoId, v.channelId)}
                   className="inline-flex items-center gap-1 rounded-full border border-border/60 px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted"
                 >
                   <ThumbsDown className="h-3.5 w-3.5" /> 싫어요
