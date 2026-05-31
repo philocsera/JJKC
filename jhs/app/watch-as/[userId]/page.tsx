@@ -49,8 +49,9 @@ export default async function WatchAsPage({
         endpoint="/api/watch-as/rerank"
         body={{ userId }}
         buttonLabel={`Gemini로 ${owner.name}님의 추천 영상 보기`}
-        hint={`위의 버튼을 눌러 ${owner.name}님의 알고리즘으로 추천 영상을 받아보세요.`}
+        hint={`${owner.name}님의 알고리즘으로 추천 영상을 불러오는 중입니다…`}
         columns="large"
+        autoStart
       />
     </div>
   );

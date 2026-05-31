@@ -3,7 +3,7 @@
 // 범용 Gemini 영상 추천 — 버튼 클릭 시 endpoint 로 POST 해 재랭킹 영상을 받아 그리드로 보여준다.
 // (좋아요/싫어요 없음) /watch-as, /compare 에서 사용. 빈 상태엔 블러 teaser.
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Sparkles, Loader2, RefreshCw } from "lucide-react";
 import { TeaserGrid } from "@/components/teaser-grid";
@@ -30,12 +30,14 @@ export function GeminiVideoFeed({
   buttonLabel,
   hint,
   columns = "default",
+  autoStart = false,
 }: {
   endpoint: string;
   body: Record<string, unknown>;
   buttonLabel: string;
   hint: string;
   columns?: "default" | "large"; // large = 적은 열 = 큰 썸네일
+  autoStart?: boolean; // 진입 시 버튼 없이 바로 추천 호출(예: /watch-as)
 }) {
   const gridCls =
     columns === "large"
@@ -44,6 +46,16 @@ export function GeminiVideoFeed({
   const [videos, setVideos] = useState<V[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // 진입 시 자동 호출 — 버튼 두 번 누르지 않게(이중 작업 제거).
+  const startedRef = useRef(false);
+  useEffect(() => {
+    if (autoStart && !startedRef.current) {
+      startedRef.current = true;
+      void generate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoStart]);
 
   async function generate() {
     setLoading(true);
