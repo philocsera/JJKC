@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getProfile } from "@/lib/profile-service";
+import { getChannelsByIds } from "@/lib/channel-service";
 import { CategoryRadar } from "@/components/category-radar";
 import { CategoryBar } from "@/components/category-bar";
 import { fingerprintGroups, categoryLabel } from "@/lib/categories";
@@ -46,6 +47,21 @@ export default async function DashboardPage() {
       </section>
     );
   }
+
+  // "좋아하는 채널" — 온보딩 대표 채널 + /discover 에서 좋아요(👍)한 채널(likedChannelIds) 합집합.
+  // 좋아요한 채널을 먼저 노출(최근 행동이 바로 보이게), 중복은 제거.
+  const likedRecords = await getChannelsByIds(profile.likedChannelIds);
+  const likedChannels = likedRecords.map((c) => ({
+    id: c.id,
+    name: c.title,
+    thumbnail: c.thumbnail,
+    videoCount: c.videoCount,
+  }));
+  const likedIds = new Set(likedChannels.map((c) => c.id));
+  const favoriteChannels = [
+    ...likedChannels,
+    ...profile.topChannels.filter((c) => !likedIds.has(c.id)),
+  ];
 
   // 모든 사용자가 동일한 최상위 카테고리 축을 갖는 fingerprint — 두 도형으로 분할.
   const fp = fingerprintGroups(profile.categories);
@@ -110,7 +126,7 @@ export default async function DashboardPage() {
           <CardTitle className="text-sm font-medium">좋아하는 채널</CardTitle>
         </CardHeader>
         <CardContent>
-          <ChannelList channels={profile.topChannels} />
+          <ChannelList channels={favoriteChannels} />
         </CardContent>
       </Card>
 
