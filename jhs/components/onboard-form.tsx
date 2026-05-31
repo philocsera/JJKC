@@ -64,15 +64,29 @@ export function OnboardForm({
 
   const [channels, setChannels] = useState<ChannelLite[]>([]);
   const [loadingChannels, setLoadingChannels] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // ── 채널 그리드: 3단계 진입 시 선택한 세부 관심사(+미선택 카테고리 폴백)의 채널 로드 ──
+  // 선택한 세부 관심사(+미선택 카테고리 폴백)의 채널을 offset 부터 한 페이지 가져온다.
+  async function fetchChannels(offset: number, signal?: AbortSignal) {
+    const qs = new URLSearchParams({
+      subCategories: checkedSubs.join(","),
+      categories: checked.join(","),
+      offset: String(offset),
+    });
+    const res = await fetch(`/api/channels/by-subcategory?${qs}`, { signal });
+    return (await res.json()) as { channels?: ChannelLite[]; hasMore?: boolean };
+  }
+
+  // ── 채널 그리드: 3단계 진입/필터 변경 시 첫 페이지부터 다시 로드 ──
   const abortRef = useRef<AbortController | null>(null);
   useEffect(() => {
     if (step !== 2 || (checked.length === 0 && checkedSubs.length === 0)) {
       setChannels([]);
+      setHasMore(false);
       return;
     }
     setLoadingChannels(true);
@@ -81,13 +95,9 @@ export function OnboardForm({
     abortRef.current = ac;
     (async () => {
       try {
-        const qs = new URLSearchParams({
-          subCategories: checkedSubs.join(","),
-          categories: checked.join(","),
-        });
-        const res = await fetch(`/api/channels/by-subcategory?${qs}`, { signal: ac.signal });
-        const data = await res.json();
+        const data = await fetchChannels(0, ac.signal);
         setChannels((data.channels ?? []) as ChannelLite[]);
+        setHasMore(Boolean(data.hasMore));
       } catch {
         /* aborted or network — ignore */
       } finally {
@@ -95,7 +105,27 @@ export function OnboardForm({
       }
     })();
     return () => ac.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, checkedSubs, checked]);
+
+  // ── "채널 더보기": 현재 로드 수를 offset 으로 다음 페이지를 이어 붙인다 ──
+  async function loadMoreChannels() {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    try {
+      const data = await fetchChannels(channels.length);
+      const more = (data.channels ?? []) as ChannelLite[];
+      setChannels((prev) => {
+        const seen = new Set(prev.map((c) => c.id));
+        return [...prev, ...more.filter((c) => !seen.has(c.id))];
+      });
+      setHasMore(Boolean(data.hasMore));
+    } catch {
+      /* network — ignore, 버튼은 유지 */
+    } finally {
+      setLoadingMore(false);
+    }
+  }
 
   const isSelected = (id: string) => selected.some((c) => c.id === id);
 
@@ -359,6 +389,22 @@ export function OnboardForm({
               })}
             </div>
           )}
+
+          {/* 채널 더보기 */}
+          {!loadingChannels && channels.length > 0 && hasMore ? (
+            <div className="flex justify-center pt-1">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={loadMoreChannels}
+                disabled={loadingMore}
+              >
+                {loadingMore ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+                채널 더보기
+              </Button>
+            </div>
+          ) : null}
         </div>
       ) : null}
 

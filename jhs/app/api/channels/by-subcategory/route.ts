@@ -1,6 +1,7 @@
-// GET /api/channels/by-subcategory?subCategories=Gaming/마인크래프트,...&categories=Gaming,Sports
+// GET /api/channels/by-subcategory?subCategories=Gaming/마인크래프트,...&categories=Gaming,Sports&offset=0
 // onboard 폼 3단계용: 선택한 세부 카테고리의 채널을 "하나의 중복제거 리스트"로 반환.
 // 세부를 안 고른 카테고리는 그 카테고리 top 채널로 폴백. 구독자순 정렬. DB만 읽음.
+// offset 으로 "더보기" 페이지네이션 — hasMore 로 다음 페이지 존재 여부를 알린다.
 
 import { NextResponse } from "next/server";
 import { getSessionUserId } from "@/lib/auth";
@@ -9,8 +10,8 @@ import { isCategoryName, type CategoryName } from "@/lib/categories";
 import { validSubKeys } from "@/lib/sub-taxonomy";
 import type { ChannelRecord } from "@/lib/types";
 
-const PER_SOURCE = 40; // 소스(세부/카테고리)별 후보 수 — 합쳐서 dedupe 후 상위 LIMIT
-const LIMIT = 60;
+const PAGE = 60;       // 한 페이지(요청)당 반환 채널 수
+const MAX_OFFSET = 600; // 페이지네이션 상한 — 소스별 과도한 fetch 방지
 
 const slim = (c: ChannelRecord) => ({
   id: c.id,
@@ -33,24 +34,28 @@ export async function GET(req: Request) {
     .filter(isCategoryName)
     .slice(0, 5);
 
+  const offset = Math.min(MAX_OFFSET, Math.max(0, Number(sp.get("offset")) || 0));
+  // 이번 페이지까지 필요한 채널 수 + 1(다음 페이지 존재 판별용). 소스별로 이만큼씩 끌어온다.
+  const need = offset + PAGE;
+  const perSource = Math.min(MAX_OFFSET + PAGE, need + 1);
+
   // 세부를 하나라도 고른 부모 카테고리 — 폴백 대상에서 제외.
   const parentsWithSub = new Set(subKeys.map((k) => k.split("/")[0]));
 
   // 1) 세부 카테고리 채널 + 2) 세부 미선택 카테고리 폴백 채널을 모은다.
   const pool: ChannelRecord[] = [];
-  for (const key of subKeys) pool.push(...(await listBySubCategory(key, { limit: PER_SOURCE })));
+  for (const key of subKeys) pool.push(...(await listBySubCategory(key, { limit: perSource })));
   for (const name of categories) {
     if (parentsWithSub.has(name)) continue;
-    pool.push(...(await listByCategory(name as CategoryName, { limit: PER_SOURCE })));
+    pool.push(...(await listByCategory(name as CategoryName, { limit: perSource })));
   }
 
-  // id 기준 중복 제거 → 구독자순 → 상위 LIMIT.
+  // id 기준 중복 제거 → 구독자순 → offset 부터 PAGE 개.
   const byId = new Map<string, ChannelRecord>();
   for (const c of pool) if (!byId.has(c.id)) byId.set(c.id, c);
-  const channels = [...byId.values()]
-    .sort((a, b) => b.subscriberCount - a.subscriberCount)
-    .slice(0, LIMIT)
-    .map(slim);
+  const sorted = [...byId.values()].sort((a, b) => b.subscriberCount - a.subscriberCount);
+  const channels = sorted.slice(offset, offset + PAGE).map(slim);
+  const hasMore = offset + PAGE < sorted.length && offset + PAGE < MAX_OFFSET + PAGE;
 
-  return NextResponse.json({ channels });
+  return NextResponse.json({ channels, hasMore });
 }

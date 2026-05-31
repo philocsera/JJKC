@@ -9,11 +9,12 @@ import { getProfile, getProfileWithOwner } from "./profile-service";
 import { categoryLabel } from "./categories";
 import { rerankVideos, rerankSharedVideos, type VideoCandidate } from "./llm-features";
 
-const CHANNEL_FANOUT = 18;   // 후보 영상을 모을 추천 상위 채널 수
-const PER_CHANNEL = 8;       // 채널당 가져올 최근 영상 수(RSS)
-const POOL_PER_CHANNEL = 3;  // 후보 풀에 넣을 채널당 상한 — 한 채널 쏠림 방지(다양성)
-const POOL_CAP = 150;        // LLM 프롬프트에 넣을 후보 영상 상한
-const TOP_N = 15;            // 최종 노출 영상 수
+const CHANNEL_FANOUT = 18;        // 후보 영상을 모을 추천 상위 채널 수
+const PER_CHANNEL = 8;            // 채널당 가져올 최근 영상 수(RSS)
+const DISCOVER_PER_CHANNEL = 1;   // /discover 추천: 채널당 후보 1개 — 추천 리스트에 채널당 영상 1개만
+const POOL_PER_CHANNEL = 3;       // /compare 후보 풀 채널당 상한 — 한 채널 쏠림 방지(다양성)
+const POOL_CAP = 150;             // LLM 프롬프트에 넣을 후보 영상 상한
+const TOP_N = 15;                 // 최종 노출 영상 수
 
 export type RerankedVideo = {
   videoId: string;
@@ -55,7 +56,7 @@ export async function rerankedVideosForUser(userId: string): Promise<RerankResul
     const label = dominantLabel(r.channel.categories);
     let perCh = 0;
     for (const v of recentMap.get(r.channel.id) ?? []) {
-      if (perCh >= POOL_PER_CHANNEL) break;
+      if (perCh >= DISCOVER_PER_CHANNEL) break;
       if (disliked.has(v.videoId) || meta.has(v.videoId)) continue;
       perCh++;
       meta.set(v.videoId, {
