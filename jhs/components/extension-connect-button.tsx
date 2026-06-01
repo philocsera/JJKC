@@ -65,7 +65,7 @@ export function ExtensionConnectButton() {
         onClick={connectExtension}
         className="rounded-full border border-red-500/50 px-4 py-2 text-sm font-semibold text-red-400 transition hover:bg-red-500/10"
       >
-        📺 Chrome Extension 연결
+        🧩 Chrome Extension 연결
       </button>
 
       {status ? (
