@@ -63,7 +63,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "invalid_body" }, { status: 400 });
   }
 
-  const channelIds = dedupe(parsed.data.channelIds).slice(0, 10);
+  // 선택한 채널 전부 사용(개수 제한 없음). 카테고리·키워드는 모든 선택 채널에서
+  // 집계되고, 대표 채널 표시 목록만 buildOnboardProfile 내부에서 상위 N개로 제한된다.
+  const channelIds = dedupe(parsed.data.channelIds);
   const categories = dedupe(parsed.data.categories.filter(isCategoryName));
   // 세부 카테고리: 택소노미에 존재하고 + 부모가 선택된 것만 인정.
   const valid = validSubKeys();
