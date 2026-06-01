@@ -14,21 +14,28 @@ export type RecentVideo = {
 const TTL = 60 * 30; // 30분 — RSS 부하/레이트리밋 방지
 const recentVideosKey = (channelId: string) => `recent-videos:${channelId}`;
 
-export async function getRecentVideos(channelId: string, n = 2): Promise<RecentVideo[]> {
-  const key = recentVideosKey(channelId);
-  const hit = await cache.get<RecentVideo[]>(key);
-  if (hit) return hit.slice(0, n);
-
+// RSS 한 번 시도(타임아웃 4.5초). 실패/에러는 빈 배열.
+async function fetchFeedOnce(channelId: string): Promise<RecentVideo[]> {
   const feed = await fetchChannelFeed(channelId, {
-    signal: AbortSignal.timeout(5000),
+    signal: AbortSignal.timeout(4500),
   }).catch(() => null);
-
-  const videos: RecentVideo[] = (feed?.videos ?? []).map((v) => ({
+  return (feed?.videos ?? []).map((v) => ({
     videoId: v.videoId,
     title: v.title,
     thumbnail: v.thumbnail,
     publishedAt: v.publishedAt,
   }));
+}
+
+export async function getRecentVideos(channelId: string, n = 2): Promise<RecentVideo[]> {
+  const key = recentVideosKey(channelId);
+  const hit = await cache.get<RecentVideo[]>(key);
+  if (hit) return hit.slice(0, n);
+
+  // 프로덕션(데이터센터 IP)에서 RSS 가 간헐 실패 → 영상 있는 채널이 적게 잡힌다.
+  // 빈 결과면 1회 재시도해 수율을 올린다(채널당 1개만 쓰므로 수율이 곧 다양성).
+  let videos = await fetchFeedOnce(channelId);
+  if (videos.length === 0) videos = await fetchFeedOnce(channelId);
 
   // 실패(빈 결과)는 캐시하지 않아 다음 방문에 재시도.
   if (videos.length > 0) await cache.set(key, videos, TTL);
