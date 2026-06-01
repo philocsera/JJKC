@@ -88,6 +88,8 @@ export default async function DashboardPage() {
               {user.name ?? "나"}
             </h1>
             <GenerateSummaryButton userId={userId} initial={profile.summaryText} />
+            
+            <ExtensionConnectButton />
           </div>
         </div>
         <span style={{ ["--font-scale" as string]: "1.4" }}>
