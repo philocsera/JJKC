@@ -15,7 +15,6 @@ const PER_CHANNEL = 12;        // 채널당 가져올 최근 영상 수(RSS) —
 const POOL_PER_CHANNEL = 1;    // (compare 전용) 후보 풀 채널당 상한
 const POOL_CAP = 150;          // LLM 프롬프트에 넣을 후보 영상 상한
 const TOP_N = 15;              // 최종 노출 영상 수
-const CAND_TARGET = 30;        // 후보 목표 수(라운드로빈) — LLM 선택지 확보
 
 export type RerankedVideo = {
   videoId: string;
@@ -61,33 +60,27 @@ export async function rerankedVideosForUser(
     channel: r.channel,
     label: dominantLabel(r.channel.categories),
     vids: (recentMap.get(r.channel.id) ?? []).filter((v) => !exclude.has(v.videoId)),
-    idx: 0,
   }));
 
-  // 라운드로빈으로 후보 구성 — 1차는 채널당 1개(채널 다양성 우선),
-  // 목표(CAND_TARGET)에 못 미치면 같은 채널의 다음(안 본) 영상으로 채운다.
+  // 채널당 최대 1개 — 한 채널이 추천을 도배하지 않도록(채널 다양성 강제).
+  // 각 채널에서 '안 본' 가장 최근 영상 하나만 후보로 넣는다. channelId 는 채널마다
+  // 유일하므로, 후보가 채널당 1개면 LLM 선별 결과도 자동으로 채널당 최대 1개가 된다.
+  // (compare 경로의 POOL_PER_CHANNEL=1 과 동일 정책.)
   const meta = new Map<string, RerankedVideo>();
   const candidates: VideoCandidate[] = [];
-  const target = Math.min(POOL_CAP, CAND_TARGET);
-  let progressed = true;
-  while (candidates.length < target && progressed) {
-    progressed = false;
-    for (const q of queues) {
-      if (candidates.length >= target) break;
-      if (q.idx >= q.vids.length) continue;
-      const v = q.vids[q.idx++];
-      progressed = true;
-      if (meta.has(v.videoId)) continue; // 다른 채널 피드에 같은 영상이 겹치는 경우 방지
-      meta.set(v.videoId, {
-        videoId: v.videoId,
-        title: v.title,
-        thumbnail: v.thumbnail,
-        channelId: q.channel.id,
-        channelName: q.channel.title,
-        reason: "",
-      });
-      candidates.push({ videoId: v.videoId, title: v.title, channelName: q.channel.title, category: q.label });
-    }
+  for (const q of queues) {
+    if (candidates.length >= POOL_CAP) break;
+    const v = q.vids.find((x) => !meta.has(x.videoId)); // 다른 채널과 겹치지 않는 첫(최신) 영상
+    if (!v) continue;
+    meta.set(v.videoId, {
+      videoId: v.videoId,
+      title: v.title,
+      thumbnail: v.thumbnail,
+      channelId: q.channel.id,
+      channelName: q.channel.title,
+      reason: "",
+    });
+    candidates.push({ videoId: v.videoId, title: v.title, channelName: q.channel.title, category: q.label });
   }
   if (candidates.length === 0) return { ok: false, reason: "no_videos" };
 

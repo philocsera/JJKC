@@ -20,6 +20,48 @@ const BASE = 8; // 최소 반지름(베이스 N각형) — 외곽의 약 1/12
 const scale = (v: number) =>
   Math.round(BASE + (100 - BASE) * Math.sqrt(Math.max(0, Math.min(100, v)) / 100));
 
+// 축 라벨(카테고리)을 어떤 화면 비율에서도 잘리지 않게 그리는 커스텀 tick.
+// recharts 가 넘겨주는 좌표(x,y)와 중심 대비 위치로 정렬 기준(text-anchor)을 정해
+// 좌측 라벨은 오른쪽 정렬, 우측 라벨은 왼쪽 정렬로 안쪽을 향하게 한다.
+// margin 으로 확보한 여백 안에서만 그려지므로 SVG 경계 밖으로 넘쳐 잘리지 않는다.
+function AngleTick(props: any) {
+  const { x, y, cx, cy, payload } = props;
+  const label: string = payload?.value ?? "";
+  // 중심 대비 가로/세로 위치로 정렬 결정 (작은 임계값으로 상·하단은 가운데 정렬).
+  const dx = x - cx;
+  const horizThreshold = 12;
+  const anchor =
+    dx > horizThreshold ? "start" : dx < -horizThreshold ? "end" : "middle";
+
+  // 긴 라벨("·" 포함, 5자 초과)은 "·" 기준으로 두 줄로 나눠 가로폭을 절반으로 줄인다.
+  // → 어떤 화면 비율에서도 양 끝 라벨이 SVG 경계 밖으로 넘쳐 잘리지 않는다.
+  const dot = label.indexOf("·");
+  const lines =
+    dot > 0 && label.length > 5
+      ? [label.slice(0, dot + 1), label.slice(dot + 1)] // "·" 는 윗줄에 둔다
+      : [label];
+
+  // 세로 위치 보정: 윗줄/아랫줄 라벨이 도형과 겹치지 않게 띄우고, 2줄은 위로 올려 중앙 맞춤.
+  const lift = lines.length > 1 ? -6 : 0;
+  const oy = (anchor === "middle" ? (y < cy ? -4 : 10) : 4) + lift;
+
+  return (
+    <text
+      x={x}
+      y={y + oy}
+      textAnchor={anchor}
+      fill="hsl(var(--muted-foreground))"
+      fontSize={13}
+    >
+      {lines.map((ln, i) => (
+        <tspan key={i} x={x} dy={i === 0 ? 0 : 14}>
+          {ln}
+        </tspan>
+      ))}
+    </text>
+  );
+}
+
 // 값 0 인 꼭짓점(중심에 겹치는 점)은 숨기고, 나머지만 점으로 표시.
 function dotRenderer(color: string) {
   return (props: any) => {
@@ -61,7 +103,13 @@ export function CategoryRadar({
   return (
     <div className={heightClass}>
       <ResponsiveContainer width="100%" height="100%">
-        <RadarChart data={data} outerRadius="80%">
+        {/* 좌우 여백을 넉넉히 줘서 양 끝 라벨(예: "영화·애니메이션")이 잘리지 않게.
+            outerRadius 를 낮춰 도형이 라벨 영역을 침범하지 않도록 한다. */}
+        <RadarChart
+          data={data}
+          outerRadius="78%"
+          margin={{ top: 20, right: 44, bottom: 24, left: 44 }}
+        >
           <defs>
             <filter id="fpGlowA" x="-40%" y="-40%" width="180%" height="180%">
               <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="hsl(var(--accent))" floodOpacity="0.6" />
@@ -73,10 +121,7 @@ export function CategoryRadar({
 
           {/* 옅은 기준 다각형(외곽 틀) */}
           <PolarGrid stroke="hsl(var(--border))" strokeOpacity={0.45} gridType="polygon" />
-          <PolarAngleAxis
-            dataKey="category"
-            tick={{ fontSize: 15, fill: "hsl(var(--muted-foreground))" }}
-          />
+          <PolarAngleAxis dataKey="category" tick={<AngleTick />} />
           <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
 
           <Radar
