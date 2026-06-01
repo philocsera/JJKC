@@ -1,6 +1,24 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 export function ExtensionConnectButton() {
+  const [status, setStatus] = useState("");
+
+  useEffect(() => {
+    function handleMessage(event: MessageEvent) {
+      if (event.source !== window) return;
+
+      if (event.data?.type === "JJKC_CONNECT_EXTENSION_DONE") {
+        setStatus("확장프로그램 연결 완료");
+        alert("JJKC 확장프로그램 로그인 정보 연동 완료");
+      }
+    }
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
+
   async function connectExtension() {
     try {
       const res = await fetch("/api/auth/session");
@@ -18,21 +36,41 @@ export function ExtensionConnectButton() {
         return;
       }
 
-      await navigator.clipboard.writeText(userId);
+      setStatus("확장프로그램 연결 요청 중...");
 
-      alert("사용자 ID가 복사되었습니다. 확장프로그램에 붙여넣으세요.");
+      window.postMessage(
+        {
+          type: "JJKC_CONNECT_EXTENSION",
+          userId,
+        },
+        window.location.origin
+      );
+
+      setTimeout(() => {
+        setStatus((prev) =>
+          prev === "확장프로그램 연결 완료"
+            ? prev
+            : "요청 전송됨. 확장프로그램 설치 후 페이지 새로고침이 필요할 수 있습니다."
+        );
+      }, 1000);
     } catch {
       alert("확장프로그램 연결 중 오류가 발생했습니다.");
     }
   }
 
   return (
-    <button
-      type="button"
-      onClick={connectExtension}
-      className="rounded-full border border-red-500/50 px-4 py-2 text-sm font-semibold text-red-400 transition hover:bg-red-500/10"
-    >
-      📺 Chrome Extension 연결
-    </button>
+    <div className="space-y-1">
+      <button
+        type="button"
+        onClick={connectExtension}
+        className="rounded-full border border-red-500/50 px-4 py-2 text-sm font-semibold text-red-400 transition hover:bg-red-500/10"
+      >
+        📺 Chrome Extension 연결
+      </button>
+
+      {status ? (
+        <p className="text-xs text-muted-foreground">{status}</p>
+      ) : null}
+    </div>
   );
 }
