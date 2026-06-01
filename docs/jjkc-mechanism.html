@@ -107,9 +107,9 @@
   .hugframe img{ width:100%; display:block; }
   .mdesc{ font-size:13px; color:var(--mut); line-height:1.7; margin-top:12px; }
   /* 구성요소: 이름(큰 글씨) → 줄바꿈 → 설명(아래) */
-  .cname{ font-size:19px; font-weight:800; color:var(--ink); line-height:1.2; letter-spacing:-.3px; }
+  .cname{ font-size:24px; font-weight:800; color:var(--ink); line-height:1.2; letter-spacing:-.3px; }
   .cname .w{ font-weight:800; }
-  .cdesc{ font-size:12px; color:var(--mut); line-height:1.5; margin-top:5px; }
+  .cdesc{ font-size:15px; color:var(--mut); line-height:1.5; margin-top:6px; }
   .mdesc b{ color:var(--ink); }
 
   /* ── 콘텐츠(문서) 페이지 — Phase 1 ── */
@@ -323,6 +323,23 @@
   <div class="brand">JJKC · MECHANISM BY SCREEN</div><div class="pgno">04</div>
 </section>
 
+<!-- ===================== 04 파일 분석 · Google 연동 (가로 병합) ===================== -->
+<section class="lpage">
+  <div class="ahead">
+    <div class="kicker">Screen 02 — Onboarding · Methods B·C (온보딩 · 방법 B·C)</div>
+    <div class="atitle">Analyze by File · Google Sync (파일로 분석 · Google 연동)</div>
+  </div>
+  <div style="flex:1; min-height:0; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:auto 1fr auto; column-gap:18px; row-gap:10px;">
+    <div class="lstep"><span class="n" style="background:#3a2f1a;color:var(--a)">B</span>Analyze by File (파일로 분석하기) (Takeout)</div>
+    <div class="lstep"><span class="n" style="background:#3a1f1d;color:var(--r)">C</span>Google Sync (Google 연동) (Auto-analyze subscriptions (구독 자동 분석))</div>
+    <div class="pframe"><img src="shots/onboard-takeout.png" alt="파일로 분석하기"></div>
+    <div class="pframe"><img src="shots/onboard-google.png" alt="Google 연동"></div>
+    <div class="mdesc" style="margin-top:0;">Directly parses YouTube <b>watch history (.json/.html)</b> exported from Google Takeout, extracts only the channel ID per video, and sends to the server. (Google Takeout에서 내보낸 유튜브 <b>시청 기록(.json/.html)</b>을 직접 파싱해 영상별 채널 ID만 추려 서버로 보냅니다.)</div>
+    <div class="mdesc" style="margin-top:0;">Syncing a Google account with <b>youtube.readonly</b> permission fetches the logged-in user's YouTube subscription list. From those subscriptions it selects <b>only channels in the analysis catalog</b>, builds an algorithm profile by intersection, and moves to the dashboard when done. (Google 계정을 <b>youtube.readonly</b> 권한으로 연동하면 로그인한 사용자의 유튜브 구독 채널 목록을 가져옵니다. 가져온 구독 채널 중 <b>분석 카탈로그에 있는 채널만</b> 골라 교집합으로 알고리즘 프로필을 생성하고, 완료되면 대시보드로 이동합니다.)</div>
+  </div>
+  <div class="brand">JJKC · MECHANISM BY SCREEN</div><div class="pgno">05</div>
+</section>
+
 <!-- ===================== 03 온보딩 직접 고르기 3단계 (가로 합본) ===================== -->
 <section class="lpage">
   <div class="ahead">
@@ -345,23 +362,6 @@
       <div class="pframe"><img src="shots/onboard-channel.png" alt="Channel Selection (채널 선택)"></div>
     </div>
   </div>
-  <div class="brand">JJKC · MECHANISM BY SCREEN</div><div class="pgno">05</div>
-</section>
-
-<!-- ===================== 04 파일 분석 · Google 연동 (가로 병합) ===================== -->
-<section class="lpage">
-  <div class="ahead">
-    <div class="kicker">Screen 02 — Onboarding · Methods B·C (온보딩 · 방법 B·C)</div>
-    <div class="atitle">Analyze by File · Google Sync (파일로 분석 · Google 연동)</div>
-  </div>
-  <div style="flex:1; min-height:0; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:auto 1fr auto; column-gap:18px; row-gap:10px;">
-    <div class="lstep"><span class="n" style="background:#3a2f1a;color:var(--a)">B</span>Analyze by File (파일로 분석하기) (Takeout)</div>
-    <div class="lstep"><span class="n" style="background:#3a1f1d;color:var(--r)">C</span>Google Sync (Google 연동) (Auto-analyze subscriptions (구독 자동 분석))</div>
-    <div class="pframe"><img src="shots/onboard-takeout.png" alt="파일로 분석하기"></div>
-    <div class="pframe"><img src="shots/onboard-google.png" alt="Google 연동"></div>
-    <div class="mdesc" style="margin-top:0;">Directly parses YouTube <b>watch history (.json/.html)</b> exported from Google Takeout, extracts only the channel ID per video, and sends to the server. (Google Takeout에서 내보낸 유튜브 <b>시청 기록(.json/.html)</b>을 직접 파싱해 영상별 채널 ID만 추려 서버로 보냅니다.)</div>
-    <div class="mdesc" style="margin-top:0;">Syncing a Google account with <b>youtube.readonly</b> permission fetches the logged-in user's YouTube subscription list. From those subscriptions it selects <b>only channels in the analysis catalog</b>, builds an algorithm profile by intersection, and moves to the dashboard when done. (Google 계정을 <b>youtube.readonly</b> 권한으로 연동하면 로그인한 사용자의 유튜브 구독 채널 목록을 가져옵니다. 가져온 구독 채널 중 <b>분석 카탈로그에 있는 채널만</b> 골라 교집합으로 알고리즘 프로필을 생성하고, 완료되면 대시보드로 이동합니다.)</div>
-  </div>
   <div class="brand">JJKC · MECHANISM BY SCREEN</div><div class="pgno">06</div>
 </section>
 
@@ -375,10 +375,10 @@
   <div class="mech"><div class="mcard">
     <div class="mhead"><span class="dot" style="background:var(--t)"></span>Dashboard Components (대시보드 구성 요소)</div>
     <div class="mgrid">
-      <div><div class="cname" style="color:var(--t)">Category fingerprint</div><div class="cdesc">Draws your category ratios as two fixed-axis radars (entertainment / hobby·info·life) to show your taste shape at a glance. (내 카테고리 비율을 고정 축 레이더 두 개(엔터·취미/정보·생활)로 그려 취향 모양을 한눈에 보여줍니다.)</div></div>
-      <div><div class="cname" style="color:var(--a)">Top categories</div><div class="cdesc">Lists the categories you watch most as horizontal bars by ratio (%). (내가 가장 많이 보는 카테고리를 비율(%) 순으로 가로 막대로 나열합니다.)</div></div>
-      <div><div class="cname" style="color:var(--r)">Favorite channels (좋아하는 채널)</div><div class="cdesc">Shows liked channels from recommendations plus onboarding picks, removable with ×. (추천에서 좋아요한 채널과 온보딩 대표 채널을 합쳐 보여주며, ×로 삭제할 수 있습니다.)</div></div>
-      <div><div class="cname" style="color:var(--b)">Find people with a similar algorithm (나와 알고리즘이 비슷한 사람 찾기)</div><div class="cdesc">Scores public profiles by category cosine and keyword Jaccard to show the most similar people. (공개 프로필을 카테고리 코사인·키워드 자카드로 점수화해 가장 닮은 사람을 보여줍니다.)</div></div>
+      <div><div class="cname" style="color:var(--t)">Category fingerprint</div><div class="cdesc">Category mix as two radar charts. (카테고리 비율을 레이더 2개로.)</div></div>
+      <div><div class="cname" style="color:var(--a)">Top categories</div><div class="cdesc">Most-watched categories as % bars. (많이 본 카테고리를 % 막대로.)</div></div>
+      <div><div class="cname" style="color:var(--r)">Favorite channels (좋아하는 채널)</div><div class="cdesc">Liked + onboarding channels, removable. (좋아요·온보딩 채널, 삭제 가능.)</div></div>
+      <div><div class="cname" style="color:var(--b)">Find similar people (비슷한 사람 찾기)</div><div class="cdesc">Finds the most similar public profiles. (가장 닮은 공개 프로필을 찾음.)</div></div>
     </div>
   </div></div>
   <div class="brand">JJKC · MECHANISM BY SCREEN</div><div class="pgno">07</div>
@@ -387,7 +387,7 @@
 <!-- ===================== 09 추천(핵심) ===================== -->
 <section class="page">
   <div class="ahead">
-    <div class="kicker">Screen 04 — Recommendation (core pipeline) (추천 (핵심 파이프라인))</div>
+    <div class="kicker">Screen 04 — Recommendation (추천)</div>
     <div class="atitle">AI-Powered Video Recommendations (AI가 해주는 영상 추천)</div>
   </div>
   <div class="ashot"><div class="frame"><div class="bar"><i style="background:#ec6a5e"></i><i style="background:#f4bf4f"></i><i style="background:#61c554"></i><span class="barurl">/discover</span></div><img src="shots/03-discover.png" alt="추천"></div></div>
@@ -398,8 +398,6 @@
       <svg width="14" height="11" viewBox="0 0 14 11"><path d="M2 5.5h8m0 0l-3-3m3 3l-3 3" stroke="#666c7e" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span class="node">RSS latest videos (RSS 최신영상)</span>
       <svg width="14" height="11" viewBox="0 0 14 11"><path d="M2 5.5h8m0 0l-3-3m3 3l-3 3" stroke="#666c7e" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span class="node">1 per channel (채널당 1개)</span>
-      <svg width="14" height="11" viewBox="0 0 14 11"><path d="M2 5.5h8m0 0l-3-3m3 3l-3 3" stroke="#666c7e" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span class="node" style="border-color:#2a1d3e">LLM re-ranking (LLM 재랭킹)</span>
       <svg width="14" height="11" viewBox="0 0 14 11"><path d="M2 5.5h8m0 0l-3-3m3 3l-3 3" stroke="#666c7e" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span class="node" style="border-color:#173029">Top 15</span>
@@ -408,9 +406,9 @@
       <div class="formula">Channel score (채널 추천 점수) = <span style="color:var(--r)">0.8·similarity (유사도)</span> + <span style="color:var(--a)">0.1·metric (지표)</span> + <span style="color:var(--t)">0.1·quality (품질)</span></div>
       <svg width="100%" height="15" viewBox="0 0 215 15" style="margin-top:6px;"><rect x="0" y="1" width="172" height="13" rx="3" fill="#e0483d" fill-opacity=".85"/><rect x="174" y="1" width="20" height="13" fill="#f3a13a" fill-opacity=".85"/><rect x="196" y="1" width="19" height="13" rx="3" fill="#36c2a6" fill-opacity=".85"/></svg>
       <div class="mgrid" style="margin-top:11px;">
-        <div><div class="cname"><span style="color:var(--r)">0.8</span> Taste similarity (취향 유사도)</div><div class="cdesc">How much my topics·subtopics·keywords overlap with the channel (cosine similarity). Directly measures real content taste — <b>largest weight</b>. (내가 보는 분야·세부주제·키워드가 채널과 얼마나 겹치는지(코사인 유사도). 실제 콘텐츠 취향을 직접 재서 가장 큰 비중.)</div></div>
-        <div><div class="cname"><span style="color:var(--a)">0.1</span> Metric match (지표 일치)</div><div class="cdesc">Fine-tunes whether niche·mainstream taste fits the channel's character. (마이너·대중 취향 성향이 채널 성격과 맞는지로 미세 보정.)</div></div>
-        <div><div class="cname"><span style="color:var(--t)">0.1</span> Popularity (인기도)</div><div class="cdesc">Weak bonus by subscriber count, slightly lowering very small channels. (구독자 수 기반 약한 가산점으로 너무 작은 채널을 살짝 낮춤.)</div></div>
+        <div><div class="cname"><span style="color:var(--r)">0.8</span> Taste similarity (취향 유사도)</div><div class="cdesc">Topic·keyword overlap with the channel (cosine). <b>Largest weight</b>. (분야·키워드 겹침(코사인). 가장 큰 비중.)</div></div>
+        <div><div class="cname"><span style="color:var(--a)">0.1</span> Metric match (지표 일치)</div><div class="cdesc">Niche vs. mainstream fit. (마이너·대중 성향 적합도.)</div></div>
+        <div><div class="cname"><span style="color:var(--t)">0.1</span> Popularity (인기도)</div><div class="cdesc">Small bonus by subscriber count. (구독자 수 기반 약한 가산점.)</div></div>
       </div>
     </div>
   </div></div>
@@ -461,7 +459,7 @@
 <section class="page solo">
   <div class="ahead">
     <div class="kicker">Chrome Extension — Real Use (실사용)</div>
-    <div class="atitle">크롬 확장 프로그램 — Algorithm Analysis of the Current Video (현재 보고 있는 영상의 알고리즘 분석)</div>
+    <div class="atitle">Chrome Extension — Algorithm Analysis of the Current Video (크롬 확장 프로그램 — 현재 보고 있는 영상의 알고리즘 분석)</div>
   </div>
   <div class="ashot"><div class="frame"><img src="extension/0.png" alt="확장 실사용"></div></div>
   <div class="brand">JJKC · MECHANISM BY SCREEN</div><div class="pgno">13</div>
@@ -471,7 +469,7 @@
 <section class="lpage">
   <div class="ahead">
     <div class="kicker">Chrome Extension — Detail Screens (세부 화면)</div>
-    <div class="atitle">크롬 확장 프로그램 — Algorithm Analysis of the Current Video (현재 보고 있는 영상의 알고리즘 분석) + User Feedback (유저 피드백)</div>
+    <div class="atitle">Chrome Extension — Algorithm Analysis of the Current Video (크롬 확장 프로그램 — 현재 보고 있는 영상의 알고리즘 분석) + User Feedback (유저 피드백)</div>
   </div>
   <div class="l3" style="align-items:center;">
     <div class="lcol" style="align-items:center;">
@@ -525,9 +523,9 @@
   var i = 0, N = slides.length;
   function pad2(n){ return (n < 10 ? '0' : '') + n; }
   function fit(){
-    var p = 46;
+    var p = 16;
     var s = Math.min((window.innerWidth - p * 2) / SW, (window.innerHeight - p * 2) / SH);
-    s = Math.max(0.2, Math.min(s, 1.1));
+    s = Math.max(0.2, Math.min(s, 2.4));
     document.documentElement.style.setProperty('--scale', s);
   }
   function render(){
