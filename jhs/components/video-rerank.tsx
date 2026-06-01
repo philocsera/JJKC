@@ -105,7 +105,7 @@ export function VideoRerank() {
           ) : (
             <Sparkles className="h-4 w-4" />
           )}
-          {loading ? "분석 중…" : videos ? "다시 추천" : "Gemini에게 영상 추천받기"}
+          {loading ? "분석 중…" : videos ? "다시 추천" : "AI에게 영상 추천받기"}
         </button>
       </div>
 
@@ -174,7 +174,7 @@ export function VideoRerank() {
       ) : !error ? (
         <TeaserGrid>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            위의 <span className="font-medium text-accent">Gemini에게 영상 추천받기</span> 버튼을 눌러 내 알고리즘에 맞는 영상을 받아보세요.
+            위의 <span className="font-medium text-accent">AI에게 영상 추천받기</span> 버튼을 눌러 내 알고리즘에 맞는 영상을 받아보세요.
           </p>
         </TeaserGrid>
       ) : null}
