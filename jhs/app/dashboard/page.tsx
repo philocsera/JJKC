@@ -96,43 +96,51 @@ export default async function DashboardPage() {
         </span>
       </header>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-medium">Category fingerprint</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            <div>
-              <p className="mb-2 text-center text-sm font-medium text-muted-foreground">{fp.a.title}</p>
-              <CategoryRadar rows={fp.a.rows} aLabel={user.name ?? "Me"} />
-            </div>
-            <div>
-              <p className="mb-2 text-center text-sm font-medium text-muted-foreground">{fp.b.title}</p>
-              <CategoryRadar rows={fp.b.rows} aLabel={user.name ?? "Me"} />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* 화면이 넓으면(>=lg) 좌: fingerprint+top categories / 우: 좋아하는 채널+비슷한 사람.
+          좁으면 단일 열로 떨어지며, DOM 순서대로 기존 세로 배치(fingerprint → top → 채널 → 비슷한 사람)를 유지. */}
+      <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-2">
+        <div className="space-y-12">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium">Category fingerprint</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                  <p className="mb-2 text-center text-sm font-medium text-muted-foreground">{fp.a.title}</p>
+                  <CategoryRadar rows={fp.a.rows} aLabel={user.name ?? "Me"} />
+                </div>
+                <div>
+                  <p className="mb-2 text-center text-sm font-medium text-muted-foreground">{fp.b.title}</p>
+                  <CategoryRadar rows={fp.b.rows} aLabel={user.name ?? "Me"} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-medium">Top categories</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <CategoryBar data={bars} />
-        </CardContent>
-      </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium">Top categories</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <CategoryBar data={bars} />
+            </CardContent>
+          </Card>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-medium">좋아하는 채널</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ChannelList channels={favoriteChannels} />
-        </CardContent>
-      </Card>
+        <div className="space-y-12">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium">좋아하는 채널</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ChannelList channels={favoriteChannels} />
+            </CardContent>
+          </Card>
 
-      <SimilarUsers userId={userId} />
+          <SimilarUsers userId={userId} />
+        </div>
+      </div>
     </section>
     </div>
   );
