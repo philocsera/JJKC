@@ -4,7 +4,7 @@
 // (최신순 → 관련성순). 결과는 서버에서 프로필 버전 기준 3h 캐시 → 재요청은 호출 없이 반환.
 // 버튼 누르기 전엔 블러 처리된 카드(숨겨진 카드) 위에 안내문구. 각 영상엔 좋아요/싫어요.
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import { Sparkles, Loader2, RefreshCw, ThumbsUp, ThumbsDown } from "lucide-react";
 import { TeaserGrid } from "@/components/teaser-grid";
@@ -30,11 +30,17 @@ export function VideoRerank() {
   const [liked, setLiked] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // 보류 중인 좋아요/싫어요 POST. rerank 캐시 키는 dislikedVideoIds.length 에 의존하므로,
+  // 피드백이 DB 에 커밋되기 전에 "다시 추천" 하면 옛 캐시(같은 영상)가 그대로 반환된다.
+  // 그래서 generate() 는 보류 중인 피드백이 모두 끝난 뒤 rerank 를 호출한다.
+  const pending = useRef<Set<Promise<unknown>>>(new Set());
 
   async function generate() {
     setLoading(true);
     setError(null);
     try {
+      // 싫어요/좋아요가 서버에 반영된 뒤 재랭킹하도록 대기(경쟁 상태 방지).
+      if (pending.current.size) await Promise.allSettled([...pending.current]);
       const res = await fetch("/api/discover/rerank", { method: "POST" });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -51,11 +57,14 @@ export function VideoRerank() {
   }
 
   function sendFeedback(videoId: string, channelId: string, action: "like" | "dislike") {
-    fetch("/api/discover/feedback", {
+    const p = fetch("/api/discover/feedback", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ videoId, channelId, action }),
-    }).catch(() => {});
+    })
+      .catch(() => {})
+      .finally(() => pending.current.delete(p));
+    pending.current.add(p);
   }
 
   function onLike(videoId: string, channelId: string) {
