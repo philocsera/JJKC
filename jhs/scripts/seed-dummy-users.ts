@@ -1,6 +1,7 @@
 // 더미 사용자 90명 생성 — 17개 부모 카테고리에 주(主)관심사를 고르게 분배(각 5~6명).
-// 각자 주 카테고리 1 + 친화도 기반 보조 카테고리 2 에서 실제 카탈로그 채널을 임의로
-// 골라 현실적인 AlgoProfile 을 구성한다. 기존 더미(dummy_*)·테스트(test_*) 사용자는 제거.
+// 각자 주 카테고리 1 + 친화도 기반 보조 카테고리 3 에서 실제 카탈로그 채널을 임의로
+// 17~21개(사람마다 랜덤) 골라 현실적인 AlgoProfile 을 구성한다. 주 카테고리 비중↑.
+// 기존 더미(dummy_*)·테스트(test_*) 사용자는 제거.
 // 모든 프로필 공개(public). 인증 토큰·요약(LLM)은 만들지 않음 — 요약은 버튼 온디맨드.
 //
 //   npx tsx scripts/seed-dummy-users.ts
@@ -153,22 +154,40 @@ async function main() {
     primaryCount[primary] = (primaryCount[primary] || 0) + 1;
     userPrimary.push({ id, primary });
 
-    // 보조 2개 — 친화도 목록에서 섞어 2개, 채널 풀이 있는 것만.
+    // 보조 3개 — 친화도 목록에서 섞어 3개, 채널 풀이 있는 것만.
     const secondaries = shuffleTake(AFFINITY[primary] ?? [], (AFFINITY[primary] ?? []).length)
       .filter((c) => c !== primary && (byCat[c]?.length ?? 0) > 0)
-      .slice(0, 2);
-    const cats = [primary, ...secondaries];
+      .slice(0, 3);
 
-    // 채널 pick — 주 6 + 보조 각 2 (최대 10)
+    // 채널 pick — 사람마다 17~21개(랜덤). 주 카테고리에 약 45% 비중을 먼저 확보하고,
+    // 나머지는 보조→주 라운드로빈으로 채운다. 카테고리별 큐를 한 번만 셔플해 중복 없이 뽑는다.
+    const target = 17 + Math.floor(rng() * 5); // 17..21
+    const queues = new Map<string, typeof channels>();
+    for (const cat of [primary, ...secondaries]) queues.set(cat, shuffle(byCat[cat] ?? []));
+
     const picked: typeof channels = [];
     const seen = new Set<string>();
-    cats.forEach((cat, idx) => {
-      const pool = byCat[cat] ?? [];
-      const take = idx === 0 ? 6 : 2;
-      for (const c of shuffleTake(pool, take)) {
-        if (!seen.has(c.id)) { seen.add(c.id); picked.push(c); }
+    const drawOne = (cat: string): boolean => {
+      const q = queues.get(cat);
+      while (q && q.length) {
+        const c = q.pop()!;
+        if (!seen.has(c.id)) { seen.add(c.id); picked.push(c); return true; }
       }
-    });
+      return false;
+    };
+    // 1) 주 카테고리 우선 확보(목표의 ~45%, 풀 한도 내)
+    const primaryShare = Math.min(Math.round(target * 0.45), (byCat[primary] ?? []).length);
+    for (let k = 0; k < primaryShare; k++) if (!drawOne(primary)) break;
+    // 2) 보조→주 라운드로빈으로 target 까지 채움(풀 고갈 시 중단)
+    const ring = [...secondaries, primary];
+    while (picked.length < target) {
+      let progressed = false;
+      for (const cat of ring) {
+        if (picked.length >= target) break;
+        if (drawOne(cat)) progressed = true;
+      }
+      if (!progressed) break;
+    }
     if (picked.length === 0) { console.log(`⚠️ ${name}(${primary}): 채널 못 찾음, 건너뜀`); continue; }
 
     const catScore: Record<string, number> = {};
@@ -188,7 +207,8 @@ async function main() {
     const categories = normalizeTopN(catScore, 10);
     const subCategories = normalizeTopN(subScore, 5);
     const topKeywords = Object.entries(kwScore).sort((a, b) => b[1] - a[1]).slice(0, 12).map(([k]) => k);
-    const topChannels = picked.slice(0, 10).map((c) => ({
+    // 선호채널 = 뽑은 17~21개 전부(대시보드 "좋아하는 채널"에 그대로 노출).
+    const topChannels = picked.map((c) => ({
       id: c.id, name: c.title, thumbnail: c.thumbnail, videoCount: c.videoCount,
     }));
     const subscribedChannelIds = picked.map((c) => c.id);
