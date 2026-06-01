@@ -10,7 +10,7 @@ export function ExtensionConnectButton() {
       if (event.source !== window) return;
 
       if (event.data?.type === "JJKC_CONNECT_EXTENSION_DONE") {
-        setStatus("확장프로그램 연결 완료");
+        setStatus("로그인 정보 연동 완료");
         alert("JJKC 확장프로그램 로그인 정보 연동 완료");
       }
     }
@@ -48,7 +48,7 @@ export function ExtensionConnectButton() {
 
       setTimeout(() => {
         setStatus((prev) =>
-          prev === "확장프로그램 연결 완료"
+          prev === "로그인 정보 연동 완료"
             ? prev
             : "요청 전송됨. 확장프로그램 설치 후 페이지 새로고침이 필요할 수 있습니다."
         );
