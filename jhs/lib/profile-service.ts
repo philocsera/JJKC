@@ -196,6 +196,41 @@ export async function recordShownVideos(userId: string, videoIds: string[]): Pro
   });
 }
 
+// 대시보드 "좋아하는 채널"(= likedChannelIds ∪ topChannels)에서 채널을 영구 제거.
+// topChannels 는 재계산 때 (온보딩 채널 ∪ liked − disliked) 로 다시 생성되므로, 다시
+// 살아나지 않게 모든 소스에서 뺀다: likedChannelIds, subscribedChannelIds,
+// OnboardInput.channelIds. 그 뒤 프로필을 재계산해 fingerprint·topChannels 를 갱신.
+export async function removeFavoriteChannel(userId: string, channelId: string): Promise<void> {
+  const [row, input] = await Promise.all([
+    prisma.algoProfile.findUnique({
+      where: { userId },
+      select: { likedChannelIds: true, subscribedChannelIds: true, topChannels: true },
+    }),
+    prisma.onboardInput.findUnique({ where: { userId }, select: { channelIds: true } }),
+  ]);
+  if (!row) return;
+
+  const liked = safeParse<string[]>(row.likedChannelIds, []).filter((id) => id !== channelId);
+  const subscribed = safeParse<string[]>(row.subscribedChannelIds, []).filter((id) => id !== channelId);
+  const top = safeParse<TopChannel[]>(row.topChannels, []).filter((c) => c.id !== channelId);
+  await prisma.algoProfile.update({
+    where: { userId },
+    data: {
+      likedChannelIds: JSON.stringify(liked),
+      subscribedChannelIds: JSON.stringify(subscribed),
+      topChannels: JSON.stringify(top), // 즉시 반영(재계산이 no-op 인 경우 대비)
+    },
+  });
+  if (input) {
+    const baseIds = safeParse<string[]>(input.channelIds, []).filter((id) => id !== channelId);
+    await prisma.onboardInput.update({ where: { userId }, data: { channelIds: JSON.stringify(baseIds) } });
+  }
+
+  // 소스를 모두 정리한 뒤 재계산 → topChannels·카테고리 fingerprint 가 제거를 반영.
+  const { recomputeProfileWithFeedback } = await import("./recompute-profile");
+  await recomputeProfileWithFeedback(userId);
+}
+
 export async function getProfile(userId: string): Promise<AlgoProfileShape | null> {
   const row = await prisma.algoProfile.findUnique({ where: { userId } });
   return row ? unpack(row) : null;

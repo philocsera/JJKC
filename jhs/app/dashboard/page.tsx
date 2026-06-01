@@ -134,7 +134,7 @@ export default async function DashboardPage() {
               <CardTitle className="text-sm font-medium">좋아하는 채널</CardTitle>
             </CardHeader>
             <CardContent>
-              <ChannelList channels={favoriteChannels} />
+              <ChannelList channels={favoriteChannels} removable />
             </CardContent>
           </Card>
 
