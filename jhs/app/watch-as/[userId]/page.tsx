@@ -22,7 +22,9 @@ export default async function WatchAsPage({
   const { owner } = hit;
 
   return (
-    <div className="space-y-6">
+    // 추천(discover)과 동일한 풀폭 컨테이너 — 영상 썸네일 크기를 맞춘다.
+    <div className="mx-[calc(50%-50vw)] w-screen px-5 sm:px-8">
+    <section className="mx-auto max-w-[1800px] space-y-6">
       {/* 컨텍스트 헤더 — 누구의 알고리즘인지 */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-5">
         <div className="flex items-center gap-3">
@@ -53,6 +55,7 @@ export default async function WatchAsPage({
         columns="default"
         autoStart
       />
+    </section>
     </div>
   );
 }
