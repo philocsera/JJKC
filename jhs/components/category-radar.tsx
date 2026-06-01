@@ -43,10 +43,12 @@ export function CategoryRadar({
   rows,
   aLabel,
   bLabel,
+  heightClass = "h-72",
 }: {
   rows: RadarRow[];
   aLabel: string;
   bLabel?: string;
+  heightClass?: string; // 컨테이너 높이(Tailwind) — 그래픽 크기. 기본 h-72.
 }) {
   const data = rows.map((r) => ({
     category: r.category,
@@ -57,9 +59,9 @@ export function CategoryRadar({
   }));
 
   return (
-    <div className="h-72">
+    <div className={heightClass}>
       <ResponsiveContainer width="100%" height="100%">
-        <RadarChart data={data} outerRadius="78%">
+        <RadarChart data={data} outerRadius="80%">
           <defs>
             <filter id="fpGlowA" x="-40%" y="-40%" width="180%" height="180%">
               <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="hsl(var(--accent))" floodOpacity="0.6" />

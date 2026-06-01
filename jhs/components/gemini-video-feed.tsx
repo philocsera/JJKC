@@ -32,18 +32,24 @@ export function GeminiVideoFeed({
   hint,
   columns = "default",
   autoStart = false,
+  maxHeightClass,
 }: {
   endpoint: string;
   body: Record<string, unknown>;
   buttonLabel: string;
   hint: string;
-  columns?: "default" | "large"; // large = 적은 열 = 큰 썸네일
+  columns?: "default" | "large" | "duo"; // large=적은 열(큰 썸네일), duo=최대 2열
   autoStart?: boolean; // 진입 시 버튼 없이 바로 추천 호출(예: /watch-as)
+  maxHeightClass?: string; // 설정 시 결과 영역을 그 높이로 제한하고 자체 스크롤(휠 분리)
 }) {
   const gridCls =
     columns === "large"
       ? "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
-      : "grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5";
+      : columns === "duo"
+        ? "grid grid-cols-1 gap-6 sm:grid-cols-2"
+        : "grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5";
+  // 결과(영상 그리드/플레이스홀더)를 감싸는 래퍼 — maxHeightClass 가 있으면 자체 스크롤.
+  const scrollCls = maxHeightClass ? `${maxHeightClass} overflow-y-auto pr-1` : "";
   const [videos, setVideos] = useState<V[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -100,6 +106,7 @@ export function GeminiVideoFeed({
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
+      <div className={scrollCls}>
       {videos && videos.length > 0 ? (
         <ul className={gridCls}>
           {videos.map((v) => (
@@ -144,6 +151,7 @@ export function GeminiVideoFeed({
           <p className="text-sm leading-relaxed text-muted-foreground">{hint}</p>
         </TeaserGrid>
       ) : null}
+      </div>
     </div>
   );
 }

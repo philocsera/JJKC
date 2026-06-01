@@ -151,72 +151,83 @@ async function CompareView({ aId, bId }: { aId: string; bId: string }) {
 
       <CompareInsightButton aId={aId} bId={bId} />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-medium">Category overlay</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <CategoryRadar
-            rows={rows}
-            aLabel={a.owner.name}
-            bLabel={b.owner.name}
-          />
-        </CardContent>
-      </Card>
+      {/* 넓으면(≥lg) 좌: 분석(Category overlay 크게 + 공통 채널) / 우: 둘 다 좋아할 영상.
+          좁으면 단일 열로 떨어진다. */}
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+        {/* 좌 — 카테고리 오버레이(크게) + 공통 관심 채널 */}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium">Category overlay</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <CategoryRadar
+                rows={rows}
+                aLabel={a.owner.name}
+                bLabel={b.owner.name}
+                heightClass="h-[26rem] sm:h-[32rem]"
+              />
+            </CardContent>
+          </Card>
 
-      {sharedChannels.length > 0 ? (
+          {sharedChannels.length > 0 ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm font-medium">
+                  공통 관심 채널 ({sharedChannels.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="flex flex-wrap gap-2">
+                  {sharedChannels.map((c) => (
+                    <li key={c.id}>
+                      <a
+                        href={`https://www.youtube.com/channel/${c.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 rounded-full border py-1 pl-1 pr-3 text-xs hover:bg-muted"
+                      >
+                        {c.thumbnail ? (
+                          <Image
+                            src={c.thumbnail}
+                            alt={c.name}
+                            width={24}
+                            height={24}
+                            className="h-6 w-6 rounded-full object-cover"
+                            unoptimized
+                          />
+                        ) : (
+                          <span className="h-6 w-6 rounded-full bg-muted" />
+                        )}
+                        <span className="max-w-[10rem] truncate">{c.name}</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          ) : null}
+        </div>
+
+        {/* 우 — 둘 다 좋아할 영상: 한 줄 최대 2개 + 자체 스크롤(페이지가 밑으로 늘지 않음) */}
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium">
-              공통 관심 채널 ({sharedChannels.length})
+              A · B 가 둘 다 좋아할 영상
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="flex flex-wrap gap-2">
-              {sharedChannels.map((c) => (
-                <li key={c.id}>
-                  <a
-                    href={`https://www.youtube.com/channel/${c.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 rounded-full border py-1 pl-1 pr-3 text-xs hover:bg-muted"
-                  >
-                    {c.thumbnail ? (
-                      <Image
-                        src={c.thumbnail}
-                        alt={c.name}
-                        width={24}
-                        height={24}
-                        className="h-6 w-6 rounded-full object-cover"
-                        unoptimized
-                      />
-                    ) : (
-                      <span className="h-6 w-6 rounded-full bg-muted" />
-                    )}
-                    <span className="max-w-[10rem] truncate">{c.name}</span>
-                  </a>
-                </li>
-              ))}
-            </ul>
+            <GeminiVideoFeed
+              endpoint="/api/compare/videos"
+              body={{ aId, bId }}
+              buttonLabel="AI로 둘 다 좋아할 영상 보기"
+              hint={`위의 버튼을 눌러 A · B 가 둘 다 좋아할 영상을 받아보세요.`}
+              columns="duo"
+              maxHeightClass="max-h-[70vh]"
+            />
           </CardContent>
         </Card>
-      ) : null}
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-medium">
-            A · B 가 둘 다 좋아할 영상
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <GeminiVideoFeed
-            endpoint="/api/compare/videos"
-            body={{ aId, bId }}
-            buttonLabel="AI로 둘 다 좋아할 영상 보기"
-            hint={`위의 버튼을 눌러 A · B 가 둘 다 좋아할 영상을 받아보세요.`}
-          />
-        </CardContent>
-      </Card>
+      </div>
     </div>
   );
 }
