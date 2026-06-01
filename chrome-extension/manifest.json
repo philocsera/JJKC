@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "JJKC Algorithm Viewer",
+  "version": "1.4.0",
+  "description": "JJKC 서버 YouTube API 기반 태그 분석과 DOM fallback, 익명 리뷰 기능을 제공합니다.",
+  "permissions": [
+    "storage",
+    "tabs",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://ytalgoshare.vercel.app/*",
+    "https://jjkc-algo-blush.vercel.app/*",
+    "https://www.youtube.com/*",
+    "https://youtube.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://jjkc-algo-blush.vercel.app/*",
+        "https://ytalgoshare.vercel.app/*",
+        "https://www.youtube.com/*",
+        "https://youtube.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "JJKC Algorithm Viewer",
+    "default_popup": "popup.html"
+  }
+}
