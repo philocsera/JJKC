@@ -21,7 +21,7 @@ export function ExtensionConnectButton() {
       await navigator.clipboard.writeText(userId);
 
       alert("사용자 ID가 복사되었습니다. 확장프로그램에 붙여넣으세요.");
-    } catch (error) {
+    } catch {
       alert("확장프로그램 연결 중 오류가 발생했습니다.");
     }
   }
