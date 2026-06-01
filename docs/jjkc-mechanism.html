@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>JJKC 서비스 메커니즘</title>
+<style>
+  @page { size: A4 landscape; margin: 0; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root{
+    --bg:#0b0c10; --panel:#15161d; --panel2:#1b1d27; --line:#2b2e3c;
+    --ink:#eceef4; --mut:#959bac; --dim:#666c7e;
+    --r:#e0483d; --a:#f3a13a; --t:#36c2a6; --b:#6e8bf0; --p:#b06ef0;
+  }
+  html{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body{ font-family:'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif; color:var(--ink); background:var(--bg); }
+
+  .page{
+    position:relative; width:297mm; height:210mm; overflow:hidden;
+    background:radial-gradient(120% 90% at 50% 0%, #14151d 0%, var(--bg) 55%);
+    padding:11mm 14mm 13mm; page-break-after:always; display:flex; flex-direction:column;
+  }
+  .page:last-child{ page-break-after:auto; }
+  .kicker{ font-size:10px; letter-spacing:.3em; color:var(--r); font-weight:700; text-transform:uppercase; }
+  .pgno{ position:absolute; right:12mm; bottom:8mm; font-size:10px; color:var(--dim); letter-spacing:.1em; }
+  .brand{ position:absolute; left:12mm; bottom:8mm; font-size:10px; color:var(--dim); letter-spacing:.18em; }
+  svg{ display:block; }
+  .num{ font-variant-numeric:tabular-nums; }
+
+  /* ── 표지 ── */
+  .cover{ justify-content:center; align-items:center; text-align:center; }
+  .cover h1{ font-size:46px; font-weight:800; letter-spacing:-.5px; line-height:1.08; }
+  .cover .sub{ font-size:14.5px; color:var(--mut); margin-top:18px; max-width:460px; line-height:1.65; }
+  .statbar{ display:flex; gap:10px; margin-top:30px; }
+  .stat{ background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:13px 18px; }
+  .stat .v{ font-size:22px; font-weight:800; letter-spacing:-.5px; }
+  .stat .l{ font-size:10px; color:var(--mut); margin-top:2px; }
+
+  /* ── 스크린샷(크게, 위) ── */
+  .ahead{ flex:0 0 auto; }
+  .ahead .atitle{ font-size:21px; font-weight:800; letter-spacing:-.3px; margin-top:4px; display:flex; align-items:baseline; gap:9px; flex-wrap:wrap; }
+  .ahead .url{ font-size:10.5px; color:var(--a); background:#23252f; border:1px solid var(--line); border-radius:6px; padding:2px 8px; font-weight:600; }
+  .ashot{ flex:1; min-height:0; display:flex; align-items:center; justify-content:center; margin-top:9px; }
+  .frame{ border:1px solid var(--line); border-radius:11px; overflow:hidden; background:#0e0f14; box-shadow:0 16px 40px rgba(0,0,0,.5); max-width:100%; max-height:100%; display:flex; flex-direction:column; }
+  .frame .bar{ height:24px; flex:0 0 auto; background:#1a1c24; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:6px; padding:0 11px; }
+  .frame .bar i{ width:8px; height:8px; border-radius:50%; display:inline-block; }
+  .frame .barurl{ margin-left:8px; font-size:9px; color:var(--dim); background:#0e0f14; border-radius:5px; padding:2px 9px; }
+  .frame img{ display:block; max-width:100%; min-height:0; object-fit:contain; }
+
+  /* ── 설명 밴드(아래) ── */
+  .mech{ flex:0 0 auto; margin-top:10px; }
+  .mcard{ background:linear-gradient(180deg,var(--panel) 0%,var(--panel2) 100%); border:1px solid var(--line); border-radius:12px; padding:12px 15px; }
+  .mhead{ font-size:12px; font-weight:800; letter-spacing:.02em; display:flex; align-items:center; gap:8px; color:var(--ink); }
+  .mhead .dot{ width:8px; height:8px; border-radius:50%; }
+  .mgrid{ margin-top:9px; display:grid; grid-template-columns:1fr 1fr; gap:7px 20px; }
+  .mrow{ display:flex; gap:8px; font-size:11px; line-height:1.45; color:var(--mut); }
+  .mrow b{ color:var(--ink); font-weight:700; }
+  .mrow .mk{ flex:0 0 auto; width:17px; height:17px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:800; margin-top:1px; }
+  .mdiag{ display:flex; gap:16px; align-items:center; margin-top:9px; }
+  .mdiag .dleft{ flex:0 0 auto; }
+  .mdiag .dright{ flex:1; min-width:0; }
+  .chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:9px; }
+  .chip{ font-size:10px; color:var(--ink); background:#23252f; border:1px solid var(--line); border-radius:7px; padding:3px 8px; }
+  .formula{ font-size:12.5px; font-weight:700; }
+  .cap{ font-size:9.5px; color:var(--dim); margin-top:7px; line-height:1.45; }
+  .arrowflow{ display:flex; align-items:center; gap:5px; flex-wrap:wrap; }
+  .node{ background:#20222c; border:1px solid var(--line); border-radius:8px; padding:4px 8px; font-size:10px; color:var(--ink); }
+  .arrowflow svg{ flex:0 0 auto; }
+  .ar{ } /* arrow placeholder */
+
+  /* 표준 페이지(가로): 스크린샷 왼쪽 크게 + 설명 오른쪽. solo=설명 없는 전체 화면 */
+  .page:not(.cover):not(.solo){ display:grid; grid-template-columns:1.55fr 1fr; grid-template-rows:auto 1fr; grid-template-areas:"head head" "shot mech"; column-gap:18px; }
+  .page:not(.cover):not(.solo) .ahead{ grid-area:head; }
+  .page:not(.cover):not(.solo) .ashot{ grid-area:shot; margin-top:8px; }
+  .page:not(.cover):not(.solo) .mech{ grid-area:mech; align-self:stretch; margin-top:8px; display:flex; }
+  .page:not(.cover):not(.solo) .mech > .mcard{ flex:1; display:flex; flex-direction:column; padding:18px 18px; }
+  .page:not(.cover):not(.solo) .mech .mhead{ font-size:14px; }
+  .page:not(.cover):not(.solo) .mech .mrow{ font-size:12.5px; line-height:1.6; }
+  .page:not(.cover):not(.solo) .mech .mgrid{ grid-template-columns:1fr; gap:14px; flex:1; align-content:space-around; margin-top:12px; }
+  .page:not(.cover):not(.solo) .mech .mdiag{ flex-direction:column; align-items:flex-start; gap:10px; }
+  .page:not(.cover):not(.solo) .mech .mdiag .dleft{ width:100%; }
+
+  /* ── 가로 합본 페이지(3 스크린샷 나란히) ── */
+  @page land { size: A4 landscape; margin: 0; }
+  .lpage{ page:land; position:relative; width:297mm; height:210mm; overflow:hidden;
+    background:radial-gradient(120% 90% at 50% 0%, #14151d 0%, var(--bg) 55%);
+    padding:11mm 13mm 13mm; page-break-after:always; display:flex; flex-direction:column; }
+  .l3{ flex:1; display:flex; gap:11px; min-height:0; margin-top:9px; }
+  .lcol{ flex:1; min-width:0; display:flex; flex-direction:column; }
+  .lstep{ font-size:12px; font-weight:800; margin-bottom:6px; display:flex; align-items:center; gap:7px; color:var(--ink); }
+  .lstep .n{ width:18px; height:18px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; }
+  .lframe{ flex:1; min-height:0; border:1px solid var(--line); border-radius:10px; overflow:hidden; background:#0e0f14; display:flex; flex-direction:column; }
+  .lframe .bar{ height:22px; flex:0 0 auto; background:#1a1c24; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:5px; padding:0 9px; }
+  .lframe .bar i{ width:7px; height:7px; border-radius:50%; display:inline-block; }
+  .lframe .imgwrap{ flex:1; min-height:0; overflow:hidden; }
+  .lframe img{ width:100%; height:auto; display:block; }
+  .lcap{ font-size:9.5px; color:var(--mut); margin-top:6px; line-height:1.4; }
+  .lmech{ flex:0 0 auto; margin-top:10px; }
+  /* 2단 배치: ①② 왼쪽 세로 스택 + ③ 오른쪽 크게 */
+  .l2{ flex:1; display:flex; gap:13px; min-height:0; margin-top:9px; }
+  .lcolL{ flex:1; display:flex; flex-direction:column; gap:10px; min-width:0; }
+  .lcolR{ flex:1.42; display:flex; flex-direction:column; min-width:0; }
+  .litem{ flex:1; display:flex; flex-direction:column; min-height:0; }
+  .pframe{ flex:1; min-height:0; border:1px solid var(--line); border-radius:10px; overflow:hidden; background:#0e0f14; display:flex; align-items:center; justify-content:center; }
+  .pframe img{ max-width:100%; max-height:100%; object-fit:contain; display:block; }
+  /* 가로로 짧은 스크린샷용 — 이미지에 딱 맞는 프레임 */
+  .hugframe{ border:1px solid var(--line); border-radius:10px; overflow:hidden; background:#0e0f14; }
+  .hugframe img{ width:100%; display:block; }
+  .mdesc{ font-size:13px; color:var(--mut); line-height:1.7; margin-top:12px; }
+  /* 구성요소: 이름(큰 글씨) → 줄바꿈 → 설명(아래) */
+  .cname{ font-size:27px; font-weight:800; color:var(--ink); line-height:1.25; letter-spacing:-.3px; }
+  .cname .w{ font-weight:800; }
+  .cdesc{ font-size:16px; color:var(--mut); line-height:1.6; margin-top:9px; }
+  .mdesc b{ color:var(--ink); }
+
+  /* ── 콘텐츠(문서) 페이지 — Phase 1 ── */
+  .dsub{ font-size:14px; color:var(--mut); margin-top:7px; line-height:1.5; }
+  .doc{ flex:1; min-height:0; display:flex; flex-direction:column; justify-content:center; gap:18px; }
+  .ch{ font-size:16.5px; font-weight:800; color:var(--ink); display:flex; align-items:center; gap:10px; line-height:1.3; }
+  .ch .tag{ width:25px; height:25px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; flex:0 0 auto; }
+  .ch .dot{ width:10px; height:10px; border-radius:50%; flex:0 0 auto; }
+  .dh{ font-size:15px; font-weight:800; color:var(--ink); display:flex; align-items:center; gap:9px; }
+  .dh .dot{ width:9px; height:9px; border-radius:50%; flex:0 0 auto; }
+  .dcards{ display:flex; gap:16px; align-items:stretch; }
+  .dcard{ flex:1; background:linear-gradient(180deg,var(--panel) 0%,var(--panel2) 100%); border:1px solid var(--line); border-radius:14px; padding:18px 20px; }
+  .dbul{ display:flex; gap:10px; font-size:13.5px; line-height:1.6; color:var(--mut); margin-top:13px; }
+  .dbul .k{ flex:0 0 auto; font-weight:800; }
+  .dbul b{ color:var(--ink); font-weight:700; }
+  .dbul i{ font-style:italic; color:var(--ink); }
+  .dcallout{ background:linear-gradient(180deg,#1d1622 0%,#181420 100%); border:1px solid #3a2550; border-radius:14px; padding:17px 22px; }
+  .dcallout .body{ font-size:14px; line-height:1.65; color:var(--mut); margin-top:10px; }
+  .dcallout .body b{ color:var(--ink); }
+  .dcallout .body code{ font-family:inherit; color:var(--p); font-weight:800; }
+  .dtable{ width:100%; border-collapse:separate; border-spacing:0; border:1px solid var(--line); border-radius:12px; overflow:hidden; font-size:13px; }
+  .dtable th, .dtable td{ text-align:left; padding:11px 14px; border-bottom:1px solid var(--line); border-right:1px solid var(--line); color:var(--mut); line-height:1.4; vertical-align:middle; }
+  .dtable th{ background:#20222c; color:var(--ink); font-weight:800; font-size:12.5px; }
+  .dtable tr:last-child td{ border-bottom:none; }
+  .dtable th:last-child, .dtable td:last-child{ border-right:none; }
+  .dtable td:first-child{ color:var(--ink); font-weight:700; background:#16171f; }
+  .dtable .win{ color:var(--t); font-weight:700; }
+
+  /* ── 웹 슬라이드쇼(가로 넘김) — 화면 전용 ── */
+  @media screen {
+    html,body{ height:100%; }
+    body.deck-on{ overflow:hidden; background:#08090d; }
+    .deck-viewport{ position:fixed; inset:0; overflow:hidden;
+      background:radial-gradient(140% 100% at 50% 0%, #14151d 0%, #08090d 62%); }
+    .deck-track{ display:flex; height:100%; will-change:transform;
+      transition:transform .52s cubic-bezier(.45,.05,.2,1); }
+    .deck-slide{ flex:0 0 100vw; height:100vh; display:grid; place-items:center; overflow:hidden; }
+    .deck-slide > section{ flex:none; transform:scale(var(--scale,1)); transform-origin:center center;
+      box-shadow:0 30px 90px rgba(0,0,0,.6); border-radius:7px; }
+    .deck-nav{ position:fixed; top:50%; transform:translateY(-50%); width:52px; height:52px; border-radius:50%;
+      background:rgba(28,30,40,.72); border:1px solid var(--line); color:var(--ink); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
+      display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10; transition:background .2s, opacity .2s; }
+    .deck-nav:hover{ background:rgba(50,54,72,.94); }
+    .deck-nav.prev{ left:26px; } .deck-nav.next{ right:26px; }
+    .deck-nav[disabled]{ opacity:.22; pointer-events:none; }
+    .deck-nav svg{ width:22px; height:22px; }
+    .deck-counter{ position:fixed; left:50%; bottom:22px; transform:translateX(-50%); z-index:10;
+      font-size:12px; letter-spacing:.12em; color:var(--mut); background:rgba(20,22,30,.7); border:1px solid var(--line);
+      border-radius:999px; padding:7px 16px; -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); font-variant-numeric:tabular-nums; }
+    .deck-counter b{ color:var(--ink); font-weight:800; }
+    .deck-progress{ position:fixed; left:0; top:0; height:3px; width:0; z-index:11;
+      background:linear-gradient(90deg,var(--r),var(--a)); transition:width .52s cubic-bezier(.45,.05,.2,1); }
+    .deck-hint{ position:fixed; right:24px; bottom:22px; z-index:10; font-size:11px; color:var(--dim);
+      background:rgba(20,22,30,.7); border:1px solid var(--line); border-radius:999px; padding:6px 13px;
+      -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); transition:opacity .6s; pointer-events:none; }
+  }
+  @media print {
+    .deck-viewport, .deck-track, .deck-slide{ display:contents !important; }
+    .deck-slide > section{ transform:none !important; box-shadow:none !important; border-radius:0 !important; }
+    .deck-nav, .deck-counter, .deck-progress, .deck-hint{ display:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== 표지 ===================== -->
+<section class="page cover">
+  <svg width="240" height="240" viewBox="0 0 240 240" style="margin-bottom:6px;">
+    <defs><filter id="glow" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#e0483d" flood-opacity=".55"/></filter></defs>
+    <g transform="translate(120,120)" stroke="#2b2e3c" fill="none">
+      <polygon points="0,-98 85,-49 85,49 0,98 -85,49 -85,-49"/>
+      <polygon points="0,-65 56,-32 56,32 0,65 -56,32 -56,-32"/>
+      <polygon points="0,-32 28,-16 28,16 0,32 -28,16 -28,-16"/>
+    </g>
+    <g transform="translate(120,120)"><polygon filter="url(#glow)" points="0,-78 62,-26 45,36 0,53 -36,26 -26,-36" fill="#e0483d" fill-opacity=".42" stroke="#e0483d" stroke-width="2.5"/></g>
+  </svg>
+  <div class="kicker">YouTube Algorithm Profiling &amp; Recommendation</div>
+  <h1 style="margin-top:12px; font-size:92px;">JJKC</h1>
+  <div style="font-size:46px; color:var(--ink); font-weight:700; margin-top:18px; line-height:1.3;">내 유튜브 알고리즘을 분석하고<br>다른 사람들의 알고리즘들을 구경하고 비교하기</div>
+  <div class="brand">JJKC · MECHANISM BY SCREEN</div>
+  <div class="pgno">01</div>
+</section>
+
+<!-- ===================== 02 Phase 1 — 알고리즘 프로필 구축 (Phase1 PDF p1) ===================== -->
+<section class="lpage">
+  <div class="ahead">
+    <div class="kicker">Phase 1</div>
+    <div class="atitle">Building the Algorithm Profile</div>
+  </div>
+  <div class="dsub">Three input methods. Why Methods 1 and 2 alone are not enough.</div>
+  <div class="doc">
+    <div class="dcards">
+      <div class="dcard">
+        <div class="ch"><span class="tag" style="background:#1c2444;color:var(--b)">1</span>Method 1 — Google Sign-in (YouTube Data API)</div>
+        <div class="dbul"><span class="k" style="color:var(--t)">Strength</span><span>Very accessible — one click, instant analysis based on real subscription / activity data.</span></div>
+        <div class="dbul"><span class="k" style="color:var(--r)">Limitation for a real service</span><span>requires the YouTube Data API v3 read permission (OAuth resistance), and the API has a daily quota cap. It works for a demo, but it cannot scale to real traffic and many users hesitate at the permission screen.</span></div>
+      </div>
+      <div class="dcard">
+        <div class="ch"><span class="tag" style="background:#173029;color:var(--t)">2</span>Method 2 — Google Takeout JSON Upload</div>
+        <div class="dbul"><span class="k" style="color:var(--t)">Strength</span><span>No permission, no quota — we can analyze the user's <i>entire</i> watch history. In principle, depth is unlimited.</span></div>
+        <div class="dbul"><span class="k" style="color:var(--r)">Limitation for a real user</span><span>accessibility is poor. The user must request Takeout, wait for an email, download a ZIP, unzip it, and upload one file. The full path takes around 30 minutes and most casual users will drop off.</span></div>
+      </div>
+    </div>
+    <div class="dcallout">
+      <div class="ch" style="color:var(--p)"><span class="dot" style="background:var(--p)"></span>Why we added Method 3</div>
+      <div class="body">Method 1 is easy but not viable as a real service. Method 2 is powerful but the user cannot reach it easily. Method 3 fills that gap: <code>no login, no file, no waiting</code> — the user simply tells us what they like, and we generate the algorithm profile for them.</div>
+    </div>
+  </div>
+  <div class="brand">JJKC · MECHANISM BY SCREEN</div><div class="pgno">02</div>
+</section>
+
+<!-- ===================== 03 Method 3 — 직접 생성 (Phase1 PDF p2) ===================== -->
+<section class="lpage">
+  <div class="ahead">
+    <div class="kicker">Phase 1 · Method 3</div>
+    <div class="atitle">Direct Algorithm Generation</div>
+  </div>
+  <div class="dsub">The user declares interests; the system builds a personalized algorithm directly from those selections.</div>
+  <div class="doc">
+    <div class="dcards">
+      <div class="dcard">
+        <div class="ch"><span class="dot" style="background:var(--t)"></span>The data foundation we built</div>
+        <div class="dbul"><span class="k" style="color:var(--t)">•</span><span>Collected <b>~6,600 Korean YouTube channels</b> with 50,000+ subscribers, gathered without using the YouTube API.</span></div>
+        <div class="dbul"><span class="k" style="color:var(--t)">•</span><span>Every channel is classified into <b>14 top-level categories</b> and a further set of <b>sub-categories</b> for finer interests.</span></div>
+      </div>
+      <div class="dcard">
+        <div class="ch"><span class="dot" style="background:var(--b)"></span>How it works</div>
+        <div class="dbul"><span class="k" style="color:var(--b)">1</span><span>The user picks the categories (and sub-categories) they are interested in.</span></div>
+        <div class="dbul"><span class="k" style="color:var(--b)">2</span><span>The selection is mapped into the same category / sub-category vector space as our channel catalog.</span></div>
+        <div class="dbul"><span class="k" style="color:var(--b)">3</span><span>From that vector, a tailored algorithm profile is generated — the same data shape Method 1 and Method 2 produce.</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="dh"><span class="dot" style="background:var(--a)"></span>Comparison of the three methods</div>
+      <table class="dtable" style="margin-top:11px;">
+        <tr>
+          <th style="width:22%">Criterion</th>
+          <th style="width:24%">① Google Sign-in</th>
+          <th style="width:24%">② Takeout JSON</th>
+          <th style="width:30%">③ Direct Generation</th>
+        </tr>
+        <tr>
+          <td>Accessibility</td>
+          <td>High (one click)</td>
+          <td>Low (about 30 min)</td>
+          <td class="win">High (under 1 min)</td>
+        </tr>
+        <tr>
+          <td>Depth of analysis</td>
+          <td>Limited by API quota</td>
+          <td>Unlimited (full history)</td>
+          <td class="win">Direct match over our 6,600-channel catalog</td>
+        </tr>
+        <tr>
+          <td>Viability as a real service</td>
+          <td>Hard (permission + quota)</td>
+          <td>Hard (user drop-off)</td>
+          <td class="win">Designed for it</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <div class="brand">JJKC · MECHANISM BY SCREEN</div><div class="pgno">03</div>
+</section>
+
+<!-- ===================== 04 랜딩 ===================== -->
+<section class="page solo">
+  <div class="ahead">
+    <div class="kicker">Screen 01 — 진입</div>
+    <div class="atitle">서비스 소개 (랜딩) <span class="url">/</span></div>
+  </div>
+  <div class="ashot"><div class="frame"><div class="bar"><i style="background:#ec6a5e"></i><i style="background:#f4bf4f"></i><i style="background:#61c554"></i><span class="barurl">jjkc-algo-blush.vercel.app/</span></div><img src="shots/01-landing.png" alt="랜딩"></div></div>
+  <div class="brand">JJKC · MECHANISM BY SCREEN</div><div class="pgno">04</div>
+</section>
+
+<!-- ===================== 03 온보딩 직접 고르기 3단계 (가로 합본) ===================== -->
+<section class="lpage">
+  <div class="ahead">
+    <div class="kicker">Screen 02 — 온보딩 · 직접 고르기</div>
+    <div class="atitle">알고리즘 만들기 — 3단계 한눈에 <span class="url">/onboard · 직접 고르기</span></div>
+  </div>
+  <div class="l2">
+    <div class="lcolL">
+      <div class="litem">
+        <div class="lstep"><span class="n" style="background:#3a1f1d;color:var(--r)">①</span>입력 방법 + 관심 카테고리</div>
+        <div class="pframe"><img src="shots/08-onboard.png" alt="온보딩 개요"></div>
+      </div>
+      <div class="litem">
+        <div class="lstep"><span class="n" style="background:#3a2f1a;color:var(--a)">②</span>세부 관심사</div>
+        <div class="pframe"><img src="shots/onboard-sub.png" alt="세부 관심사"></div>
+      </div>
+    </div>
+    <div class="lcolR">
+      <div class="lstep"><span class="n" style="background:#173029;color:var(--t)">③</span>채널 선택</div>
+      <div class="pframe"><img src="shots/onboard-channel.png" alt="채널 선택"></div>
+    </div>
+  </div>
+  <div class="brand">JJKC · MECHANISM BY SCREEN</div><div class="pgno">05</div>
+</section>
+
+<!-- ===================== 04 파일 분석 · Google 연동 (가로 병합) ===================== -->
+<section class="lpage">
+  <div class="ahead">
+    <div class="kicker">Screen 02 — 온보딩 · 방법 B·C</div>
+    <div class="atitle">파일로 분석 · Google 연동 <span class="url">/onboard</span></div>
+  </div>
+  <div style="flex:1; min-height:0; display:flex; align-items:center;">
+  <div class="l2" style="align-items:flex-start;">
+    <div class="lcol">
+      <div class="lstep"><span class="n" style="background:#3a2f1a;color:var(--a)">B</span>파일로 분석하기 (Takeout)</div>
+      <div class="hugframe"><img src="shots/onboard-takeout.png" alt="파일로 분석하기"></div>
+      <div class="mdesc">Google Takeout에서 내보낸 유튜브 <b>시청 기록(.json/.html)</b>을 직접 파싱해 영상별 채널 ID만 추려 서버로 보냅니다.</div>
+    </div>
+    <div class="lcol">
+      <div class="lstep"><span class="n" style="background:#3a1f1d;color:var(--r)">C</span>Google 연동 (구독 자동 분석)</div>
+      <div class="hugframe"><img src="shots/onboard-google.png" alt="Google 연동"></div>
+      <div class="mdesc">Google 계정을 <b>youtube.readonly</b> 권한으로 연동하면 로그인한 사용자의 유튜브 구독 채널 목록을 가져옵니다. 가져온 구독 채널 중 <b>분석 카탈로그에 있는 채널만</b> 골라 교집합으로 알고리즘 프로필을 생성하고, 완료되면 대시보드로 이동합니다.</div>
+    </div>
+  </div>
+  </div>
+  <div class="brand">JJKC · MECHANISM BY SCREEN</div><div class="pgno">06</div>
+</section>
+
+<!-- ===================== 08 대시보드 ===================== -->
+<section class="page">
+  <div class="ahead">
+    <div class="kicker">Screen 03 — 내 알고리즘</div>
+    <div class="atitle">대시보드 (Category Fingerprint) <span class="url">/dashboard</span></div>
+  </div>
+  <div class="ashot"><div class="frame"><div class="bar"><i style="background:#ec6a5e"></i><i style="background:#f4bf4f"></i><i style="background:#61c554"></i><span class="barurl">/dashboard</span></div><img src="shots/02-dashboard.png" alt="대시보드"></div></div>
+  <div class="mech"><div class="mcard">
+    <div class="mhead"><span class="dot" style="background:var(--t)"></span>대시보드 구성 요소</div>
+    <div class="mgrid">
+      <div><div class="cname" style="color:var(--t)">Category fingerprint</div><div class="cdesc">내 카테고리 비율을 고정 축 레이더 두 개(엔터·취미/정보·생활)로 그려 취향 모양을 한눈에 보여줍니다.</div></div>
+      <div><div class="cname" style="color:var(--a)">Top categories</div><div class="cdesc">내가 가장 많이 보는 카테고리를 비율(%) 순으로 가로 막대로 나열합니다.</div></div>
+      <div><div class="cname" style="color:var(--r)">좋아하는 채널</div><div class="cdesc">추천에서 좋아요한 채널과 온보딩 대표 채널을 합쳐 보여주며, ×로 삭제할 수 있습니다.</div></div>
+      <div><div class="cname" style="color:var(--b)">나와 알고리즘이 비슷한 사람 찾기</div><div class="cdesc">공개 프로필을 카테고리 코사인·키워드 자카드로 점수화해 가장 닮은 사람을 보여줍니다.</div></div>
+    </div>
+  </div></div>
+  <div class="brand">JJKC · MECHANISM BY SCREEN</div><div class="pgno">07</div>
+</section>
+
+<!-- ===================== 09 추천(핵심) ===================== -->
+<section class="page">
+  <div class="ahead">
+    <div class="kicker">Screen 04 — 추천 (핵심 파이프라인)</div>
+    <div class="atitle">AI 영상 추천 <span class="url">/discover</span></div>
+  </div>
+  <div class="ashot"><div class="frame"><div class="bar"><i style="background:#ec6a5e"></i><i style="background:#f4bf4f"></i><i style="background:#61c554"></i><span class="barurl">/discover</span></div><img src="shots/03-discover.png" alt="추천"></div></div>
+  <div class="mech"><div class="mcard">
+    <div class="mhead"><span class="dot" style="background:var(--r)"></span>이 서비스에서 영상을 추천하는 방식</div>
+    <div class="arrowflow" style="margin-top:11px;">
+      <span class="node">추천 채널 60</span>
+      <svg width="14" height="11" viewBox="0 0 14 11"><path d="M2 5.5h8m0 0l-3-3m3 3l-3 3" stroke="#666c7e" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="node">RSS 최신영상</span>
+      <svg width="14" height="11" viewBox="0 0 14 11"><path d="M2 5.5h8m0 0l-3-3m3 3l-3 3" stroke="#666c7e" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="node">채널당 1개</span>
+      <svg width="14" height="11" viewBox="0 0 14 11"><path d="M2 5.5h8m0 0l-3-3m3 3l-3 3" stroke="#666c7e" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="node" style="border-color:#2a1d3e">LLM 재랭킹</span>
+      <svg width="14" height="11" viewBox="0 0 14 11"><path d="M2 5.5h8m0 0l-3-3m3 3l-3 3" stroke="#666c7e" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="node" style="border-color:#173029">Top 15</span>
+    </div>
+    <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--line); flex:1; display:flex; flex-direction:column;">
+      <div class="formula">채널 추천 점수 = <span style="color:var(--r)">0.8·유사도</span> + <span style="color:var(--a)">0.1·지표</span> + <span style="color:var(--t)">0.1·품질</span></div>
+      <svg width="100%" height="15" viewBox="0 0 215 15" style="margin-top:6px;"><rect x="0" y="1" width="172" height="13" rx="3" fill="#e0483d" fill-opacity=".85"/><rect x="174" y="1" width="20" height="13" fill="#f3a13a" fill-opacity=".85"/><rect x="196" y="1" width="19" height="13" rx="3" fill="#36c2a6" fill-opacity=".85"/></svg>
+      <div class="mgrid" style="margin-top:11px;">
+        <div><div class="cname"><span style="color:var(--r)">0.8</span> 취향 유사도</div><div class="cdesc">내가 보는 분야·세부주제·키워드가 채널과 얼마나 겹치는지(코사인 유사도). 실제 콘텐츠 취향을 직접 재서 <b>가장 큰 비중</b>.</div></div>
+        <div><div class="cname"><span style="color:var(--a)">0.1</span> 지표 일치</div><div class="cdesc">마이너·대중 취향 성향이 채널 성격과 맞는지로 미세 보정.</div></div>
+        <div><div class="cname"><span style="color:var(--t)">0.1</span> 인기도</div><div class="cdesc">구독자 수 기반 약한 가산점으로 너무 작은 채널을 살짝 낮춤.</div></div>
+      </div>
+    </div>
+  </div></div>
+  <div class="brand">JJKC · MECHANISM BY SCREEN</div><div class="pgno">08</div>
+</section>
+
+<!-- ===================== 07 탐색 (스크린샷만) ===================== -->
+<section class="page solo">
+  <div class="ahead">
+    <div class="kicker">Screen 05 — 탐색</div>
+    <div class="atitle">다른 사람들의 알고리즘 <span class="url">/explore</span></div>
+  </div>
+  <div class="ashot"><div class="frame"><div class="bar"><i style="background:#ec6a5e"></i><i style="background:#f4bf4f"></i><i style="background:#61c554"></i><span class="barurl">/explore</span></div><img src="shots/04-explore.png" alt="탐색"></div></div>
+  <div class="brand">JJKC · MECHANISM BY SCREEN</div><div class="pgno">09</div>
+</section>
+
+<!-- ===================== 08 프로필 (스크린샷만) ===================== -->
+<section class="page solo">
+  <div class="ahead">
+    <div class="kicker">Screen 06 — 공개 프로필</div>
+    <div class="atitle">다른 사용자의 취향 지문 <span class="url">/profile/…</span></div>
+  </div>
+  <div class="ashot"><div class="frame"><div class="bar"><i style="background:#ec6a5e"></i><i style="background:#f4bf4f"></i><i style="background:#61c554"></i><span class="barurl">/profile/…</span></div><img src="shots/05-profile.png" alt="프로필"></div></div>
+  <div class="brand">JJKC · MECHANISM BY SCREEN</div><div class="pgno">10</div>
+</section>
+
+<!-- ===================== 09 비교 (스크린샷만) ===================== -->
+<section class="page solo">
+  <div class="ahead">
+    <div class="kicker">Screen 07 — 비교</div>
+    <div class="atitle">두 사람의 알고리즘 비교 <span class="url">/compare?a=…&amp;b=…</span></div>
+  </div>
+  <div class="ashot"><div class="frame"><div class="bar"><i style="background:#ec6a5e"></i><i style="background:#f4bf4f"></i><i style="background:#61c554"></i><span class="barurl">/compare</span></div><img src="shots/06-compare.png" alt="비교"></div></div>
+  <div class="brand">JJKC · MECHANISM BY SCREEN</div><div class="pgno">11</div>
+</section>
+
+<!-- ===================== 10 Watch-as (스크린샷만) ===================== -->
+<section class="page solo">
+  <div class="ahead">
+    <div class="kicker">Screen 08 — 체험</div>
+    <div class="atitle">Watch as — 남의 알고리즘 체험 <span class="url">/watch-as/…</span></div>
+  </div>
+  <div class="ashot"><div class="frame"><div class="bar"><i style="background:#ec6a5e"></i><i style="background:#f4bf4f"></i><i style="background:#61c554"></i><span class="barurl">/watch-as/…</span></div><img src="shots/07-watchas.png" alt="Watch as"></div></div>
+  <div class="brand">JJKC · MECHANISM BY SCREEN</div><div class="pgno">12</div>
+</section>
+
+<!-- ===================== 11 크롬 확장 — 실사용 (스크린샷만) ===================== -->
+<section class="page solo">
+  <div class="ahead">
+    <div class="kicker">Chrome Extension — 실사용</div>
+    <div class="atitle">유튜브에서 지금 보는 영상의 알고리즘 유사도 <span class="url">JJKC Algorithm Viewer</span></div>
+  </div>
+  <div class="ashot"><div class="frame"><img src="extension/0.png" alt="확장 실사용"></div></div>
+  <div class="brand">JJKC · MECHANISM BY SCREEN</div><div class="pgno">13</div>
+</section>
+
+<!-- ===================== 14 크롬 확장 — 세부 화면 (가로 3개) ===================== -->
+<section class="lpage">
+  <div class="ahead">
+    <div class="kicker">Chrome Extension — 세부 화면</div>
+    <div class="atitle">확장 팝업 — 유사도 분석 · 피드백 <span class="url">JJKC Algorithm Viewer</span></div>
+  </div>
+  <div class="l3" style="align-items:center;">
+    <div class="lcol" style="align-items:center;">
+      <div class="lstep"><span class="n" style="background:#173029;color:var(--t)">①</span>영상 유사도</div>
+      <div style="width:90%; border:1px solid var(--line); border-radius:10px; overflow:hidden;"><img src="extension/1.png" alt="영상 유사도" style="width:100%; display:block;"></div>
+    </div>
+    <div class="lcol" style="align-items:center;">
+      <div class="lstep"><span class="n" style="background:#3a1f1d;color:var(--r)">②</span>카테고리 비교</div>
+      <div style="width:90%; border:1px solid var(--line); border-radius:10px; overflow:hidden;"><img src="extension/2.png" alt="카테고리 비교" style="width:100%; display:block;"></div>
+    </div>
+    <div class="lcol" style="align-items:center;">
+      <div class="lstep"><span class="n" style="background:#3a2f1a;color:var(--a)">③</span>만족도 평가</div>
+      <div style="width:90%; border:1px solid var(--line); border-radius:10px; overflow:hidden;"><img src="extension/3.png" alt="만족도 평가" style="width:100%; display:block;"></div>
+      <div class="lstep" style="margin-top:10px;"><span class="n" style="background:#3a1f1d;color:var(--r)">↳</span>수집된 피드백 — 관리자(/admin)</div>
+      <div style="width:90%; border:1px solid var(--line); border-radius:10px; overflow:hidden;"><img src="shots/09-admin.png" alt="유저 피드백 관리" style="width:100%; display:block;"></div>
+    </div>
+  </div>
+  <div class="brand">JJKC · MECHANISM BY SCREEN</div><div class="pgno">14</div>
+</section>
+
+<script>
+/* 웹 슬라이드쇼: 좌우 화살표/버튼/스와이프로 한 장씩 가로 넘김.
+   PDF 생성(headless Chrome, URL 끝에 #print) 시에는 비활성화 → 기존 세로 적층 인쇄 유지. */
+(function(){
+  if (location.hash === '#print') return;
+  var slides = Array.prototype.slice.call(document.querySelectorAll('section.page, section.lpage'));
+  if (!slides.length) return;
+  var SW = 1122.5, SH = 793.7; // 297mm × 210mm @96dpi
+
+  var vp = document.createElement('div'); vp.className = 'deck-viewport';
+  var track = document.createElement('div'); track.className = 'deck-track';
+  slides.forEach(function(sec){
+    var sl = document.createElement('div'); sl.className = 'deck-slide';
+    sl.appendChild(sec); track.appendChild(sl);
+  });
+  vp.appendChild(track);
+  document.body.appendChild(vp);
+  document.body.classList.add('deck-on');
+
+  var prog = document.createElement('div'); prog.className = 'deck-progress'; document.body.appendChild(prog);
+  function navBtn(cls, d){
+    var b = document.createElement('button'); b.className = 'deck-nav ' + cls; b.type = 'button';
+    b.setAttribute('aria-label', cls === 'prev' ? '이전 페이지' : '다음 페이지');
+    b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="' + d + '"/></svg>';
+    document.body.appendChild(b); return b;
+  }
+  var prev = navBtn('prev', 'M15 5l-7 7 7 7'), next = navBtn('next', 'M9 5l7 7-7 7');
+  var counter = document.createElement('div'); counter.className = 'deck-counter'; document.body.appendChild(counter);
+  var hint = document.createElement('div'); hint.className = 'deck-hint'; hint.textContent = '← →  또는 좌우 버튼으로 넘기기'; document.body.appendChild(hint);
+
+  var i = 0, N = slides.length;
+  function pad2(n){ return (n < 10 ? '0' : '') + n; }
+  function fit(){
+    var p = 46;
+    var s = Math.min((window.innerWidth - p * 2) / SW, (window.innerHeight - p * 2) / SH);
+    s = Math.max(0.2, Math.min(s, 1.1));
+    document.documentElement.style.setProperty('--scale', s);
+  }
+  function render(){
+    track.style.transform = 'translateX(' + (-i * 100) + 'vw)';
+    counter.innerHTML = '<b>' + pad2(i + 1) + '</b> / ' + pad2(N);
+    prog.style.width = ((i + 1) / N * 100) + '%';
+    prev.disabled = i === 0; next.disabled = i === N - 1;
+  }
+  function go(n){ var c = Math.max(0, Math.min(N - 1, n)); if (c !== i){ i = c; render(); } }
+  prev.addEventListener('click', function(){ go(i - 1); });
+  next.addEventListener('click', function(){ go(i + 1); });
+  window.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' '){ e.preventDefault(); go(i + 1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i - 1); }
+    else if (e.key === 'Home'){ go(0); }
+    else if (e.key === 'End'){ go(N - 1); }
+  });
+  var tx = 0;
+  vp.addEventListener('touchstart', function(e){ tx = e.touches[0].clientX; }, {passive:true});
+  vp.addEventListener('touchend', function(e){ var dx = e.changedTouches[0].clientX - tx; if (Math.abs(dx) > 50){ go(dx < 0 ? i + 1 : i - 1); } }, {passive:true});
+  var wlock = false;
+  vp.addEventListener('wheel', function(e){
+    var d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    if (Math.abs(d) < 8 || wlock) return;
+    wlock = true; go(i + (d > 0 ? 1 : -1));
+    setTimeout(function(){ wlock = false; }, 540);
+  }, {passive:true});
+  window.addEventListener('resize', fit);
+  fit(); render();
+  setTimeout(function(){ hint.style.opacity = '0'; }, 4500);
+})();
+</script>
+</body>
+</html>
