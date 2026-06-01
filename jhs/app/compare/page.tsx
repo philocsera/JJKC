@@ -205,7 +205,7 @@ async function CompareView({ aId, bId }: { aId: string; bId: string }) {
       <Card>
         <CardHeader>
           <CardTitle className="text-sm font-medium">
-            {a.owner.name} · {b.owner.name} 가 둘 다 좋아할 영상
+            A · B 가 둘 다 좋아할 영상
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -213,7 +213,7 @@ async function CompareView({ aId, bId }: { aId: string; bId: string }) {
             endpoint="/api/compare/videos"
             body={{ aId, bId }}
             buttonLabel="AI로 둘 다 좋아할 영상 보기"
-            hint={`위의 버튼을 눌러 ${a.owner.name} · ${b.owner.name} 가 둘 다 좋아할 영상을 받아보세요.`}
+            hint={`위의 버튼을 눌러 A · B 가 둘 다 좋아할 영상을 받아보세요.`}
           />
         </CardContent>
       </Card>
