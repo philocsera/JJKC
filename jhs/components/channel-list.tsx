@@ -1,43 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { X } from "lucide-react";
 import type { TopChannel } from "@/lib/types";
-
-// 데이터에 가끔 제어문자(U+0000~U+001F, U+007F)가 섞이므로, 코드 포인트로 걸러
-// 첫 번째 '보이는' 글자를 이니셜로 쓴다(정규식 문자클래스에 제어문자를 넣지 않음).
-function firstVisibleChar(name: string): string {
-  for (const ch of name ?? "") {
-    if (ch.charCodeAt(0) > 0x20) return ch; // 공백·제어문자(<= U+0020) 건너뜀
-  }
-  return "?";
-}
-
-// 채널 썸네일. yt3.ggpht.com 직접 로딩은 간헐적으로 실패(throttle/핫링크 차단)할 수 있어
-// onError 시 채널 이름 이니셜 아바타로 폴백한다 → 어떤 환경에서도 깨진 이미지가 안 보인다.
-function ChannelAvatar({ name, thumbnail }: { name: string; thumbnail?: string }) {
-  const [failed, setFailed] = useState(false);
-  const initial = firstVisibleChar(name);
-
-  if (!thumbnail || failed) {
-    return (
-      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
-        {initial}
-      </span>
-    );
-  }
-  return (
-    <Image
-      src={thumbnail}
-      alt={name}
-      width={36}
-      height={36}
-      className="h-9 w-9 rounded-full object-cover"
-      onError={() => setFailed(true)}
-    />
-  );
-}
+import { ChannelAvatar } from "@/components/channel-avatar";
 
 export function ChannelList({
   channels,
@@ -78,7 +44,7 @@ export function ChannelList({
             className="shrink-0 rounded-full ring-offset-2 ring-offset-background transition hover:ring-2 hover:ring-accent/60"
             title={`${c.name} 채널 열기`}
           >
-            <ChannelAvatar name={c.name} thumbnail={c.thumbnail} />
+            <ChannelAvatar name={c.name} thumbnail={c.thumbnail} optimized />
           </a>
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-medium">{c.name}</div>

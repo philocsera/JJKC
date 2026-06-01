@@ -7,8 +7,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { Check, Loader2, ExternalLink } from "lucide-react";
+import { ChannelAvatar } from "@/components/channel-avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CATEGORY_NAMESPACE, CATEGORY_LABELS_KO } from "@/lib/categories";
@@ -323,18 +323,7 @@ export function OnboardForm({
                   onClick={() => toggleChannel(c)}
                   className="flex items-center gap-1.5 rounded-full border bg-muted py-1 pl-1 pr-2 text-xs hover:bg-muted/70"
                 >
-                  {c.thumbnail ? (
-                    <Image
-                      src={c.thumbnail}
-                      alt={c.title}
-                      width={20}
-                      height={20}
-                      className="h-5 w-5 rounded-full object-cover"
-                      unoptimized
-                    />
-                  ) : (
-                    <span className="h-5 w-5 rounded-full bg-background" />
-                  )}
+                  <ChannelAvatar name={c.title} thumbnail={c.thumbnail} className="h-5 w-5" />
                   <span className="max-w-[10rem] truncate">{c.title}</span>
                   <Check className="h-3 w-3 text-accent" />
                 </button>
@@ -363,20 +352,7 @@ export function OnboardForm({
                         on ? "border-accent bg-accent/10" : "hover:bg-muted"
                       }`}
                     >
-                      {c.thumbnail ? (
-                        <Image
-                          src={c.thumbnail}
-                          alt={c.title}
-                          width={36}
-                          height={36}
-                          className="h-9 w-9 rounded-full object-cover"
-                          unoptimized
-                        />
-                      ) : (
-                        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-sm font-semibold">
-                          {c.title.slice(0, 1)}
-                        </span>
-                      )}
+                      <ChannelAvatar name={c.title} thumbnail={c.thumbnail} className="h-9 w-9" />
                       <div className="min-w-0 flex-1">
                         <div className="truncate text-sm font-medium">{c.title}</div>
                         <div className="text-xs text-muted-foreground">
