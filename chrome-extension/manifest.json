@@ -2,10 +2,28 @@
   "manifest_version": 3,
   "name": "JJKC Algorithm Viewer",
   "version": "1.0.0",
-  "description": "View your JJKC YouTube algorithm profile.",
-  "permissions": ["storage", "tabs"],
-  "host_permissions": ["https://ytalgoshare.vercel.app/*"],
+  "description": "JJKC 공식 17개 카테고리 벡터 기반으로 현재 보는 YouTube 영상과 내 알고리즘 유사도를 계산합니다.",
+  "permissions": ["storage", "tabs", "activeTab"],
+  "host_permissions": [
+    "https://ytalgoshare.vercel.app/*",
+    "https://jjkc-algo-blush.vercel.app/*",
+    "https://www.youtube.com/*",
+    "https://youtube.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://jjkc-algo-blush.vercel.app/*",
+        "https://ytalgoshare.vercel.app/*",
+        "https://www.youtube.com/*",
+        "https://youtube.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
   "action": {
+    "default_title": "JJKC Algorithm Viewer",
     "default_popup": "popup.html"
   }
 }
