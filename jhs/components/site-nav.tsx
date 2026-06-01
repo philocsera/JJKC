@@ -5,7 +5,6 @@ import { SignOutButton } from "./sign-out-button";
 import { prisma } from "@/lib/prisma";
 
 const NAV_DASHBOARD = { href: "/dashboard", label: "내 알고리즘" };
-const NAV_FEEDBACK = { href: "/admin/reviews", label: "유저 피드백 관리" };
 
 // 알고리즘 프로필이 있어야 노출되는 메뉴
 const NAV_AFTER_PROFILE = [
@@ -35,7 +34,7 @@ export async function SiteNav() {
     }));
 
     links = hasProfile
-      ? [NAV_DASHBOARD, ...NAV_AFTER_PROFILE, NAV_FEEDBACK]
+      ? [NAV_DASHBOARD, ...NAV_AFTER_PROFILE]
       : [NAV_DASHBOARD];
   }
 
