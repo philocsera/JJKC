@@ -9,6 +9,7 @@ import { fingerprintGroups, categoryLabel } from "@/lib/categories";
 import { ChannelList } from "@/components/channel-list";
 import { SimilarUsers } from "@/components/similar-users";
 import { GenerateSummaryButton } from "@/components/generate-summary-button";
+import { ExtensionConnectButton } from "@/components/extension-connect-button";
 import { SyncButton } from "@/components/sync-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
