@@ -36,6 +36,7 @@ function fmtSubs(n: number): string {
 }
 
 const STEPS = ["관심 카테고리", "세부 관심사", "채널 선택"];
+const MAX_CHANNELS = 10; // 프로필은 대표 채널 상위 10개만 사용 → 그 이상은 선택 차단.
 
 export function OnboardForm({
   initial,
@@ -130,10 +131,18 @@ export function OnboardForm({
   const isSelected = (id: string) => selected.some((c) => c.id === id);
 
   function toggleChannel(c: ChannelLite) {
-    setSelected((prev) => {
-      if (prev.some((x) => x.id === c.id)) return prev.filter((x) => x.id !== c.id);
-      return [...prev, c];
-    });
+    if (selected.some((x) => x.id === c.id)) {
+      setSelected((prev) => prev.filter((x) => x.id !== c.id));
+      setError(null);
+      return;
+    }
+    // 상한(10개) 도달 시 추가를 막고 안내 — 초과 선택으로 저장이 실패하지 않게.
+    if (selected.length >= MAX_CHANNELS) {
+      setError(`채널은 최대 ${MAX_CHANNELS}개까지 선택할 수 있어요. 먼저 일부를 해제해 주세요.`);
+      return;
+    }
+    setSelected((prev) => [...prev, c]);
+    setError(null);
   }
 
   function toggleCategory(name: string) {

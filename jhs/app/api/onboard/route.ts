@@ -44,10 +44,12 @@ export async function GET() {
   return NextResponse.json({ channelIds, categories, subCategories, channels });
 }
 
+// 개수 상한은 "거부"가 아니라 아래에서 slice/filter 로 정규화한다. 그래서 Zod 는
+// 비정상 폭주만 막는 넉넉한 상한만 둔다(예: 채널 11개 선택 시 400 으로 저장 실패하던 버그 방지).
 const Body = z.object({
-  channelIds: z.array(z.string().min(1)).max(10).default([]),
-  categories: z.array(z.string()).max(17).default([]),
-  subCategories: z.array(z.string()).max(40).default([]),
+  channelIds: z.array(z.string().min(1)).max(100).default([]),
+  categories: z.array(z.string()).max(100).default([]),
+  subCategories: z.array(z.string()).max(300).default([]),
 });
 
 const dedupe = (xs: string[]) => [...new Set(xs)];
