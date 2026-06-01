@@ -218,3 +218,11 @@ model CollectionRun {
   startedAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+// 확장프로그램을 통해 작성된 익명 유저 피드백 관리
+model ExtensionReview {
+  id         String   @id @default(cuid())
+  rating     Int
+  reviewText String
+  createdAt  DateTime @default(now())
+}
