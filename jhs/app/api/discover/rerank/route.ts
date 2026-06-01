@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 import { getSessionUserId } from "@/lib/auth";
 import { getProfile } from "@/lib/profile-service";
 import { rerankedVideosForUser, type RerankedVideo } from "@/lib/video-rerank";
-import { llmEnabled } from "@/lib/llm";
+import { llmEnabled, LLM_QUOTA_MESSAGE } from "@/lib/llm";
 import { cache } from "@/lib/cache";
 
 const PROMPT_VER = "v1";
@@ -32,6 +32,9 @@ export async function POST() {
 
   const result = await rerankedVideosForUser(me);
   if (!result.ok) {
+    if (result.reason === "quota_exceeded") {
+      return NextResponse.json({ error: "quota_exceeded", message: LLM_QUOTA_MESSAGE }, { status: 429 });
+    }
     const status = result.reason === "llm_failed" ? 502 : 400;
     return NextResponse.json({ error: result.reason }, { status });
   }

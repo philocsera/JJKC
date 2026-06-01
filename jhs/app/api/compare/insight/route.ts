@@ -6,7 +6,7 @@ import { z } from "zod";
 import { getSessionUserId } from "@/lib/auth";
 import { getProfileWithOwner } from "@/lib/profile-service";
 import { generateCompareInsight } from "@/lib/llm-features";
-import { llmEnabled } from "@/lib/llm";
+import { llmEnabled, LlmQuotaError, LLM_QUOTA_MESSAGE } from "@/lib/llm";
 import { cache } from "@/lib/cache";
 
 const Body = z.object({ aId: z.string().min(1), bId: z.string().min(1) });
@@ -38,8 +38,15 @@ export async function POST(req: Request) {
       ...b.profile.subscribedChannelIds,
     ]);
     const sharedChannels = a.profile.topChannels.filter((c) => bChannelIds.has(c.id)).map((c) => c.name);
-    insight = await generateCompareInsight(a, b, sharedChannels);
-    if (!insight) return NextResponse.json({ error: "generation_failed" }, { status: 502 });
+    try {
+      insight = await generateCompareInsight(a, b, sharedChannels);
+    } catch (e) {
+      if (e instanceof LlmQuotaError) {
+        return NextResponse.json({ error: "quota_exceeded", message: LLM_QUOTA_MESSAGE }, { status: 429 });
+      }
+      throw e;
+    }
+    if (!insight) return NextResponse.json({ error: "generation_failed", message: "생성에 실패했습니다. 잠시 후 다시 시도해 주세요." }, { status: 502 });
     await cache.set(key, insight, 60 * 60 * 24);
   }
   return NextResponse.json({ ok: true, insight });

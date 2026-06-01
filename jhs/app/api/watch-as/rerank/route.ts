@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getProfile } from "@/lib/profile-service";
 import { rerankedVideosForUser, type RerankedVideo } from "@/lib/video-rerank";
-import { llmEnabled } from "@/lib/llm";
+import { llmEnabled, LLM_QUOTA_MESSAGE } from "@/lib/llm";
 import { cache } from "@/lib/cache";
 
 const Body = z.object({ userId: z.string().min(1) });
@@ -33,6 +33,9 @@ export async function POST(req: Request) {
 
   const result = await rerankedVideosForUser(userId);
   if (!result.ok) {
+    if (result.reason === "quota_exceeded") {
+      return NextResponse.json({ error: "quota_exceeded", message: LLM_QUOTA_MESSAGE }, { status: 429 });
+    }
     const status = result.reason === "llm_failed" ? 502 : 400;
     return NextResponse.json({ error: result.reason }, { status });
   }

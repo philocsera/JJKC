@@ -22,6 +22,7 @@ const ERROR_MSG: Record<string, string> = {
   no_profile: "알고리즘 프로필이 없습니다.",
   no_videos: "최근 영상을 불러오지 못했습니다.",
   llm_failed: "AI 추천 생성에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+  quota_exceeded: "오늘 AI 무료 사용량을 모두 사용했어요. 내일 다시 시도해 주세요.",
 };
 
 export function GeminiVideoFeed({

@@ -8,6 +8,7 @@ import { getRecentVideosBatch } from "./recent-videos";
 import { getProfile, getProfileWithOwner } from "./profile-service";
 import { categoryLabel } from "./categories";
 import { rerankVideos, rerankSharedVideos, type VideoCandidate } from "./llm-features";
+import { LlmQuotaError } from "./llm";
 
 const CHANNEL_FANOUT = 18;     // 후보 영상을 모을 추천 상위 채널 수
 const PER_CHANNEL = 8;         // 채널당 가져올 최근 영상 수(RSS)
@@ -26,7 +27,7 @@ export type RerankedVideo = {
 
 export type RerankResult =
   | { ok: true; videos: RerankedVideo[] }
-  | { ok: false; reason: "no_profile" | "empty_catalog" | "no_videos" | "llm_failed" };
+  | { ok: false; reason: "no_profile" | "empty_catalog" | "no_videos" | "llm_failed" | "quota_exceeded" };
 
 function dominantLabel(categories: Record<string, number>): string {
   const e = Object.entries(categories).sort((a, b) => b[1] - a[1])[0];
@@ -83,17 +84,23 @@ export async function rerankedVideosForUser(userId: string): Promise<RerankResul
   const likedNames = profile.likedChannelIds.map((id) => nameById.get(id)).filter(Boolean) as string[];
   const dislikedNames = profile.dislikedChannelIds.map((id) => nameById.get(id)).filter(Boolean) as string[];
 
-  const ranked = await rerankVideos(
-    {
-      categories: profile.categories,
-      topKeywords: profile.topKeywords,
-      summary: profile.summaryText,
-      likedNames,
-      dislikedNames,
-    },
-    candidates,
-    TOP_N,
-  );
+  let ranked;
+  try {
+    ranked = await rerankVideos(
+      {
+        categories: profile.categories,
+        topKeywords: profile.topKeywords,
+        summary: profile.summaryText,
+        likedNames,
+        dislikedNames,
+      },
+      candidates,
+      TOP_N,
+    );
+  } catch (e) {
+    if (e instanceof LlmQuotaError) return { ok: false, reason: "quota_exceeded" };
+    throw e;
+  }
   if (!ranked) return { ok: false, reason: "llm_failed" };
 
   const videos = ranked
@@ -155,12 +162,18 @@ export async function rerankedSharedVideosForPair(aId: string, bId: string): Pro
   }
   if (candidates.length === 0) return { ok: false, reason: "no_videos" };
 
-  const ranked = await rerankSharedVideos(
-    { name: a.owner.name, categories: a.profile.categories, topKeywords: a.profile.topKeywords },
-    { name: b.owner.name, categories: b.profile.categories, topKeywords: b.profile.topKeywords },
-    candidates,
-    12,
-  );
+  let ranked;
+  try {
+    ranked = await rerankSharedVideos(
+      { name: a.owner.name, categories: a.profile.categories, topKeywords: a.profile.topKeywords },
+      { name: b.owner.name, categories: b.profile.categories, topKeywords: b.profile.topKeywords },
+      candidates,
+      12,
+    );
+  } catch (e) {
+    if (e instanceof LlmQuotaError) return { ok: false, reason: "quota_exceeded" };
+    throw e;
+  }
   if (!ranked) return { ok: false, reason: "llm_failed" };
 
   const videos = ranked
