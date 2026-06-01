@@ -8,7 +8,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CATEGORY_NAMESPACE, CATEGORY_LABELS_KO } from "@/lib/categories";
@@ -355,36 +355,48 @@ export function OnboardForm({
               {channels.map((c) => {
                 const on = isSelected(c.id);
                 return (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => toggleChannel(c)}
-                    className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-                      on ? "border-accent bg-accent/10" : "hover:bg-muted"
-                    }`}
-                  >
-                    {c.thumbnail ? (
-                      <Image
-                        src={c.thumbnail}
-                        alt={c.title}
-                        width={36}
-                        height={36}
-                        className="h-9 w-9 rounded-full object-cover"
-                        unoptimized
-                      />
-                    ) : (
-                      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-sm font-semibold">
-                        {c.title.slice(0, 1)}
-                      </span>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-medium">{c.title}</div>
-                      <div className="text-xs text-muted-foreground">
-                        구독자 {fmtSubs(c.subscriberCount)}
+                  <div key={c.id} className="relative">
+                    <button
+                      type="button"
+                      onClick={() => toggleChannel(c)}
+                      className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 pr-8 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                        on ? "border-accent bg-accent/10" : "hover:bg-muted"
+                      }`}
+                    >
+                      {c.thumbnail ? (
+                        <Image
+                          src={c.thumbnail}
+                          alt={c.title}
+                          width={36}
+                          height={36}
+                          className="h-9 w-9 rounded-full object-cover"
+                          unoptimized
+                        />
+                      ) : (
+                        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-sm font-semibold">
+                          {c.title.slice(0, 1)}
+                        </span>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-medium">{c.title}</div>
+                        <div className="text-xs text-muted-foreground">
+                          구독자 {fmtSubs(c.subscriberCount)}
+                        </div>
                       </div>
-                    </div>
-                    {on ? <Check className="h-4 w-4 shrink-0 text-accent" /> : null}
-                  </button>
+                      {on ? <Check className="h-4 w-4 shrink-0 text-accent" /> : null}
+                    </button>
+                    {/* 선택과 분리된 '채널 열기' — 클릭 시 유튜브 채널 페이지(새 탭) */}
+                    <a
+                      href={`https://www.youtube.com/channel/${c.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      title={`${c.title} 채널 열기`}
+                      className="absolute right-1.5 top-1.5 z-10 rounded-md p-1 text-muted-foreground transition-colors hover:bg-background hover:text-accent"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  </div>
                 );
               })}
             </div>
