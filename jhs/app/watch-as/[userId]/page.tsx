@@ -50,7 +50,7 @@ export default async function WatchAsPage({
         body={{ userId }}
         buttonLabel={`AI로 ${owner.name}님의 추천 영상 보기`}
         hint={`${owner.name}님의 알고리즘으로 추천 영상을 불러오는 중입니다…`}
-        columns="large"
+        columns="default"
         autoStart
       />
     </div>
