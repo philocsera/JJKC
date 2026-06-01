@@ -4,12 +4,12 @@
 # 시간 제한 없음(낮 실행). 발굴은 기존 DB id 와 중복 제거되므로 버퍼 구간 재실행 안전.
 #
 # 실행 (맥 안 자게 + 터미널 닫혀도 생존):
-#   cd jhs && caffeinate -is nohup bash scripts/resume-enrich.sh > /tmp/resume.log 2>&1 &
+#   cd main && caffeinate -is nohup bash scripts/resume-enrich.sh > /tmp/resume.log 2>&1 &
 #
 # 환경변수: CHUNK(라운드당 쿼리수,기본40)
 
 set -uo pipefail
-cd "$(dirname "$0")/.." # → jhs/
+cd "$(dirname "$0")/.." # → main/
 
 POOL="data/remaining-queries.txt"
 WORK=/tmp/resume

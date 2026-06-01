@@ -23,10 +23,10 @@
 
 ## 처음 설정 (clone 후 — 로컬 SQLite 개발)
 
-`dev.db` 는 `.gitignore` 대상이라 clone 하면 **빈 DB** 입니다. 카탈로그(Channel 6,685개 · ChannelCluster 17개)는 `jhs/data/catalog-seed.json` 으로 커밋돼 있으니 복원하세요. (사용자/인증 데이터는 시드에 없음 — 토큰·이메일 미포함.)
+`dev.db` 는 `.gitignore` 대상이라 clone 하면 **빈 DB** 입니다. 카탈로그(Channel 6,685개 · ChannelCluster 17개)는 `main/data/catalog-seed.json` 으로 커밋돼 있으니 복원하세요. (사용자/인증 데이터는 시드에 없음 — 토큰·이메일 미포함.)
 
 ```bash
-cd jhs
+cd main
 npm install                 # postinstall 이 prisma generate(Postgres) 실행
 npm run sqlite:push         # 파생 SQLite 스키마로 빈 dev.db 생성/동기화 + SQLite client 생성
 npm run catalog:restore     # data/catalog-seed.json → Channel + ChannelCluster 적재 (dev.db)

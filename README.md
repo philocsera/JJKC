@@ -3,6 +3,7 @@
 내 시청 취향을 입력하면 취향에 맞는 한국 유튜브 채널을 추천하고, 내 "알고리즘"을 다른 사람과 공유·비교하는 서비스. **YouTube Data API(키·쿼터·OAuth) 없이** 직접 구축한 한국 채널 카탈로그 위에서 동작한다.
 
 🔗 https://jjkc-algo-blush.vercel.app/
+📑 서비스 메커니즘 슬라이드 — https://philocsera.github.io/JJKC/
 
 ---
 
@@ -19,7 +20,7 @@
 | **외부 SQL 덤프 / 보강 수집** | ~1,116 | 구독자수·조회수 등 RSS 로 못 받는 메타데이터 보강 |
 | **RSS 피드** (전 채널 검증) | 6,592 | `feeds/videos.xml?channel_id=…` 로 제목·영상 메타 수집 + **영상 제목 한글 비율로 외국 채널 제외** |
 
-> 발굴은 ~900개 한국 버티컬 니치 쿼리 풀(`jhs/data/overnight-queries.txt`)을 배치로 돌려 롱테일까지 캔다. 중단 시 `jhs/scripts/resume-enrich.sh` 로 남은 쿼리만 이어서 발굴→보강→재분류·재클러스터까지 재개할 수 있다.
+> 발굴은 ~900개 한국 버티컬 니치 쿼리 풀(`main/data/overnight-queries.txt`)을 배치로 돌려 롱테일까지 캔다. 중단 시 `main/scripts/resume-enrich.sh` 로 남은 쿼리만 이어서 발굴→보강→재분류·재클러스터까지 재개할 수 있다.
 
 - 구독자 **5만 미만**과 **외국 채널**은 제외. **음악(K-pop 등) 카테고리는 프로젝트에서 제외**.
 - 모든 수집은 공개 페이지/RSS 만 사용 — **API 키·OAuth 토큰·쿼터 0**.
@@ -35,13 +36,13 @@
 
 ### 4. 재현 / 협업자 공유
 
-`dev.db`(SQLite)는 git 에서 제외되지만, 카탈로그는 `jhs/data/catalog-seed.json` 으로 커밋된다 (사용자·토큰 데이터 미포함). clone 후:
+`dev.db`(SQLite)는 git 에서 제외되지만, 카탈로그는 `main/data/catalog-seed.json` 으로 커밋된다 (사용자·토큰 데이터 미포함). clone 후:
 
 ```bash
-cd jhs && npm install && npm run db:push && npm run catalog:restore
+cd main && npm install && npm run db:push && npm run catalog:restore
 ```
 
-수집·분류 파이프라인 스크립트(`jhs/scripts/`): `discover-channels` → `enrich-discovered` → `reclassify-subcategories` → `channels-cluster` (+ `export-catalog` / `restore-catalog`).
+수집·분류 파이프라인 스크립트(`main/scripts/`): `discover-channels` → `enrich-discovered` → `reclassify-subcategories` → `channels-cluster` (+ `export-catalog` / `restore-catalog`).
 
 ---
 
@@ -76,4 +77,4 @@ Google 로그인 후 **3단계**: ① 큰 카테고리 선택 → ② 그 카테
 
 Next.js 15 (App Router) · TypeScript · Prisma + SQLite · NextAuth (Google, 식별용) · Tailwind · Upstash Redis(캐시). 런타임 외부 호출은 채널 RSS 피드뿐 (키 0).
 
-> 수집 전략·rate-limit 회피·lexicon 튜닝·메타데이터 출처·클러스터 결과 등 **기술 상세는 [`jhs/README.md`](jhs/README.md)** 참고.
+> 수집 전략·rate-limit 회피·lexicon 튜닝·메타데이터 출처·클러스터 결과 등 **기술 상세는 [`main/README.md`](main/README.md)** 참고.

@@ -3,12 +3,12 @@
 # 5만 floor 유지. 라운드마다 다른 니치 쿼리 배치를 돌려 새 버티컬을 캔다.
 #
 # 실행 (맥 안 자게 + 터미널 닫혀도 생존):
-#   cd jhs && caffeinate -is nohup bash scripts/overnight-enrich.sh > /tmp/overnight.log 2>&1 &
+#   cd main && caffeinate -is nohup bash scripts/overnight-enrich.sh > /tmp/overnight.log 2>&1 &
 #
 # 환경변수: CHUNK(라운드당 쿼리수,기본40) PACE(라운드간 대기초,기본240) STOP_HHMM(종료시각,기본0900)
 
 set -uo pipefail
-cd "$(dirname "$0")/.." # → jhs/
+cd "$(dirname "$0")/.." # → main/
 
 POOL="data/overnight-queries.txt"
 WORK=/tmp/onight

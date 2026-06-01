@@ -23,9 +23,9 @@ next-env.d.ts
 # 일회성/생성 카탈로그 데이터 산출물 (실제 데이터는 dev.db 에 있음)
 /channels-final.json
 /dump.sql
-# 발굴 중간 산출물 (경로 무관 — jhs/discovered-pending.json 등 포함)
+# 발굴 중간 산출물 (경로 무관 — main/discovered-pending.json 등 포함)
 discovered-*.json
-jhs/data/sub-taxonomy.proposed.json
+main/data/sub-taxonomy.proposed.json
 
 # 발표 자료(docs) — 생성물/원본 백업/임시 스크립트는 커밋 제외(HTML+최적화 이미지만 게시)
 docs/*.pdf
