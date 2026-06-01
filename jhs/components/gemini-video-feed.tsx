@@ -33,6 +33,7 @@ export function GeminiVideoFeed({
   columns = "default",
   autoStart = false,
   maxHeightClass,
+  fillHeight = false,
 }: {
   endpoint: string;
   body: Record<string, unknown>;
@@ -41,6 +42,7 @@ export function GeminiVideoFeed({
   columns?: "default" | "large" | "duo"; // large=적은 열(큰 썸네일), duo=최대 2열
   autoStart?: boolean; // 진입 시 버튼 없이 바로 추천 호출(예: /watch-as)
   maxHeightClass?: string; // 설정 시 결과 영역을 그 높이로 제한하고 자체 스크롤(휠 분리)
+  fillHeight?: boolean; // lg 이상에서 부모(카드) 높이를 채우고 결과 영역만 스크롤(높이 일치용)
 }) {
   const gridCls =
     columns === "large"
@@ -48,8 +50,13 @@ export function GeminiVideoFeed({
       : columns === "duo"
         ? "grid grid-cols-1 gap-6 sm:grid-cols-2"
         : "grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5";
-  // 결과(영상 그리드/플레이스홀더)를 감싸는 래퍼 — maxHeightClass 가 있으면 자체 스크롤.
-  const scrollCls = maxHeightClass ? `${maxHeightClass} overflow-y-auto pr-1` : "";
+  // fillHeight: lg 에서 카드 높이를 채우고 결과만 스크롤. 모바일은 max-h-[70vh] 로 제한.
+  const outerCls = fillHeight ? "flex flex-col gap-5 lg:min-h-0 lg:flex-1" : "space-y-5";
+  const scrollCls = fillHeight
+    ? "overflow-y-auto pr-1 max-h-[70vh] lg:max-h-none lg:min-h-0 lg:flex-1"
+    : maxHeightClass
+      ? `${maxHeightClass} overflow-y-auto pr-1`
+      : "";
   const [videos, setVideos] = useState<V[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -87,12 +94,12 @@ export function GeminiVideoFeed({
   }
 
   return (
-    <div className="space-y-5">
+    <div className={outerCls}>
       <button
         type="button"
         onClick={generate}
         disabled={loading}
-        className="inline-flex items-center gap-1.5 rounded-full border border-accent/40 px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent/10 disabled:opacity-50"
+        className="inline-flex items-center gap-1.5 self-start rounded-full border border-accent/40 px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent/10 disabled:opacity-50"
       >
         {loading ? (
           <Loader2 className="h-4 w-4 animate-spin" />
