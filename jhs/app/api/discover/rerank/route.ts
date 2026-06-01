@@ -7,17 +7,40 @@ import { getProfile } from "@/lib/profile-service";
 import { rerankedVideosForUser, type RerankedVideo } from "@/lib/video-rerank";
 import { llmEnabled, LLM_QUOTA_MESSAGE } from "@/lib/llm";
 import { cache } from "@/lib/cache";
+import { clientIp, bumpDailyCount } from "@/lib/rate-limit";
 
 const PROMPT_VER = "v1";
 const TTL = 60 * 60 * 3; // 3시간 — 새 영상이 천천히 반영되도록
+const DAILY_IP_LIMIT = 10; // IP 당 하루 추천받기 횟수 상한(KST 자정 리셋)
 
-export async function POST() {
+export async function POST(req: Request) {
   const me = await getSessionUserId();
   if (!me) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   if (!llmEnabled()) {
     return NextResponse.json(
       { error: "llm_disabled", message: "GEMINI_API_KEY 가 설정되지 않았습니다." },
       { status: 503 },
+    );
+  }
+
+  // IP 당 하루 추천받기 횟수 제한(버튼 누름 기준 — '다시 추천'·캐시 응답 포함).
+  // 카운터 장애 시엔 기능을 막지 않는다(fail-open).
+  const ip = clientIp(req);
+  let used = 0;
+  try {
+    used = await bumpDailyCount("discover-rerank", ip);
+  } catch (err) {
+    // 카운터 장애(예: 테이블 부재/DB 오류)는 로그로 남기고 기능은 막지 않는다(fail-open).
+    console.error("[rate-limit] discover-rerank bump failed:", err);
+    used = 0;
+  }
+  if (used > DAILY_IP_LIMIT) {
+    return NextResponse.json(
+      {
+        error: "rate_limited",
+        message: `오늘 추천받기 한도(IP당 하루 ${DAILY_IP_LIMIT}회)를 모두 사용했어요. 내일 다시 시도해 주세요.`,
+      },
+      { status: 429 },
     );
   }
 

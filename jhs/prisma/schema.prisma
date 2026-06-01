@@ -192,6 +192,15 @@ model ChannelCluster {
   updatedAt     DateTime @updatedAt
 }
 
+// IP 단위 레이트리밋 카운터(키별). 키에 날짜(KST)를 넣어 매일 리셋한다.
+// 서버리스 인스턴스 간 공유돼야 하므로 메모리캐시 대신 DB 에 둔다(원자적 upsert increment).
+// 오래된 행은 키에 날짜가 박혀 자연히 누적되지만 IP·일당 1행이라 무시 가능(필요 시 cron 정리).
+model RateLimit {
+  key       String   @id // "<action>:<ip>:<YYYY-MM-DD(KST)>"
+  count     Int      @default(0)
+  updatedAt DateTime @updatedAt
+}
+
 // 수집을 며칠에 걸쳐 재개 가능하게 하는 상태(일일 쿼터 분산).
 model CollectionRun {
   id          Int      @id @default(autoincrement())
