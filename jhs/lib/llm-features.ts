@@ -94,7 +94,8 @@ export async function rerankVideos(
     `싫어한 채널: ${taste.dislikedNames.slice(0, 8).join(", ") || "없음"}\n\n` +
     `후보 영상:\n${list}`;
 
-  const raw = await llmChat(system, user, { maxTokens: 1400, temperature: 0.4, model: RERANK_MODEL });
+  // topN 이 커질 수 있어(다양성 보충용 30개) 출력 토큰을 넉넉히 — 항목당 ~40토큰.
+  const raw = await llmChat(system, user, { maxTokens: 2400, temperature: 0.4, model: RERANK_MODEL });
   const parsed = parseRerank(raw, candidates.length);
   if (!parsed) return null;
 

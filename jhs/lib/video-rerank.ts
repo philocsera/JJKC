@@ -10,11 +10,14 @@ import { categoryLabel } from "./categories";
 import { rerankVideos, rerankSharedVideos, type VideoCandidate } from "./llm-features";
 import { LlmQuotaError } from "./llm";
 
-const CHANNEL_FANOUT = 24;     // 후보 영상을 모을 추천 상위 채널 수
+const CHANNEL_FANOUT = 30;     // 후보 영상을 모을 추천 상위 채널 수(RSS 실패분 감안해 여유)
 const PER_CHANNEL = 12;        // 채널당 가져올 최근 영상 수(RSS) — 안 본 영상 여유분 확보
+const RSS_CONCURRENCY = 10;    // RSS 동시 요청 수 — 너무 적으면 영상 있는 채널이 적게 잡힘
 const POOL_PER_CHANNEL = 1;    // (compare 전용) 후보 풀 채널당 상한
 const POOL_CAP = 150;          // LLM 프롬프트에 넣을 후보 영상 상한
 const TOP_N = 15;              // 최종 노출 영상 수
+const CAND_TARGET = 45;        // 후보 목표 수 — 15개를 채우고 LLM 선택지를 줄 여유분
+const LLM_PICK = 30;           // LLM 에 랭킹시킬 상위 개수 — 다양성 보충 여유(>TOP_N)
 
 export type RerankedVideo = {
   videoId: string;
@@ -40,14 +43,18 @@ export async function rerankedVideosForUser(
 ): Promise<RerankResult> {
   const [profile, rec] = await Promise.all([
     getProfile(userId),
-    recommendForUser(userId, { limit: 24, maxPerCluster: 5 }),
+    recommendForUser(userId, { limit: CHANNEL_FANOUT, maxPerCluster: 8 }),
   ]);
 
   if (!profile) return { ok: false, reason: "no_profile" };
   if (!rec.ok) return { ok: false, reason: rec.reason === "empty_catalog" ? "empty_catalog" : "no_profile" };
 
   const topChannels = rec.recommendations.slice(0, CHANNEL_FANOUT);
-  const recentMap = await getRecentVideosBatch(topChannels.map((r) => r.channel.id), PER_CHANNEL);
+  const recentMap = await getRecentVideosBatch(
+    topChannels.map((r) => r.channel.id),
+    PER_CHANNEL,
+    RSS_CONCURRENCY,
+  );
 
   // 후보에서 뺄 영상 = 싫어요 영상 + 이미 보여준 영상(shown, 호출부가 전달).
   // → 반응(좋아요/싫어요) 없던 영상을 그대로 재노출하지 않고 다른 영상으로 교체한다.
@@ -62,25 +69,34 @@ export async function rerankedVideosForUser(
     vids: (recentMap.get(r.channel.id) ?? []).filter((v) => !exclude.has(v.videoId)),
   }));
 
-  // 채널당 최대 1개 — 한 채널이 추천을 도배하지 않도록(채널 다양성 강제).
-  // 각 채널에서 '안 본' 가장 최근 영상 하나만 후보로 넣는다. channelId 는 채널마다
-  // 유일하므로, 후보가 채널당 1개면 LLM 선별 결과도 자동으로 채널당 최대 1개가 된다.
-  // (compare 경로의 POOL_PER_CHANNEL=1 과 동일 정책.)
+  // 라운드로빈으로 후보 구성 — 채널 다양성 우선(1라운드는 채널당 1개), 목표(CAND_TARGET)에
+  // 못 미치면 같은 채널의 다음(안 본) 영상으로 보충한다. 이렇게 모은 순서 자체가
+  // "채널당 1개씩 먼저" 라서, 후보가 충분하면 서로 다른 채널이 앞쪽에 배치된다.
   const meta = new Map<string, RerankedVideo>();
   const candidates: VideoCandidate[] = [];
-  for (const q of queues) {
-    if (candidates.length >= POOL_CAP) break;
-    const v = q.vids.find((x) => !meta.has(x.videoId)); // 다른 채널과 겹치지 않는 첫(최신) 영상
-    if (!v) continue;
-    meta.set(v.videoId, {
-      videoId: v.videoId,
-      title: v.title,
-      thumbnail: v.thumbnail,
-      channelId: q.channel.id,
-      channelName: q.channel.title,
-      reason: "",
-    });
-    candidates.push({ videoId: v.videoId, title: v.title, channelName: q.channel.title, category: q.label });
+  const idx = new Array(queues.length).fill(0);
+  const target = Math.min(POOL_CAP, CAND_TARGET);
+  let progressed = true;
+  while (candidates.length < target && progressed) {
+    progressed = false;
+    for (let qi = 0; qi < queues.length; qi++) {
+      if (candidates.length >= target) break;
+      const q = queues[qi];
+      // 이 채널에서 아직 후보로 안 쓴 다음 영상을 찾는다(다른 채널과 겹치는 건 건너뜀).
+      while (idx[qi] < q.vids.length && meta.has(q.vids[idx[qi]].videoId)) idx[qi]++;
+      if (idx[qi] >= q.vids.length) continue;
+      const v = q.vids[idx[qi]++];
+      progressed = true;
+      meta.set(v.videoId, {
+        videoId: v.videoId,
+        title: v.title,
+        thumbnail: v.thumbnail,
+        channelId: q.channel.id,
+        channelName: q.channel.title,
+        reason: "",
+      });
+      candidates.push({ videoId: v.videoId, title: v.title, channelName: q.channel.title, category: q.label });
+    }
   }
   if (candidates.length === 0) return { ok: false, reason: "no_videos" };
 
@@ -105,7 +121,7 @@ export async function rerankedVideosForUser(
         dislikedNames,
       },
       candidates,
-      TOP_N,
+      Math.min(candidates.length, LLM_PICK), // TOP_N 보다 넉넉히 랭킹 → 다양성 보충 여유
     );
   } catch (e) {
     if (e instanceof LlmQuotaError) return { ok: false, reason: "quota_exceeded" };
@@ -113,12 +129,27 @@ export async function rerankedVideosForUser(
   }
   if (!ranked) return { ok: false, reason: "llm_failed" };
 
-  const videos = ranked
+  // LLM 관련성 순(ranked)을 채널 메타로 복원.
+  const rankedVideos = ranked
     .map(({ videoId, reason }) => {
       const m = meta.get(videoId);
       return m ? { ...m, reason } : null;
     })
     .filter(Boolean) as RerankedVideo[];
+
+  // 최종 선택: 채널당 1개 우선(다양성) → TOP_N 을 못 채우면 같은 채널 다음 영상으로 보충.
+  // 서로 다른 채널이 TOP_N 개 이상이면 전부 다른 채널, 적으면 채워서라도 항상 TOP_N 개를 채운다.
+  const seenCh = new Set<string>();
+  const primary: RerankedVideo[] = [];
+  const backfill: RerankedVideo[] = [];
+  for (const v of rankedVideos) {
+    if (seenCh.has(v.channelId)) backfill.push(v);
+    else {
+      seenCh.add(v.channelId);
+      primary.push(v);
+    }
+  }
+  const videos = [...primary, ...backfill].slice(0, TOP_N);
 
   return videos.length ? { ok: true, videos } : { ok: false, reason: "llm_failed" };
 }

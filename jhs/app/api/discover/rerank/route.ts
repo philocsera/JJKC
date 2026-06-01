@@ -10,6 +10,10 @@ import { llmEnabled, LLM_QUOTA_MESSAGE } from "@/lib/llm";
 import { cache } from "@/lib/cache";
 import { clientIp, bumpDailyCount } from "@/lib/rate-limit";
 
+// RSS 후보 풀(최대 30채널)을 콜드 캐시에서 모으는 시간 + LLM 호출 여유.
+// 기본 타임아웃(플랜에 따라 10초)에 걸리지 않도록 명시한다.
+export const maxDuration = 60;
+
 const PROMPT_VER = "v1";
 const TTL = 60 * 60 * 3; // 3시간 — 새 영상이 천천히 반영되도록
 const DAILY_IP_LIMIT = 10; // IP 당 하루 추천받기 횟수 상한(KST 자정 리셋)
