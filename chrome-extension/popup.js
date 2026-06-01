@@ -1,4 +1,4 @@
-const SITE_URL = "https://ytalgoshare.vercel.app";
+const SITE_URL = "https://jjkc-algo-blush.vercel.app";
 
 const userIdInput = document.getElementById("userIdInput");
 const saveBtn = document.getElementById("saveBtn");
