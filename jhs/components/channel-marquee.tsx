@@ -18,7 +18,15 @@ export async function ChannelMarquee() {
       <div className="marquee-wrap relative overflow-hidden py-2">
         <div className="marquee-track flex gap-5">
           {row.map((c, i) => (
-            <div key={`${c.id}-${i}`} className="group relative shrink-0" title={c.title}>
+            // 프로필 사진 클릭 → 채널 유튜브 페이지(새 탭)
+            <a
+              key={`${c.id}-${i}`}
+              href={`https://www.youtube.com/channel/${c.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative shrink-0"
+              title={`${c.title} 채널 열기`}
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={c.thumbnail}
@@ -29,7 +37,7 @@ export async function ChannelMarquee() {
               <span className="pointer-events-none absolute left-1/2 top-full z-10 mt-2 -translate-x-1/2 whitespace-nowrap rounded-md border border-border bg-card px-2 py-1 text-xs text-foreground opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
                 {c.title}
               </span>
-            </div>
+            </a>
           ))}
         </div>
         {/* 양옆 페이드 */}
