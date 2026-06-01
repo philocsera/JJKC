@@ -21,13 +21,14 @@ export async function POST(req: Request) {
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "invalid_body" }, { status: 400 });
 
-  const likedChannelAdded = await setVideoFeedback(
+  const channelsChanged = await setVideoFeedback(
     me,
     parsed.data.videoId,
     parsed.data.action,
     parsed.data.channelId,
   );
-  // 좋아요로 채널이 새로 추가됐으면 카테고리 프로필을 재계산(fingerprint·top categories·비슷한 사람 반영).
-  if (likedChannelAdded) await recomputeProfileWithFeedback(me);
+  // 좋아요/싫어요로 채널 목록이 바뀌었으면 카테고리 프로필 재계산
+  // (fingerprint·top categories·비슷한 사람 반영. 싫어요 채널은 드리프트에서도 제외).
+  if (channelsChanged) await recomputeProfileWithFeedback(me);
   return NextResponse.json({ ok: true });
 }

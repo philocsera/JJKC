@@ -33,6 +33,7 @@ export type AlgoProfileShape = {
   dislikedChannelIds: string[];
   likedVideoIds: string[];
   dislikedVideoIds: string[];
+  shownVideoIds: string[];
   summaryText: string;
   lastSyncedAt: string;
 };

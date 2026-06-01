@@ -44,6 +44,7 @@ type DbProfile = {
   dislikedChannelIds?: string | null;
   likedVideoIds?: string | null;
   dislikedVideoIds?: string | null;
+  shownVideoIds?: string | null;
   summaryText?: string | null;
   lastSyncedAt: Date;
 };
@@ -62,6 +63,7 @@ function unpack(p: DbProfile): AlgoProfileShape {
     dislikedChannelIds: safeParse<string[]>(p.dislikedChannelIds, []),
     likedVideoIds: safeParse<string[]>(p.likedVideoIds, []),
     dislikedVideoIds: safeParse<string[]>(p.dislikedVideoIds, []),
+    shownVideoIds: safeParse<string[]>(p.shownVideoIds, []),
     summaryText: p.summaryText ?? "",
     lastSyncedAt: p.lastSyncedAt.toISOString(),
   };
@@ -111,7 +113,9 @@ export async function addDislikedChannel(userId: string, channelId: string) {
 }
 
 // /discover 영상 좋아요/싫어요(영상 단위). like↔dislike 는 상호배타 — 한쪽에 넣으면 다른쪽서 제거.
-// 좋아요 시 channelId 가 오면 그 채널을 likedChannelIds 에 추가 → 다음 추천에서 제외(이미 아는 채널).
+// 좋아요 시 channelId → likedChannelIds(추천에서 제외, 이미 아는 채널).
+// 싫어요 시 channelId → dislikedChannelIds(채널째 추천에서 제외 + 관련 채널까지 제외).
+// 반환: 채널 목록(liked/disliked)이 바뀌었는지 — true 면 호출부가 카테고리 벡터를 재계산.
 export async function setVideoFeedback(
   userId: string,
   videoId: string,
@@ -120,7 +124,7 @@ export async function setVideoFeedback(
 ): Promise<boolean> {
   const row = await prisma.algoProfile.findUnique({
     where: { userId },
-    select: { likedVideoIds: true, dislikedVideoIds: true, likedChannelIds: true },
+    select: { likedVideoIds: true, dislikedVideoIds: true, likedChannelIds: true, dislikedChannelIds: true },
   });
   if (!row) return false;
   const liked = new Set(safeParse<string[]>(row.likedVideoIds, []));
@@ -134,22 +138,62 @@ export async function setVideoFeedback(
     likedVideoIds: string;
     dislikedVideoIds: string;
     likedChannelIds?: string;
+    dislikedChannelIds?: string;
   } = {
     likedVideoIds: JSON.stringify([...liked]),
     dislikedVideoIds: JSON.stringify([...disliked]),
   };
-  // 좋아요한 영상의 채널을 "좋아하는 채널"로 등록 → recommendForUser 가 다음부터 추천에서 제외.
-  let likedChannelAdded = false;
-  if (action === "like" && channelId) {
+  // 채널 신호는 liked/disliked 상호배타 — 한쪽에 넣으면 반대쪽에서 제거(한 채널이 양쪽에
+  // 동시에 들어가는 정합성 문제 방지).
+  let channelsChanged = false;
+  if (channelId) {
     const likedCh = safeParse<string[]>(row.likedChannelIds, []);
-    if (!likedCh.includes(channelId)) {
-      data.likedChannelIds = JSON.stringify([...likedCh, channelId]);
-      likedChannelAdded = true;
+    const dislikedCh = safeParse<string[]>(row.dislikedChannelIds, []);
+    const inLiked = likedCh.includes(channelId);
+    const inDisliked = dislikedCh.includes(channelId);
+    if (action === "like" && (!inLiked || inDisliked)) {
+      // 좋아요한 영상의 채널을 "좋아하는 채널"로 등록(이미 아는 채널 → 추천에서 제외).
+      if (!inLiked) data.likedChannelIds = JSON.stringify([...likedCh, channelId]);
+      if (inDisliked) data.dislikedChannelIds = JSON.stringify(dislikedCh.filter((id) => id !== channelId));
+      channelsChanged = true;
+    } else if (action === "dislike" && (!inDisliked || inLiked)) {
+      // 싫어요한 영상의 채널을 통째로 dislikedChannelIds 에 등록 → 추천에서 강하게 배제.
+      if (!inDisliked) data.dislikedChannelIds = JSON.stringify([...dislikedCh, channelId]);
+      if (inLiked) data.likedChannelIds = JSON.stringify(likedCh.filter((id) => id !== channelId));
+      channelsChanged = true;
     }
   }
   await prisma.algoProfile.update({ where: { userId }, data });
-  // 좋아요한 채널이 새로 추가됐으면, 호출부가 카테고리 벡터를 재계산하도록 알린다.
-  return likedChannelAdded;
+  return channelsChanged;
+}
+
+// /discover 에서 방금 보여준 영상 id 들을 기록(최근 MAX 개만 유지, FIFO).
+// 다음 재랭킹 때 후보에서 제외돼 반응 없던 영상이 그대로 다시 나오지 않게 한다.
+const SHOWN_MAX = 300;
+export async function recordShownVideos(userId: string, videoIds: string[]): Promise<void> {
+  if (videoIds.length === 0) return;
+  const row = await prisma.algoProfile.findUnique({
+    where: { userId },
+    select: { shownVideoIds: true },
+  });
+  if (!row) return;
+  const prev = safeParse<string[]>(row.shownVideoIds, []);
+  // 새 id 를 뒤에 붙이고 중복 제거 — 같은 id 는 "마지막(최신) 위치"를 남긴다(뒤에서부터 스캔).
+  // 그래야 마지막 원소가 항상 가장 최근 보여준 영상이 되고(캐시 시그니처용), 상한 슬라이스도 정확.
+  const merged = [...prev, ...videoIds];
+  const seen = new Set<string>();
+  const deduped: string[] = [];
+  for (let i = merged.length - 1; i >= 0; i--) {
+    if (seen.has(merged[i])) continue;
+    seen.add(merged[i]);
+    deduped.push(merged[i]);
+  }
+  deduped.reverse();
+  const kept = deduped.slice(Math.max(0, deduped.length - SHOWN_MAX));
+  await prisma.algoProfile.update({
+    where: { userId },
+    data: { shownVideoIds: JSON.stringify(kept) },
+  });
 }
 
 export async function getProfile(userId: string): Promise<AlgoProfileShape | null> {

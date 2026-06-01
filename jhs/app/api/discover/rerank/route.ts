@@ -1,9 +1,10 @@
 // POST /api/discover/rerank — 버튼 클릭 시에만 LLM 으로 영상을 재랭킹한다.
-// 프로필(취향) 버전 + 좋아요/싫어요 변경 시 캐시 무효화. 3h 캐시. 로그인 필요.
+// 프로필(취향) 변경 + "이미 보여준 영상(shown)" 변경 시 캐시 무효화 → 다시 추천하면
+// 안 본 영상으로 갈아끼워 보여준다. 3h 캐시. 로그인 필요.
 
 import { NextResponse } from "next/server";
 import { getSessionUserId } from "@/lib/auth";
-import { getProfile } from "@/lib/profile-service";
+import { getProfile, recordShownVideos } from "@/lib/profile-service";
 import { rerankedVideosForUser, type RerankedVideo } from "@/lib/video-rerank";
 import { llmEnabled, LLM_QUOTA_MESSAGE } from "@/lib/llm";
 import { cache } from "@/lib/cache";
@@ -47,13 +48,18 @@ export async function POST(req: Request) {
   const profile = await getProfile(me);
   if (!profile) return NextResponse.json({ error: "no_profile" }, { status: 404 });
 
-  const ver = `${profile.lastSyncedAt}:${profile.likedChannelIds.length}:${profile.dislikedChannelIds.length}:${profile.likedVideoIds.length}:${profile.dislikedVideoIds.length}`;
+  // shown 시그니처: 길이 + 마지막(가장 최근) 보여준 영상 id. 생성마다 새 영상이 끝에
+  // 붙으므로 매번 달라져 캐시가 무효화 → "다시 추천" 시 안 본 영상으로 갱신된다.
+  // (길이만 쓰면 shown 상한 도달 후 고정돼 갱신이 멈추므로 마지막 id 를 함께 넣는다.)
+  const shown = profile.shownVideoIds;
+  const shownSig = shown.length ? `${shown.length}:${shown[shown.length - 1]}` : "0";
+  const ver = `${profile.lastSyncedAt}:${profile.likedChannelIds.length}:${profile.dislikedChannelIds.length}:${profile.likedVideoIds.length}:${profile.dislikedVideoIds.length}:${shownSig}`;
   const key = `discover-rerank:${PROMPT_VER}:${me}:${ver}`;
 
   const cached = await cache.get<RerankedVideo[]>(key);
   if (cached) return NextResponse.json({ ok: true, videos: cached, cached: true });
 
-  const result = await rerankedVideosForUser(me);
+  const result = await rerankedVideosForUser(me, { excludeVideoIds: new Set(shown) });
   if (!result.ok) {
     if (result.reason === "quota_exceeded") {
       return NextResponse.json({ error: "quota_exceeded", message: LLM_QUOTA_MESSAGE }, { status: 429 });
@@ -62,6 +68,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: result.reason }, { status });
   }
 
+  // 방금 보여준 영상을 기록 → 다음 재랭킹 후보에서 제외(반응 없던 영상 재노출 방지).
+  await recordShownVideos(me, result.videos.map((v) => v.videoId));
   await cache.set(key, result.videos, TTL);
   return NextResponse.json({ ok: true, videos: result.videos });
 }

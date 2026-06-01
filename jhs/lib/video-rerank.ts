@@ -10,11 +10,12 @@ import { categoryLabel } from "./categories";
 import { rerankVideos, rerankSharedVideos, type VideoCandidate } from "./llm-features";
 import { LlmQuotaError } from "./llm";
 
-const CHANNEL_FANOUT = 18;     // 후보 영상을 모을 추천 상위 채널 수
-const PER_CHANNEL = 8;         // 채널당 가져올 최근 영상 수(RSS)
-const POOL_PER_CHANNEL = 1;    // 후보 풀 채널당 상한 — 추천/비교 모두 채널당 영상 1개만 노출
+const CHANNEL_FANOUT = 24;     // 후보 영상을 모을 추천 상위 채널 수
+const PER_CHANNEL = 12;        // 채널당 가져올 최근 영상 수(RSS) — 안 본 영상 여유분 확보
+const POOL_PER_CHANNEL = 1;    // (compare 전용) 후보 풀 채널당 상한
 const POOL_CAP = 150;          // LLM 프롬프트에 넣을 후보 영상 상한
 const TOP_N = 15;              // 최종 노출 영상 수
+const CAND_TARGET = 30;        // 후보 목표 수(라운드로빈) — LLM 선택지 확보
 
 export type RerankedVideo = {
   videoId: string;
@@ -34,7 +35,10 @@ function dominantLabel(categories: Record<string, number>): string {
   return e ? categoryLabel(e[0]) : "";
 }
 
-export async function rerankedVideosForUser(userId: string): Promise<RerankResult> {
+export async function rerankedVideosForUser(
+  userId: string,
+  opts: { excludeVideoIds?: ReadonlySet<string> } = {},
+): Promise<RerankResult> {
   const [profile, rec] = await Promise.all([
     getProfile(userId),
     recommendForUser(userId, { limit: 24, maxPerCluster: 5 }),
@@ -46,31 +50,44 @@ export async function rerankedVideosForUser(userId: string): Promise<RerankResul
   const topChannels = rec.recommendations.slice(0, CHANNEL_FANOUT);
   const recentMap = await getRecentVideosBatch(topChannels.map((r) => r.channel.id), PER_CHANNEL);
 
-  // 싫어요한 영상은 후보에서 제외(다시 추천되지 않게).
-  const disliked = new Set(profile.dislikedVideoIds);
+  // 후보에서 뺄 영상 = 싫어요 영상 + 이미 보여준 영상(shown, 호출부가 전달).
+  // → 반응(좋아요/싫어요) 없던 영상을 그대로 재노출하지 않고 다른 영상으로 교체한다.
+  // (싫어요한 영상의 "채널"은 dislikedChannelIds 로 recommendForUser 단계에서 이미 제외됨.)
+  const exclude = new Set<string>(profile.dislikedVideoIds);
+  if (opts.excludeVideoIds) for (const id of opts.excludeVideoIds) exclude.add(id);
 
-  // 후보 풀 — 채널별 메타와 함께. videoId 중복 제거.
+  // 채널별 "안 본" 최근 영상 큐(최신순 유지).
+  const queues = topChannels.map((r) => ({
+    channel: r.channel,
+    label: dominantLabel(r.channel.categories),
+    vids: (recentMap.get(r.channel.id) ?? []).filter((v) => !exclude.has(v.videoId)),
+    idx: 0,
+  }));
+
+  // 라운드로빈으로 후보 구성 — 1차는 채널당 1개(채널 다양성 우선),
+  // 목표(CAND_TARGET)에 못 미치면 같은 채널의 다음(안 본) 영상으로 채운다.
   const meta = new Map<string, RerankedVideo>();
   const candidates: VideoCandidate[] = [];
-  for (const r of topChannels) {
-    const label = dominantLabel(r.channel.categories);
-    let perCh = 0;
-    for (const v of recentMap.get(r.channel.id) ?? []) {
-      if (perCh >= POOL_PER_CHANNEL) break;
-      if (disliked.has(v.videoId) || meta.has(v.videoId)) continue;
-      perCh++;
+  const target = Math.min(POOL_CAP, CAND_TARGET);
+  let progressed = true;
+  while (candidates.length < target && progressed) {
+    progressed = false;
+    for (const q of queues) {
+      if (candidates.length >= target) break;
+      if (q.idx >= q.vids.length) continue;
+      const v = q.vids[q.idx++];
+      progressed = true;
+      if (meta.has(v.videoId)) continue; // 다른 채널 피드에 같은 영상이 겹치는 경우 방지
       meta.set(v.videoId, {
         videoId: v.videoId,
         title: v.title,
         thumbnail: v.thumbnail,
-        channelId: r.channel.id,
-        channelName: r.channel.title,
+        channelId: q.channel.id,
+        channelName: q.channel.title,
         reason: "",
       });
-      candidates.push({ videoId: v.videoId, title: v.title, channelName: r.channel.title, category: label });
-      if (candidates.length >= POOL_CAP) break;
+      candidates.push({ videoId: v.videoId, title: v.title, channelName: q.channel.title, category: q.label });
     }
-    if (candidates.length >= POOL_CAP) break;
   }
   if (candidates.length === 0) return { ok: false, reason: "no_videos" };
 
