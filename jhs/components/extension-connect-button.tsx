@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Puzzle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export function ExtensionConnectButton() {
   const [status, setStatus] = useState("");
@@ -43,14 +45,14 @@ export function ExtensionConnectButton() {
           type: "JJKC_CONNECT_EXTENSION",
           userId,
         },
-        window.location.origin
+        window.location.origin,
       );
 
       setTimeout(() => {
         setStatus((prev) =>
           prev === "로그인 정보 연동 완료"
             ? prev
-            : "요청 전송됨. 확장프로그램 설치 후 페이지 새로고침이 필요할 수 있습니다."
+            : "요청 전송됨. 확장프로그램 설치 후 페이지 새로고침이 필요할 수 있습니다.",
         );
       }, 1000);
     } catch {
@@ -58,19 +60,21 @@ export function ExtensionConnectButton() {
     }
   }
 
+  // '내 알고리즘 수정하기'(SyncButton)와 같은 Button 그래픽 — secondary 느낌의 outline 변형.
+  // 스택에서 수정 버튼과 폭을 맞추려고 w-full.
   return (
     <div className="space-y-1">
-      <button
+      <Button
         type="button"
+        variant="outline"
+        size="lg"
         onClick={connectExtension}
-        className="rounded-full border border-red-500/50 px-4 py-2 text-sm font-semibold text-red-400 transition hover:bg-red-500/10"
+        className="w-full"
       >
-        📺 Chrome Extension 연결
-      </button>
-
-      {status ? (
-        <p className="text-xs text-muted-foreground">{status}</p>
-      ) : null}
+        <Puzzle className="h-4 w-4" />
+        Chrome Extension 연결
+      </Button>
+      {status ? <p className="text-xs text-muted-foreground">{status}</p> : null}
     </div>
   );
 }

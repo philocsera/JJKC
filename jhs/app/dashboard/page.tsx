@@ -88,12 +88,16 @@ export default async function DashboardPage() {
               {user.name ?? "나"}
             </h1>
             <GenerateSummaryButton userId={userId} initial={profile.summaryText} />
-            <ExtensionConnectButton />
           </div>
         </div>
-        <span style={{ ["--font-scale" as string]: "1.4" }}>
+        {/* 확장프로그램 연결을 '내 알고리즘 수정하기' 위에 같은 그래픽으로 스택 */}
+        <div
+          className="flex flex-col items-stretch gap-2"
+          style={{ ["--font-scale" as string]: "1.4" }}
+        >
+          <ExtensionConnectButton />
           <SyncButton label="내 알고리즘 수정하기" size="lg" />
-        </span>
+        </div>
       </header>
 
       {/* 화면이 넓으면(>=lg) 좌: fingerprint+top categories / 우: 좋아하는 채널+비슷한 사람.
