@@ -169,8 +169,33 @@
   @media print {
     .deck-viewport, .deck-track, .deck-slide{ display:contents !important; }
     .deck-slide > section{ transform:none !important; box-shadow:none !important; border-radius:0 !important; }
-    .deck-nav, .deck-counter, .deck-progress, .deck-hint{ display:none !important; }
+    .deck-nav, .deck-counter, .deck-progress, .deck-hint, .theme-toggle{ display:none !important; }
   }
+  /* ── 테마 토글 버튼(화면 전용) ── */
+  @media screen {
+    .theme-toggle{ position:fixed; top:16px; right:18px; z-index:12; width:38px; height:38px; border-radius:50%;
+      background:rgba(28,30,40,.72); border:1px solid var(--line); color:var(--ink); cursor:pointer;
+      display:flex; align-items:center; justify-content:center; -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); transition:background .2s; }
+    .theme-toggle:hover{ background:rgba(50,54,72,.92); }
+    .theme-toggle svg{ width:18px; height:18px; }
+  }
+  /* ── 라이트 모드 ── */
+  body.light{ --bg:#eceef3; --panel:#ffffff; --panel2:#f5f6fa; --line:#dde1ea; --ink:#1b1e27; --mut:#586074; --dim:#949bac; }
+  body.light .page,
+  body.light .lpage{ background:radial-gradient(120% 90% at 50% 0%, #ffffff 0%, var(--bg) 60%); }
+  body.light.deck-on{ background:#e4e7ee; }
+  body.light .deck-viewport{ background:radial-gradient(140% 100% at 50% 0%, #ffffff 0%, #e4e7ee 62%); }
+  body.light .frame, body.light .lframe, body.light .pframe, body.light .hugframe{ background:#ffffff; }
+  body.light .frame .bar, body.light .lframe .bar{ background:#eef0f4; }
+  body.light .frame .barurl{ background:#ffffff; }
+  body.light .node, body.light .chip, body.light .dtable th{ background:#eaedf3; }
+  body.light .dtable td:first-child{ background:#f3f5f9; }
+  body.light .dcallout{ background:linear-gradient(180deg,#f7f2fc 0%,#f2ecf9 100%); border-color:#e4d7f3; }
+  body.light .deck-nav, body.light .theme-toggle{ background:rgba(255,255,255,.86); color:#1b1e27; }
+  body.light .deck-nav:hover, body.light .theme-toggle:hover{ background:rgba(232,235,242,.97); }
+  body.light .deck-counter, body.light .deck-hint{ background:rgba(255,255,255,.82); }
+  body.light .deck-slide > section{ box-shadow:0 22px 64px rgba(40,52,84,.20); }
+  body.light svg text[fill="#cfd3df"]{ fill:var(--ink); }
 </style>
 </head>
 <body>
@@ -520,6 +545,22 @@
   var counter = document.createElement('div'); counter.className = 'deck-counter'; document.body.appendChild(counter);
   var hint = document.createElement('div'); hint.className = 'deck-hint'; hint.textContent = 'Use ← → or the side buttons  (← → 또는 좌우 버튼으로 넘기기)'; document.body.appendChild(hint);
 
+  // 라이트/다크 테마 토글
+  var SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5 5l1.6 1.6M17.4 17.4L19 19M19 5l-1.6 1.6M6.6 17.4L5 19"/></svg>';
+  var MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3 6.6 6.6 0 0 0 21 12.8z"/></svg>';
+  var toggle = document.createElement('button'); toggle.className = 'theme-toggle'; toggle.type = 'button';
+  toggle.setAttribute('aria-label', 'Toggle light/dark theme'); toggle.title = '라이트/다크 전환';
+  document.body.appendChild(toggle);
+  function applyTheme(light){
+    document.body.classList.toggle('light', light);
+    toggle.innerHTML = light ? MOON : SUN;  // 전환할 대상 아이콘
+    try { localStorage.setItem('jjkc-theme', light ? 'light' : 'dark'); } catch (e) {}
+  }
+  toggle.addEventListener('click', function(){ applyTheme(!document.body.classList.contains('light')); });
+  var savedTheme; try { savedTheme = localStorage.getItem('jjkc-theme'); } catch (e) {}
+  var forcedTheme = new URLSearchParams(location.search).get('theme');
+  applyTheme(forcedTheme ? forcedTheme === 'light' : savedTheme === 'light');
+
   var i = 0, N = slides.length;
   function pad2(n){ return (n < 10 ? '0' : '') + n; }
   function fit(){
@@ -555,6 +596,11 @@
   }, {passive:true});
   window.addEventListener('resize', fit);
   fit(); render();
+  var jump = parseInt((location.hash || '').slice(1), 10);  // #5 → 5번 슬라이드로 딥링크
+  if (jump >= 1 && jump <= N && jump !== 1) {
+    track.style.transition = 'none'; i = jump - 1; render();
+    requestAnimationFrame(function(){ track.style.transition = ''; });
+  }
   setTimeout(function(){ hint.style.opacity = '0'; }, 4500);
 })();
 </script>
