@@ -32,7 +32,7 @@ export default async function WatchAsPage({
           <div>
             <h1 className="text-xl font-extrabold sm:text-2xl">{owner.name}님의 알고리즘</h1>
             <p className="text-xs text-muted-foreground">
-              이 사람의 시청 취향으로 Gemini가 골라준 추천 영상입니다.
+              이 사람의 시청 취향으로 AI가 골라준 추천 영상입니다.
             </p>
           </div>
         </div>
@@ -48,7 +48,7 @@ export default async function WatchAsPage({
       <GeminiVideoFeed
         endpoint="/api/watch-as/rerank"
         body={{ userId }}
-        buttonLabel={`Gemini로 ${owner.name}님의 추천 영상 보기`}
+        buttonLabel={`AI로 ${owner.name}님의 추천 영상 보기`}
         hint={`${owner.name}님의 알고리즘으로 추천 영상을 불러오는 중입니다…`}
         columns="large"
         autoStart
