@@ -88,6 +88,8 @@
   .lcol{ flex:1; min-width:0; display:flex; flex-direction:column; }
   .lstep{ font-size:12px; font-weight:800; margin-bottom:6px; display:flex; align-items:center; gap:7px; color:var(--ink); }
   .lstep .n{ width:18px; height:18px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; }
+  .lpage.bigsteps .lstep{ font-size:24px; margin-bottom:10px; }
+  .lpage.bigsteps .lstep .n{ width:30px; height:30px; border-radius:8px; font-size:15px; }
   .lframe{ flex:1; min-height:0; border:1px solid var(--line); border-radius:10px; overflow:hidden; background:#0e0f14; display:flex; flex-direction:column; }
   .lframe .bar{ height:22px; flex:0 0 auto; background:#1a1c24; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:5px; padding:0 9px; }
   .lframe .bar i{ width:7px; height:7px; border-radius:50%; display:inline-block; }
@@ -105,7 +107,7 @@
   /* 가로로 짧은 스크린샷용 — 이미지에 딱 맞는 프레임 */
   .hugframe{ border:1px solid var(--line); border-radius:10px; overflow:hidden; background:#0e0f14; }
   .hugframe img{ width:100%; display:block; }
-  .mdesc{ font-size:13px; color:var(--mut); line-height:1.7; margin-top:12px; }
+  .mdesc{ font-size:18px; color:var(--mut); line-height:1.6; margin-top:12px; }
   /* 구성요소: 이름(큰 글씨) → 줄바꿈 → 설명(아래) */
   .cname{ font-size:24px; font-weight:800; color:var(--ink); line-height:1.2; letter-spacing:-.3px; }
   .cname .w{ font-weight:800; }
@@ -229,22 +231,22 @@
     <div style="display:flex; gap:16px; align-items:stretch;">
       <div style="flex:1.25; display:flex; flex-direction:column; gap:12px;">
         <div class="dcard" style="padding:14px 16px;">
-          <div class="ch" style="font-size:15px;"><span class="tag" style="background:#1c2444;color:var(--b)">1</span>Google Sign-in (Google 로그인)</div>
+          <div class="ch" style="font-size:30px;"><span class="tag" style="background:#1c2444;color:var(--b)">1</span>Google Sign-in (Google 로그인)</div>
           <div class="dbul" style="margin-top:9px;"><span class="k" style="color:var(--t)">＋</span><span>One click, instant analysis from real subscription data. (클릭 한 번, 실제 구독 데이터로 즉시 분석.)</span></div>
           <div class="dbul" style="margin-top:6px;"><span class="k" style="color:var(--r)">－</span><span>Needs API permission + a daily quota — can't scale, and users hesitate at OAuth. (API 권한·일일 쿼터 필요 — 확장 불가, OAuth에서 이탈.)</span></div>
         </div>
         <div class="dcard" style="padding:14px 16px;">
-          <div class="ch" style="font-size:15px;"><span class="tag" style="background:#173029;color:var(--t)">2</span>Takeout JSON Upload (Takeout 업로드)</div>
+          <div class="ch" style="font-size:30px;"><span class="tag" style="background:#173029;color:var(--t)">2</span>Takeout JSON Upload (Takeout 업로드)</div>
           <div class="dbul" style="margin-top:9px;"><span class="k" style="color:var(--t)">＋</span><span>No permission or quota — analyzes the <i>entire</i> watch history. (권한·쿼터 없이 전체 시청기록 분석.)</span></div>
           <div class="dbul" style="margin-top:6px;"><span class="k" style="color:var(--r)">－</span><span>Request → email → ZIP → unzip → upload: ~30 min, most users drop off. (요청→메일→ZIP→해제→업로드: ~30분, 대부분 이탈.)</span></div>
         </div>
         <div class="dcallout" style="padding:14px 18px;">
-          <div class="ch" style="color:var(--p); font-size:15px;"><span class="dot" style="background:var(--p)"></span>Why we added Method 3 (방법 3을 추가한 이유)</div>
+          <div class="ch" style="color:var(--p); font-size:30px;"><span class="dot" style="background:var(--p)"></span>Why we added Method 3 (방법 3을 추가한 이유)</div>
           <div class="body" style="margin-top:7px;">M1 is easy but not viable; M2 is powerful but hard to reach. Method 3 fills the gap — <code>no login, no file, no waiting</code>. (M1은 쉽지만 비현실적, M2는 강력하지만 도달이 어려움. 방법 3이 그 빈틈을 메움 — 로그인·파일·대기 없음.)</div>
         </div>
       </div>
       <div style="flex:1; display:flex; flex-direction:column; background:linear-gradient(180deg,var(--panel) 0%,var(--panel2) 100%); border:1px solid var(--line); border-radius:14px; padding:14px 16px;">
-        <div class="dh" style="font-size:14px;"><span class="dot" style="background:var(--r)"></span>Accessibility × Depth (접근성 × 깊이)</div>
+        <div class="dh" style="font-size:28px;"><span class="dot" style="background:var(--r)"></span>Accessibility × Depth (접근성 × 깊이)</div>
         <div style="flex:1; display:flex; align-items:center; justify-content:center; margin-top:4px;">
           <svg viewBox="0 0 330 250" style="width:100%; height:auto;">
             <defs>
@@ -281,7 +283,7 @@
   <div class="dsub">Declare interests → the system builds a personalized algorithm directly. (관심사를 선언하면 시스템이 개인화 알고리즘을 직접 생성.)</div>
   <div class="doc" style="gap:15px;">
     <div>
-      <div class="dh"><span class="dot" style="background:var(--b)"></span>How it works (동작 방식)</div>
+      <div class="dh" style="font-size:30px;"><span class="dot" style="background:var(--b)"></span>How it works (동작 방식)</div>
       <div style="display:flex; align-items:stretch; gap:7px; margin-top:11px;">
         <div style="flex:1; background:linear-gradient(180deg,var(--panel) 0%,var(--panel2) 100%); border:1px solid var(--line); border-radius:12px; padding:13px 8px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:5px;">
           <div style="font-size:23px; line-height:1;">🙋</div><div style="font-size:12.5px; font-weight:800; color:var(--ink);">Pick interests</div><div style="font-size:10.5px; color:var(--mut);">관심사 선택</div>
@@ -306,7 +308,7 @@
       <div class="cap" style="margin-top:10px;">Catalog: ~6,600 Korean channels (50k+ subscribers), built without the YouTube API. Output is the same data shape Methods 1 &amp; 2 produce. (카탈로그: 한국 채널 ~6,600개(구독 5만+), YouTube API 없이 구축. 출력은 방법 1·2와 동일한 데이터 형태.)</div>
     </div>
     <div>
-      <div class="dh"><span class="dot" style="background:var(--a)"></span>Comparison of the three methods (세 방법 비교)</div>
+      <div class="dh" style="font-size:30px;"><span class="dot" style="background:var(--a)"></span>Comparison of the three methods (세 방법 비교)</div>
       <table class="dtable" style="margin-top:10px;">
         <tr>
           <th style="width:22%">Criterion (기준)</th>
@@ -359,14 +361,14 @@
     <div class="lstep"><span class="n" style="background:#3a1f1d;color:var(--r)">C</span>Google Sync (Google 연동) (Auto-analyze subscriptions (구독 자동 분석))</div>
     <div class="pframe"><img src="shots/onboard-takeout.png" alt="파일로 분석하기"></div>
     <div class="pframe"><img src="shots/onboard-google.png" alt="Google 연동"></div>
-    <div class="mdesc" style="margin-top:0;">Directly parses YouTube <b>watch history (.json/.html)</b> exported from Google Takeout, extracts only the channel ID per video, and sends to the server. (Google Takeout에서 내보낸 유튜브 <b>시청 기록(.json/.html)</b>을 직접 파싱해 영상별 채널 ID만 추려 서버로 보냅니다.)</div>
-    <div class="mdesc" style="margin-top:0;">Syncing a Google account with <b>youtube.readonly</b> permission fetches the logged-in user's YouTube subscription list. From those subscriptions it selects <b>only channels in the analysis catalog</b>, builds an algorithm profile by intersection, and moves to the dashboard when done. (Google 계정을 <b>youtube.readonly</b> 권한으로 연동하면 로그인한 사용자의 유튜브 구독 채널 목록을 가져옵니다. 가져온 구독 채널 중 <b>분석 카탈로그에 있는 채널만</b> 골라 교집합으로 알고리즘 프로필을 생성하고, 완료되면 대시보드로 이동합니다.)</div>
+    <div class="mdesc" style="margin-top:0;">Parses your Takeout <b>watch history</b> and sends only each video's channel ID. (Takeout 시청기록을 파싱해 영상별 채널 ID만 전송.)</div>
+    <div class="mdesc" style="margin-top:0;">Links your Google account (<b>youtube.readonly</b>) and builds a profile from only your <b>catalog-listed subscriptions</b>. (구글 연동 후 카탈로그에 있는 구독 채널만으로 프로필 생성.)</div>
   </div>
   <div class="brand">JJKC · MECHANISM BY SCREEN</div><div class="pgno">05</div>
 </section>
 
 <!-- ===================== 03 온보딩 직접 고르기 3단계 (가로 합본) ===================== -->
-<section class="lpage">
+<section class="lpage bigsteps">
   <div class="ahead">
     <div class="kicker">Screen 02 — Onboarding · Manual Selection (온보딩 · 직접 고르기)</div>
     <div class="atitle">Build Your Algorithm (알고리즘 만들기)</div>
@@ -491,12 +493,12 @@
 </section>
 
 <!-- ===================== 14 크롬 확장 — 세부 화면 (가로 3개) ===================== -->
-<section class="lpage">
+<section class="lpage bigsteps">
   <div class="ahead">
     <div class="kicker">Chrome Extension — Detail Screens (세부 화면)</div>
     <div class="atitle">Chrome Extension — Algorithm Analysis of the Current Video (크롬 확장 프로그램 — 현재 보고 있는 영상의 알고리즘 분석) + User Feedback (유저 피드백)</div>
   </div>
-  <div class="l3" style="align-items:center;">
+  <div class="l3" style="align-items:flex-start;">
     <div class="lcol" style="align-items:center;">
       <div class="lstep"><span class="n" style="background:#173029;color:var(--t)">①</span>Video Similarity (영상 유사도)</div>
       <div style="width:90%; border:1px solid var(--line); border-radius:10px; overflow:hidden;"><img src="extension/1.png" alt="영상 유사도" style="width:100%; display:block;"></div>
