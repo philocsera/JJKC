@@ -3,6 +3,7 @@
 내 시청 취향을 입력하면 취향에 맞는 한국 유튜브 채널을 추천하고, 내 "알고리즘"을 다른 사람과 공유·비교하는 서비스. **YouTube Data API(키·쿼터·OAuth) 없이** 직접 구축한 한국 채널 카탈로그 위에서 동작한다.
 
 🔗 https://jjkc-algo-blush.vercel.app/
+
 📑 서비스 메커니즘 슬라이드 — https://philocsera.github.io/JJKC/
 
 ---
