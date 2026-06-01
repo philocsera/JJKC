@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "JJKC Algorithm Viewer",
+  "version": "1.0.0",
+  "description": "View your JJKC YouTube algorithm profile.",
+  "permissions": ["storage", "tabs"],
+  "host_permissions": ["https://ytalgoshare.vercel.app/*"],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
