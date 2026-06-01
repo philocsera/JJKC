@@ -5,6 +5,8 @@ import { SignOutButton } from "./sign-out-button";
 import { prisma } from "@/lib/prisma";
 
 const NAV_DASHBOARD = { href: "/dashboard", label: "내 알고리즘" };
+const NAV_FEEDBACK = { href: "/admin/reviews", label: "유저 피드백 관리" };
+
 // 알고리즘 프로필이 있어야 노출되는 메뉴
 const NAV_AFTER_PROFILE = [
   { href: "/discover", label: "추천" },
@@ -14,17 +16,27 @@ const NAV_AFTER_PROFILE = [
 export async function SiteNav() {
   const session = await auth();
   const user = session?.user as
-    | { id: string; name?: string | null; email?: string | null; image?: string | null }
+    | {
+        id: string;
+        name?: string | null;
+        email?: string | null;
+        image?: string | null;
+      }
     | undefined;
+
   // 로그인 안 했으면 메뉴 숨김. 로그인했어도 아직 알고리즘 프로필이 없으면
   // '내 알고리즘'(대시보드)만 노출하고 추천·다른 사람들의 알고리즘은 숨긴다.
   let links: { href: string; label: string }[] = [];
+
   if (user?.id) {
     const hasProfile = !!(await prisma.algoProfile.findUnique({
       where: { userId: user.id },
       select: { userId: true },
     }));
-    links = hasProfile ? [NAV_DASHBOARD, ...NAV_AFTER_PROFILE] : [NAV_DASHBOARD];
+
+    links = hasProfile
+      ? [NAV_DASHBOARD, ...NAV_AFTER_PROFILE, NAV_FEEDBACK]
+      : [NAV_DASHBOARD];
   }
 
   return (
@@ -58,7 +70,9 @@ export async function SiteNav() {
           {user?.id ? (
             <span className="ml-2 flex items-center gap-2.5 border-l border-border/60 pl-3">
               <Avatar className="h-7 w-7 ring-1 ring-border">
-                {user.image ? <AvatarImage src={user.image} alt={user.name ?? ""} /> : null}
+                {user.image ? (
+                  <AvatarImage src={user.image} alt={user.name ?? ""} />
+                ) : null}
                 <AvatarFallback className="text-xs">
                   {(user.name ?? user.email ?? "?").slice(0, 1).toUpperCase()}
                 </AvatarFallback>
