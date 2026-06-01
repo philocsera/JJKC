@@ -690,3 +690,60 @@ async function analyzeCurrentYoutubePage() {
 }
 
 loadProfile();
+
+// 익명 유저 피드백 제출 기능
+const reviewRating = document.getElementById("reviewRating");
+const reviewText = document.getElementById("reviewText");
+const submitReviewBtn = document.getElementById("submitReviewBtn");
+const reviewStatus = document.getElementById("reviewStatus");
+
+submitReviewBtn?.addEventListener("click", async () => {
+  if (!reviewRating || !reviewText || !reviewStatus) {
+    return;
+  }
+
+  const rating = Number(reviewRating.value);
+  const text = String(reviewText.value ?? "").trim();
+
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+    reviewStatus.textContent = "별점을 선택해주세요.";
+    return;
+  }
+
+  if (!text) {
+    reviewStatus.textContent = "리뷰 내용을 입력해주세요.";
+    return;
+  }
+
+  if (text.length > 500) {
+    reviewStatus.textContent = "리뷰는 500자 이하로 입력해주세요.";
+    return;
+  }
+
+  try {
+    reviewStatus.textContent = "익명 리뷰를 저장하는 중...";
+
+    const res = await fetch(`${SITE_URL}/api/extension/reviews`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        rating,
+        reviewText: text,
+      }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || data.ok === false) {
+      throw new Error(data.error || "리뷰 저장 실패");
+    }
+
+    reviewText.value = "";
+    reviewStatus.textContent = "익명 리뷰가 저장되었습니다.";
+  } catch {
+    reviewStatus.textContent =
+      "리뷰 저장 중 오류가 발생했습니다. 사이트 API 배포 상태를 확인하세요.";
+  }
+});
