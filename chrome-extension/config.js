@@ -1,0 +1,6 @@
+// JJKC OpenAI API 설정 파일
+
+window.JJKC_OPENAI_CONFIG = {
+  OPENAI_API_KEY: "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",
+  OPENAI_MODEL: "gpt-5.5"
+};
