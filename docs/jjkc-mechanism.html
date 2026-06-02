@@ -37,7 +37,7 @@
 
   /* ── 스크린샷(크게, 위) ── */
   .ahead{ flex:0 0 auto; }
-  .ahead .atitle{ font-size:31px; font-weight:800; letter-spacing:-.3px; margin-top:4px; display:flex; align-items:baseline; gap:9px; flex-wrap:wrap; }
+  .ahead .atitle{ font-size:37px; font-weight:800; letter-spacing:-.3px; margin-top:4px; display:flex; align-items:baseline; gap:9px; flex-wrap:wrap; }
   .ahead .url{ font-size:10.5px; color:var(--a); background:#23252f; border:1px solid var(--line); border-radius:6px; padding:2px 8px; font-weight:600; }
   .ashot{ flex:1; min-height:0; display:flex; align-items:center; justify-content:center; margin-top:9px; }
   .frame{ border:1px solid var(--line); border-radius:11px; overflow:hidden; background:#0e0f14; box-shadow:0 16px 40px rgba(0,0,0,.5); max-width:100%; max-height:100%; display:flex; flex-direction:column; }
@@ -158,29 +158,33 @@
     .deck-nav.prev{ left:26px; } .deck-nav.next{ right:26px; }
     .deck-nav[disabled]{ opacity:.22; pointer-events:none; }
     .deck-nav svg{ width:22px; height:22px; }
-    .deck-counter{ position:fixed; left:50%; bottom:22px; transform:translateX(-50%); z-index:10;
+    .deck-counter{ position:fixed; right:22px; bottom:18px; z-index:10;
       font-size:12px; letter-spacing:.12em; color:var(--mut); background:rgba(20,22,30,.7); border:1px solid var(--line);
       border-radius:999px; padding:7px 16px; -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); font-variant-numeric:tabular-nums; }
     .deck-counter b{ color:var(--ink); font-weight:800; }
     .deck-progress{ position:fixed; left:0; top:0; height:3px; width:0; z-index:11;
       background:linear-gradient(90deg,var(--r),var(--a)); transition:width .52s cubic-bezier(.45,.05,.2,1); }
-    .deck-hint{ position:fixed; right:24px; bottom:22px; z-index:10; font-size:11px; color:var(--dim);
+    .deck-hint{ position:fixed; left:24px; bottom:22px; z-index:10; font-size:11px; color:var(--dim);
       background:rgba(20,22,30,.7); border:1px solid var(--line); border-radius:999px; padding:6px 13px;
       -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); transition:opacity .6s; pointer-events:none; }
   }
   @media print {
     .deck-viewport, .deck-track, .deck-slide{ display:contents !important; }
     .deck-slide > section{ transform:none !important; box-shadow:none !important; border-radius:0 !important; }
-    .deck-nav, .deck-counter, .deck-progress, .deck-hint, .theme-toggle{ display:none !important; }
+    .deck-nav, .deck-counter, .deck-progress, .deck-hint, .theme-toggle, .fs-toggle{ display:none !important; }
   }
   /* ── 테마 토글 버튼(화면 전용) ── */
   @media screen {
-    .theme-toggle{ position:fixed; top:16px; right:18px; z-index:12; width:38px; height:38px; border-radius:50%;
+    .theme-toggle, .fs-toggle{ position:fixed; top:16px; z-index:12; width:38px; height:38px; border-radius:50%;
       background:rgba(28,30,40,.72); border:1px solid var(--line); color:var(--ink); cursor:pointer;
       display:flex; align-items:center; justify-content:center; -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); transition:background .2s; }
-    .theme-toggle:hover{ background:rgba(50,54,72,.92); }
-    .theme-toggle svg{ width:18px; height:18px; }
+    .theme-toggle{ right:18px; }
+    .fs-toggle{ right:62px; }
+    .theme-toggle:hover, .fs-toggle:hover{ background:rgba(50,54,72,.92); }
+    .theme-toggle svg, .fs-toggle svg{ width:18px; height:18px; }
   }
+  body.light .fs-toggle{ background:rgba(255,255,255,.86); color:#1b1e27; }
+  body.light .fs-toggle:hover{ background:rgba(232,235,242,.97); }
   /* ── 라이트 모드 ── */
   body.light{ --bg:#eceef3; --panel:#ffffff; --panel2:#f5f6fa; --line:#dde1ea; --ink:#1b1e27; --mut:#586074; --dim:#949bac; }
   body.light .page,
@@ -580,12 +584,33 @@
   var forcedTheme = new URLSearchParams(location.search).get('theme');
   applyTheme(forcedTheme ? forcedTheme === 'light' : savedTheme === 'light');
 
+  // 전체화면 토글(브라우저 상단바 숨김)
+  var FS_ON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V5a1 1 0 0 1 1-1h4M20 9V5a1 1 0 0 0-1-1h-4M4 15v4a1 1 0 0 0 1 1h4M20 15v4a1 1 0 0 1-1 1h-4"/></svg>';
+  var FS_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4H5a1 1 0 0 0-1 1v4M15 4h4a1 1 0 0 1 1 1v4M9 20H5a1 1 0 0 1-1-1v-4M15 20h4a1 1 0 0 1 1-1v-4"/></svg>';
+  var fsBtn = document.createElement('button'); fsBtn.className = 'fs-toggle'; fsBtn.type = 'button';
+  fsBtn.setAttribute('aria-label', 'Toggle fullscreen'); fsBtn.title = '전체화면 전환 (F)';
+  document.body.appendChild(fsBtn);
+  function fsActive(){ return document.fullscreenElement || document.webkitFullscreenElement; }
+  function syncFsIcon(){ fsBtn.innerHTML = fsActive() ? FS_OFF : FS_ON; }
+  function toggleFs(){
+    if (fsActive()){
+      (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    } else {
+      var el = document.documentElement;
+      (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+    }
+  }
+  fsBtn.addEventListener('click', toggleFs);
+  document.addEventListener('fullscreenchange', syncFsIcon);
+  document.addEventListener('webkitfullscreenchange', syncFsIcon);
+  syncFsIcon();
+
   var i = 0, N = slides.length;
   function pad2(n){ return (n < 10 ? '0' : '') + n; }
   function fit(){
-    var p = 16;
+    var p = 6;
     var s = Math.min((window.innerWidth - p * 2) / SW, (window.innerHeight - p * 2) / SH);
-    s = Math.max(0.2, Math.min(s, 2.4));
+    s = Math.max(0.2, Math.min(s, 3));
     document.documentElement.style.setProperty('--scale', s);
   }
   function render(){
@@ -602,6 +627,7 @@
     else if (e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(i - 1); }
     else if (e.key === 'Home'){ go(0); }
     else if (e.key === 'End'){ go(N - 1); }
+    else if (e.key === 'f' || e.key === 'F'){ e.preventDefault(); toggleFs(); }
   });
   var tx = 0;
   vp.addEventListener('touchstart', function(e){ tx = e.touches[0].clientX; }, {passive:true});
