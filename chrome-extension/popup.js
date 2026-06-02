@@ -45,112 +45,112 @@ const CATEGORY_LABELS_KO = {
 const CATEGORY_AFFINITY = {
   "Gaming": {
     "Gaming": 1,
-    "Entertainment": 0.45,
+    "Entertainment": 0.5,
     "Comedy": 0.35,
-    "People & Blogs": 0.25,
-    "Science & Technology": 0.2
+    "People & Blogs": 0.3,
+    "Science & Technology": 0.25
   },
   "Comedy": {
     "Comedy": 1,
-    "Entertainment": 0.75,
-    "People & Blogs": 0.45,
-    "Gaming": 0.25
+    "Entertainment": 0.8,
+    "People & Blogs": 0.5,
+    "Gaming": 0.3
   },
   "Entertainment": {
     "Entertainment": 1,
-    "Comedy": 0.7,
-    "People & Blogs": 0.65,
-    "Gaming": 0.35,
-    "영화": 0.35,
-    "애니메이션": 0.3
+    "Comedy": 0.75,
+    "People & Blogs": 0.7,
+    "Gaming": 0.4,
+    "영화": 0.4,
+    "애니메이션": 0.35
   },
   "요리·먹방": {
     "요리·먹방": 1,
-    "생활·하우투": 0.55,
-    "Entertainment": 0.35,
-    "People & Blogs": 0.3
+    "생활·하우투": 0.6,
+    "Entertainment": 0.4,
+    "People & Blogs": 0.35
   },
   "뷰티·패션": {
     "뷰티·패션": 1,
-    "생활·하우투": 0.5,
-    "People & Blogs": 0.4,
-    "Entertainment": 0.3
+    "생활·하우투": 0.55,
+    "People & Blogs": 0.45,
+    "Entertainment": 0.35
   },
   "생활·하우투": {
     "생활·하우투": 1,
-    "Education": 0.6,
-    "Science & Technology": 0.45,
-    "요리·먹방": 0.5,
-    "뷰티·패션": 0.45,
-    "Autos & Vehicles": 0.35
+    "Education": 0.65,
+    "Science & Technology": 0.5,
+    "요리·먹방": 0.55,
+    "뷰티·패션": 0.5,
+    "Autos & Vehicles": 0.38
   },
   "Science & Technology": {
     "Science & Technology": 1,
-    "Education": 0.78,
-    "생활·하우투": 0.48,
-    "News & Politics": 0.28,
-    "Gaming": 0.22,
-    "Autos & Vehicles": 0.25
+    "Education": 0.82,
+    "생활·하우투": 0.52,
+    "News & Politics": 0.3,
+    "Gaming": 0.28,
+    "Autos & Vehicles": 0.3
   },
   "Education": {
     "Education": 1,
-    "Science & Technology": 0.78,
-    "생활·하우투": 0.55,
-    "News & Politics": 0.35,
-    "People & Blogs": 0.25
+    "Science & Technology": 0.82,
+    "생활·하우투": 0.6,
+    "News & Politics": 0.4,
+    "People & Blogs": 0.3
   },
   "News & Politics": {
     "News & Politics": 1,
-    "Education": 0.42,
-    "People & Blogs": 0.25,
-    "Nonprofits & Activism": 0.45
+    "Education": 0.48,
+    "People & Blogs": 0.3,
+    "Nonprofits & Activism": 0.5
   },
   "Sports": {
     "Sports": 1,
-    "Entertainment": 0.28,
-    "People & Blogs": 0.22
+    "Entertainment": 0.32,
+    "People & Blogs": 0.25
   },
   "People & Blogs": {
     "People & Blogs": 1,
-    "Entertainment": 0.65,
-    "Comedy": 0.45,
-    "Travel & Events": 0.45,
-    "생활·하우투": 0.35,
-    "요리·먹방": 0.25
+    "Entertainment": 0.7,
+    "Comedy": 0.5,
+    "Travel & Events": 0.5,
+    "생활·하우투": 0.4,
+    "요리·먹방": 0.3
   },
   "Travel & Events": {
     "Travel & Events": 1,
-    "People & Blogs": 0.5,
-    "Entertainment": 0.3
+    "People & Blogs": 0.55,
+    "Entertainment": 0.35
   },
   "영화": {
     "영화": 1,
-    "Entertainment": 0.55,
-    "애니메이션": 0.35,
-    "Comedy": 0.2
+    "Entertainment": 0.6,
+    "애니메이션": 0.4,
+    "Comedy": 0.25
   },
   "애니메이션": {
     "애니메이션": 1,
-    "Entertainment": 0.45,
-    "영화": 0.35,
-    "Gaming": 0.25
+    "Entertainment": 0.5,
+    "영화": 0.4,
+    "Gaming": 0.3
   },
   "Autos & Vehicles": {
     "Autos & Vehicles": 1,
-    "생활·하우투": 0.35,
-    "Science & Technology": 0.25,
-    "Sports": 0.2
+    "생활·하우투": 0.4,
+    "Science & Technology": 0.3,
+    "Sports": 0.22
   },
   "Pets & Animals": {
     "Pets & Animals": 1,
-    "People & Blogs": 0.35,
-    "Entertainment": 0.25
+    "People & Blogs": 0.4,
+    "Entertainment": 0.3
   },
   "Nonprofits & Activism": {
     "Nonprofits & Activism": 1,
-    "News & Politics": 0.45,
-    "Education": 0.25,
-    "People & Blogs": 0.2
+    "News & Politics": 0.5,
+    "Education": 0.3,
+    "People & Blogs": 0.25
   }
 };
 
@@ -167,6 +167,13 @@ const profileSection = document.getElementById("profileSection");
 const youtubeSection = document.getElementById("youtubeSection");
 const youtubeAnalysis = document.getElementById("youtubeAnalysis");
 const analyzeYoutubeBtn = document.getElementById("analyzeYoutubeBtn");
+
+
+
+const reviewRating = document.getElementById("reviewRating");
+const reviewText = document.getElementById("reviewText");
+const submitReviewBtn = document.getElementById("submitReviewBtn");
+const reviewStatus = document.getElementById("reviewStatus");
 
 profileTab.addEventListener("click", () => {
   profileTab.classList.add("active");
@@ -210,6 +217,218 @@ compareBtn.addEventListener("click", () => {
 });
 
 analyzeYoutubeBtn.addEventListener("click", analyzeCurrentYoutubePage);
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+submitReviewBtn?.addEventListener("click", async () => {
+  if (!reviewRating || !reviewText || !reviewStatus) return;
+
+  const rating = Number(reviewRating.value);
+  const text = String(reviewText.value ?? "").trim();
+
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+    reviewStatus.textContent = "별점을 선택해주세요.";
+    return;
+  }
+
+  if (!text) {
+    reviewStatus.textContent = "리뷰 내용을 입력해주세요.";
+    return;
+  }
+
+  if (text.length > 500) {
+    reviewStatus.textContent = "리뷰는 500자 이하로 입력해주세요.";
+    return;
+  }
+
+  try {
+    reviewStatus.textContent = "익명 리뷰를 저장하는 중...";
+
+    const res = await fetch(`${SITE_URL}/api/extension/reviews`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        rating,
+        reviewText: text,
+      }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || data.ok === false) {
+      throw new Error(data.error || "리뷰 저장 실패");
+    }
+
+    reviewText.value = "";
+    reviewStatus.textContent = "익명 리뷰가 저장되었습니다.";
+  } catch {
+    reviewStatus.textContent =
+      "리뷰 저장 중 오류가 발생했습니다. 사이트 API 배포 상태를 확인하세요.";
+  }
+});
+
+
+function getJsonTextFromOpenAIResponse(data) {
+  if (typeof data?.output_text === "string") {
+    return data.output_text;
+  }
+
+  const parts = data?.output
+    ?.flatMap((item) => item?.content || [])
+    ?.map((content) => content?.text)
+    ?.filter(Boolean);
+
+  return parts?.join("\n") || "";
+}
+
+function normalizeLLMCategoryScores(scores) {
+  const vector = emptyVector();
+  const input = scores || {};
+
+  Object.entries(input).forEach(([rawName, rawValue]) => {
+    const category = normalizeJjkcCategory(rawName);
+    const value = Number(rawValue);
+    if (!category || !Number.isFinite(value) || value <= 0) return;
+    vector[category] = (vector[category] || 0) + value;
+  });
+
+  return normalizeVector(vector);
+}
+
+function buildLLMPrompt(video) {
+  return [
+    "You are a strict YouTube video classification engine for the JJKC algorithm viewer.",
+    "Classify the current video into exactly the 17 JJKC categories below.",
+    "Return JSON only. Do not include markdown.",
+    "",
+    "JJKC categories:",
+    JJKC_CATEGORIES.join(", "),
+    "",
+    "Rules:",
+    "- Infer tags from the title, channel name, description snippet, hashtags, and metadata keywords.",
+    "- Use categoryScores as percentages summing to 100.",
+    "- Give 2 to 4 dominant categories when appropriate.",
+    "- Do not invent unrelated categories.",
+    "- keywords should be concise inferred tags, not sentences.",
+    "- confidence must be 0 to 100.",
+    "",
+    "Output JSON shape:",
+    "{",
+    '  "categoryScores": {"Gaming": 0, "...": 0},',
+    '  "keywords": ["tag1", "tag2"],',
+    '  "hashtags": ["tag1"],',
+    '  "summary": "short Korean explanation",',
+    '  "confidence": 0',
+    "}",
+    "",
+    "Video data:",
+    JSON.stringify({
+      title: video.title || "",
+      channelName: video.channelName || "",
+      descriptionSnippet: video.descriptionSnippet || "",
+      hashtags: video.hashtags || [],
+      metadataKeywords: video.metadataKeywords || [],
+      domKeywords: video.keywords || [],
+      officialCategory: video.officialCategory || ""
+    }, null, 2)
+  ].join("\n");
+}
+
+async function analyzeVideoWithLLM(domVideo) {
+  const apiKey = window.JJKC_OPENAI_CONFIG?.OPENAI_API_KEY;
+  const model = window.JJKC_OPENAI_CONFIG?.OPENAI_MODEL || "gpt-5.4";
+
+  if (!apiKey || apiKey === "PASTE_YOUR_OPENAI_API_KEY_HERE") {
+    console.warn("OpenAI API key is not configured in config.js");
+    return null;
+  }
+
+  try {
+    const res = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        input: buildLLMPrompt(domVideo),
+        text: {
+          format: {
+            type: "json_schema",
+            name: "jjkc_video_analysis",
+            strict: true,
+            schema: {
+              type: "object",
+              additionalProperties: false,
+              required: ["categoryScores", "keywords", "hashtags", "summary", "confidence"],
+              properties: {
+                categoryScores: {
+                  type: "object",
+                  additionalProperties: false,
+                  required: JJKC_CATEGORIES,
+                  properties: Object.fromEntries(
+                    JJKC_CATEGORIES.map((category) => [
+                      category,
+                      { type: "number", minimum: 0, maximum: 100 }
+                    ])
+                  )
+                },
+                keywords: {
+                  type: "array",
+                  maxItems: 20,
+                  items: { type: "string" }
+                },
+                hashtags: {
+                  type: "array",
+                  maxItems: 15,
+                  items: { type: "string" }
+                },
+                summary: { type: "string" },
+                confidence: { type: "number", minimum: 0, maximum: 100 }
+              }
+            }
+          }
+        }
+      }),
+    });
+
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok || !data) {
+      console.warn("OpenAI analysis failed:", data);
+      return null;
+    }
+
+    const jsonText = getJsonTextFromOpenAIResponse(data);
+    const parsed = JSON.parse(jsonText);
+
+    const categoryScores = normalizeLLMCategoryScores(parsed.categoryScores);
+
+    return {
+      ...domVideo,
+      categoryScores,
+      keywords: [...new Set([...(parsed.keywords || []), ...(domVideo.keywords || [])])].slice(0, 25),
+      hashtags: [...new Set([...(parsed.hashtags || []), ...(domVideo.hashtags || [])])].slice(0, 15),
+      llmSummary: parsed.summary || "",
+      confidence: Math.round(Number(parsed.confidence || 0)),
+      analysisSource: "openai-llm"
+    };
+  } catch (error) {
+    console.warn("OpenAI LLM analysis error:", error);
+    return null;
+  }
+}
+
+
+
+
+
+
 
 function safeText(value, fallback = "-") {
   if (value === null || value === undefined || value === "") return fallback;
@@ -380,8 +599,40 @@ function affinitySimilarity(myVector, videoVector) {
   return weighted / totalVideoWeight;
 }
 
-// 키워드 보정.
-// 내 요약, 상위 채널명, 내 상위 카테고리 라벨과 영상 키워드가 맞으면 점수를 올린다.
+// 새 보정: 영상 상위 카테고리가 내 상위 카테고리 또는 관련 카테고리와 얼마나 겹치는지 별도로 측정한다.
+function categoryInterestSimilarity(myVector, videoVector) {
+  const myTop = topVectorEntries(myVector, 6);
+  const videoTop = topVectorEntries(videoVector, 5);
+
+  if (myTop.length === 0 || videoTop.length === 0) return 0;
+
+  let score = 0;
+  let totalVideo = 0;
+
+  videoTop.forEach(([videoCat, videoValue]) => {
+    let best = 0;
+
+    myTop.forEach(([myCat, myValue]) => {
+      const relation =
+        CATEGORY_AFFINITY[myCat]?.[videoCat] ??
+        CATEGORY_AFFINITY[videoCat]?.[myCat] ??
+        (myCat === videoCat ? 1 : 0);
+
+      // 내 관심 비중이 낮아도 상위 관심사 안에 있으면 반영되도록 완화
+      const myWeight = 0.55 + Math.min(0.45, Number(myValue) / 100);
+      best = Math.max(best, relation * myWeight);
+    });
+
+    score += Number(videoValue) * best;
+    totalVideo += Number(videoValue);
+  });
+
+  if (totalVideo <= 0) return 0;
+  return score / totalVideo;
+}
+
+// 개선된 키워드 보정.
+// 직접 문자열 일치가 없더라도 영상 카테고리가 내 관심 카테고리와 관련 있으면 최소 점수를 부여한다.
 function keywordSimilarity(profile, myVector, video) {
   const profileTextParts = [];
 
@@ -400,7 +651,8 @@ function keywordSimilarity(profile, myVector, video) {
   });
 
   const profileText = profileTextParts.join(" ").toLowerCase();
-  const videoWords = [
+
+  const normalWords = [
     ...(video.keywords || []),
     video.title || "",
     video.channelName || ""
@@ -411,24 +663,47 @@ function keywordSimilarity(profile, myVector, video) {
     .split(/\s+/)
     .filter((word) => word.length >= 2);
 
-  const uniqueVideoWords = [...new Set(videoWords)].slice(0, 30);
+  const hashtagWords = (video.hashtags || [])
+    .join(" ")
+    .toLowerCase()
+    .replace(/[^0-9a-zA-Z가-힣\s]/g, " ")
+    .split(/\s+/)
+    .filter((word) => word.length >= 2);
 
-  if (!profileText || uniqueVideoWords.length === 0) return 0;
+  const uniqueNormalWords = [...new Set(normalWords)].slice(0, 40);
+  const uniqueHashtagWords = [...new Set(hashtagWords)].slice(0, 20);
 
-  let hit = 0;
+  if (!profileText || (uniqueNormalWords.length === 0 && uniqueHashtagWords.length === 0)) {
+    return 0;
+  }
 
-  uniqueVideoWords.forEach((word) => {
-    if (profileText.includes(word)) hit += 1;
+  let keywordHit = 0;
+  let hashtagHit = 0;
+
+  uniqueNormalWords.forEach((word) => {
+    if (profileText.includes(word)) keywordHit += 1;
   });
 
-  return Math.min(1, hit / 5);
+  uniqueHashtagWords.forEach((word) => {
+    if (profileText.includes(word)) hashtagHit += 1;
+  });
+
+  // 키워드가 많이 겹칠수록 완만하게 지수형으로 상승한다.
+  // 해시태그는 영상 설명에 의도적으로 입력된 정보이므로 일반 키워드보다 1.5배 강하게 반영한다.
+  const weightedHit = keywordHit + hashtagHit * 1.5;
+
+  // 1 - exp(-x/3): 초반에는 빠르게 오르지만 1을 넘지 않아 과도한 폭주를 막는다.
+  const directScore = 1 - Math.exp(-weightedHit / 3);
+
+  return Math.min(1, directScore);
 }
 
-// 점수 스케일 보정.
-// raw score를 그대로 퍼센트로 보여주면 너무 낮게 보이므로 sqrt 스케일을 적용한다.
 function scaleSimilarity(rawScore) {
   const clamped = Math.max(0, Math.min(1, rawScore));
-  return Math.round(Math.sqrt(clamped) * 100);
+
+  // 이전 방식보다 조금 더 강하게 보정하되,
+  // 모든 영상이 과하게 높게 나오지 않도록 기본점수는 5점만 부여한다.
+  return Math.round(5 + Math.sqrt(clamped) * 95);
 }
 
 function calculateHybridSimilarity(profile, myVector, videoVector, video) {
@@ -437,9 +712,9 @@ function calculateHybridSimilarity(profile, myVector, videoVector, video) {
   const keyword = keywordSimilarity(profile, myVector, video);
 
   const raw =
-    cosine * 0.45 +
+    cosine * 0.40 +
     affinity * 0.40 +
-    keyword * 0.15;
+    keyword * 0.20;
 
   return {
     raw,
@@ -460,7 +735,7 @@ function getMatchLevel(score) {
 
 function buildMatchComment(score, videoTop, myTop) {
   if (score >= 85) {
-    return `영상의 주요 성향(${label(videoTop)})이 내 핵심 알고리즘(${label(myTop)})과 매우 가깝습니다.`;
+    return `영상의 주요 성향(${label(videoTop)})이 내 핵심 알고리즘(${label(myTop)})와 매우 가깝습니다.`;
   }
 
   if (score >= 70) {
@@ -561,6 +836,7 @@ async function loadProfile() {
 
 async function analyzeCurrentYoutubePage() {
   youtubeAnalysis.innerHTML = "현재 YouTube 영상과 내 알고리즘을 비교하는 중...";
+  await delay(250);
 
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
@@ -601,7 +877,13 @@ async function analyzeCurrentYoutubePage() {
 
     if (!response?.ok) throw new Error(response?.error || "No response");
 
-    const video = response.data;
+    const domVideo = response.data;
+    const llmVideo = await analyzeVideoWithLLM(domVideo);
+    const video = llmVideo || domVideo;
+    const analysisSourceText = llmVideo
+      ? "OpenAI LLM 기반 태그 추정"
+      : "LLM 실패 또는 API 키 없음: DOM fallback 분석";
+
     const profile = profileData.profile ?? {};
 
     const myVector = getMyCategoryVector(profile.categories ?? {});
@@ -637,10 +919,17 @@ async function analyzeCurrentYoutubePage() {
       ? video.keywords.map((k) => `<span class="pill gray">${safeText(k)}</span>`).join("")
       : `<span class="muted">추출된 키워드 없음</span>`;
 
+    const hashtagHtml = (video.hashtags || []).length
+      ? video.hashtags.map((k) => `<span class="pill green">#${safeText(k)}</span>`).join("")
+      : `<span class="muted">감지된 설명 태그 없음</span>`;
+
     youtubeAnalysis.innerHTML = `
       <div class="section-title">현재 영상</div>
       <div class="title">${safeText(video.title, "영상 제목 없음")}</div>
       <p class="muted">채널: ${safeText(video.channelName, "채널명 없음")}</p>
+      <p class="muted">분석 출처: ${safeText(analysisSourceText)}</p>
+      <p class="muted">분류 신뢰도: ${safeText(video.confidence ?? "-")}%</p>
+      ${video.llmSummary ? `<p class="muted">LLM 요약: ${safeText(video.llmSummary)}</p>` : ""}
 
       <div class="score-wrap">
         <div class="score-head">
@@ -659,7 +948,7 @@ async function analyzeCurrentYoutubePage() {
         <div class="score-breakdown">
           <div>기본 카테고리 유사도</div><div>${hybrid.cosineScore}%</div>
           <div>관련 카테고리 보정</div><div>${hybrid.affinityScore}%</div>
-          <div>키워드 보정</div><div>${hybrid.keywordScore}%</div>
+          <div>LLM 키워드 보정</div><div>${hybrid.keywordScore}%</div>
         </div>
       </div>
 
@@ -680,70 +969,16 @@ async function analyzeCurrentYoutubePage() {
 
       <div class="section-title">영상/채널 키워드</div>
       <div>${keywordHtml}</div>
+
+      <div class="section-title">영상 설명 태그</div>
+      <div>${hashtagHtml}</div>
     `;
   } catch {
     youtubeAnalysis.innerHTML = `
       <span class="error">현재 영상 정보를 읽지 못했습니다.</span>
-      <p class="muted">유튜브 영상 페이지를 새로고침한 뒤 다시 시도하세요.</p>
+      <p class="muted">새로고침하지 말고 YouTube 화면이 바뀐 뒤 다시 버튼을 눌러보세요. 현재 화면을 다시 읽도록 수정되었습니다.</p>
     `;
   }
 }
 
 loadProfile();
-
-// 익명 유저 피드백 제출 기능
-const reviewRating = document.getElementById("reviewRating");
-const reviewText = document.getElementById("reviewText");
-const submitReviewBtn = document.getElementById("submitReviewBtn");
-const reviewStatus = document.getElementById("reviewStatus");
-
-submitReviewBtn?.addEventListener("click", async () => {
-  if (!reviewRating || !reviewText || !reviewStatus) {
-    return;
-  }
-
-  const rating = Number(reviewRating.value);
-  const text = String(reviewText.value ?? "").trim();
-
-  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
-    reviewStatus.textContent = "별점을 선택해주세요.";
-    return;
-  }
-
-  if (!text) {
-    reviewStatus.textContent = "리뷰 내용을 입력해주세요.";
-    return;
-  }
-
-  if (text.length > 500) {
-    reviewStatus.textContent = "리뷰는 500자 이하로 입력해주세요.";
-    return;
-  }
-
-  try {
-    reviewStatus.textContent = "익명 리뷰를 저장하는 중...";
-
-    const res = await fetch(`${SITE_URL}/api/extension/reviews`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        rating,
-        reviewText: text,
-      }),
-    });
-
-    const data = await res.json().catch(() => ({}));
-
-    if (!res.ok || data.ok === false) {
-      throw new Error(data.error || "리뷰 저장 실패");
-    }
-
-    reviewText.value = "";
-    reviewStatus.textContent = "익명 리뷰가 저장되었습니다.";
-  } catch {
-    reviewStatus.textContent =
-      "리뷰 저장 중 오류가 발생했습니다. 사이트 API 배포 상태를 확인하세요.";
-  }
-});

@@ -217,6 +217,15 @@ function getYtInitialPlayerResponse() {
   return null;
 }
 
+function getCurrentVideoIdFromUrl() {
+  try {
+    const url = new URL(location.href);
+    return url.searchParams.get("v") || "";
+  } catch {
+    return "";
+  }
+}
+
 function getYoutubeMetadata() {
   const player = getYtInitialPlayerResponse();
 
@@ -238,6 +247,7 @@ function getYoutubeMetadata() {
     .filter(Boolean);
 
   return {
+    videoId: videoDetails.videoId || "",
     officialCategory,
     keywords: [...new Set([...keywordsFromPlayer, ...metaKeywords])].slice(0, 30),
     title: videoDetails.title || "",
@@ -301,7 +311,7 @@ function buildVideoCategoryScores(videoInfo) {
 
   const text = `${videoInfo.title} ${videoInfo.channelName} ${videoInfo.keywords.join(" ")}`;
   const lex = lexiconScores(text);
-  addScores(scores, lex.scores, 15);
+  addScores(scores, lex.scores, 22);
 
   const total = Object.values(scores).reduce((sum, value) => sum + Number(value || 0), 0);
 
@@ -311,21 +321,53 @@ function buildVideoCategoryScores(videoInfo) {
   };
 }
 
+
+function getYoutubeDescriptionText() {
+  const selectors = [
+    "ytd-watch-metadata #description-inline-expander",
+    "ytd-watch-metadata #description",
+    "#description-inline-expander",
+    "#description",
+    "ytd-text-inline-expander"
+  ];
+
+  for (const selector of selectors) {
+    const el = document.querySelector(selector);
+    const text = el?.textContent?.trim();
+    if (text) return text;
+  }
+
+  return "";
+}
+
+function extractHashtags(text) {
+  const matches = String(text || "").match(/#[0-9A-Za-z가-힣_]+/g) || [];
+  return [...new Set(
+    matches
+      .map((tag) => tag.replace(/^#/, "").trim())
+      .filter((tag) => tag.length >= 2)
+  )].slice(0, 12);
+}
+
 function getCurrentVideoInfo() {
   const metadata = getYoutubeMetadata();
+  const currentVideoId = typeof getCurrentVideoIdFromUrl === "function" ? getCurrentVideoIdFromUrl() : "";
+  const isFreshMetadata =
+    !currentVideoId ||
+    !metadata.videoId ||
+    metadata.videoId === currentVideoId;
 
-  const title =
-    metadata.title ||
+  const domTitle =
     getText([
       "h1.ytd-watch-metadata",
       "h1.title",
       "#title h1",
       "yt-formatted-string.ytd-watch-metadata"
     ]) ||
+    document.querySelector("meta[name='title']")?.getAttribute("content")?.trim() ||
     document.title.replace(" - YouTube", "").trim();
 
-  const channelName =
-    metadata.channelName ||
+  const domChannelName =
     getText([
       "ytd-watch-metadata ytd-channel-name a",
       "#owner #channel-name a",
@@ -333,27 +375,81 @@ function getCurrentVideoInfo() {
       "ytd-video-owner-renderer ytd-channel-name a"
     ]);
 
-  const keywords = [
-    ...extractKeywords(`${title} ${channelName}`),
-    ...metadata.keywords.slice(0, 8)
-  ];
+  const title = domTitle || (isFreshMetadata ? metadata.title : "") || "";
+  const channelName = domChannelName || (isFreshMetadata ? metadata.channelName : "") || "";
 
-  const scoreResult = buildVideoCategoryScores({
-    title,
-    channelName,
-    keywords,
-    officialCategory: metadata.officialCategory
-  });
+  const descriptionText = typeof getYoutubeDescriptionText === "function" ? getYoutubeDescriptionText() : "";
+  const descriptionSnippet = typeof cleanDescriptionForLLM === "function"
+    ? cleanDescriptionForLLM(descriptionText)
+    : String(descriptionText || "").slice(0, 900);
+
+  const hashtags = typeof extractHashtags === "function" ? extractHashtags(descriptionText) : [];
+  const safeOfficialCategory = isFreshMetadata ? metadata.officialCategory : "";
+  const safeMetadataKeywords = isFreshMetadata ? metadata.keywords : [];
+
+  const titleChannelKeywords = extractKeywords(`${title} ${channelName}`);
+  const descriptionKeywords = extractKeywords(descriptionSnippet).slice(0, 25);
 
   return {
+    videoId: currentVideoId,
     title,
     channelName,
     url: location.href,
-    officialCategory: metadata.officialCategory,
-    categoryScores: scoreResult.categoryScores,
-    matchedKeywords: scoreResult.matchedKeywords,
-    keywords: [...new Set([...keywords, ...scoreResult.matchedKeywords])].slice(0, 14)
+    officialCategory: safeOfficialCategory,
+    metadataKeywords: safeMetadataKeywords.slice(0, 12),
+    hashtags,
+    keywords: [...new Set([...titleChannelKeywords, ...descriptionKeywords, ...hashtags, ...safeMetadataKeywords.slice(0, 6)])].slice(0, 25),
+    descriptionSnippet,
+    analysisSource: "dom-for-llm"
   };
+}
+
+
+function waitForCurrentYoutubeDom(timeoutMs = 2600) {
+  return new Promise((resolve) => {
+    const startedAt = Date.now();
+    const startVideoId = getCurrentVideoIdFromUrl();
+
+    const tick = () => {
+      const currentVideoId = getCurrentVideoIdFromUrl();
+
+      const title =
+        getText([
+          "h1.ytd-watch-metadata",
+          "h1.title",
+          "#title h1",
+          "yt-formatted-string.ytd-watch-metadata"
+        ]) ||
+        document.title.replace(" - YouTube", "").trim();
+
+      const channelName =
+        getText([
+          "ytd-watch-metadata ytd-channel-name a",
+          "#owner #channel-name a",
+          "#upload-info #channel-name a",
+          "ytd-video-owner-renderer ytd-channel-name a"
+        ]);
+
+      const enoughDom = Boolean(title && channelName);
+      const timedOut = Date.now() - startedAt >= timeoutMs;
+
+      // YouTube 내부 라우팅 직후에는 DOM이 잠시 이전 영상일 수 있다.
+      // 현재 URL videoId를 확인한 뒤, DOM이 준비되었거나 timeout이면 현재 상태로 분석한다.
+      if ((currentVideoId && currentVideoId === startVideoId && enoughDom) || (title && timedOut)) {
+        resolve();
+        return;
+      }
+
+      setTimeout(tick, 120);
+    };
+
+    tick();
+  });
+}
+
+async function getCurrentVideoInfoFresh() {
+  await waitForCurrentYoutubeDom();
+  return getCurrentVideoInfo();
 }
 
 window.addEventListener("message", async (event) => {
@@ -387,19 +483,20 @@ window.addEventListener("message", async (event) => {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type !== "JJKC_ANALYZE_CURRENT_VIDEO") return;
 
-  try {
-    const videoInfo = getCurrentVideoInfo();
-
-    sendResponse({
-      ok: true,
-      data: videoInfo
+  // YouTube 내부 이동으로 영상이 바뀌어도 새로고침 없이 현재 DOM을 다시 읽는다.
+  getCurrentVideoInfoFresh()
+    .then((videoInfo) => {
+      sendResponse({
+        ok: true,
+        data: videoInfo
+      });
+    })
+    .catch(() => {
+      sendResponse({
+        ok: false,
+        error: "Failed to analyze current YouTube page"
+      });
     });
-  } catch {
-    sendResponse({
-      ok: false,
-      error: "Failed to analyze current YouTube page"
-    });
-  }
 
   return true;
 });
