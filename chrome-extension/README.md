@@ -9,7 +9,7 @@ JJKC 사이트에 저장된 내 알고리즘 프로필을 받아와, **지금 �
 ## 설치
 
 1. ZIP 압축 해제 (또는 이 폴더 준비)
-2. `config.js`를 열고 OpenAI API 키를 입력
+2. `config.js`를 열고 OpenAI API 키를 입력(현재는 테스트용 OpenAI API 키가 적용되어 있어 바로 사용 가능합니다.)
    ```js
    OPENAI_API_KEY: "PASTE_YOUR_OPENAI_API_KEY_HERE"
    ```
